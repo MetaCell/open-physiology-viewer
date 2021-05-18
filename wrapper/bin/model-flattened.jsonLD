@@ -1,0 +1,69 @@
+{
+  "@context": {
+    "@base": "https://apinatomy.org/uris/models/mainGraph/ids/",
+    "local": "https://apinatomy.org/uris/models/mainGraph/ids/",
+    "id": "@id",
+    "name": "rdfs:label",
+    "@version": 1.1,
+    "apinatomy": {
+      "@id": "https://apinatomy.org/uris/readable/",
+      "@prefix": true
+    },
+    "elements": {
+      "@id": "https://apinatomy.org/uris/elements/",
+      "@prefix": true
+    },
+    "owl": {
+      "@id": "http://www.w3.org/2002/07/owl#",
+      "@prefix": true
+    },
+    "rdf": {
+      "@id": "http://www.w3.org/1999/02/22-rdf-syntax-ns#",
+      "@prefix": true
+    },
+    "rdfs": {
+      "@id": "http://www.w3.org/2000/01/rdf-schema#",
+      "@prefix": true
+    }
+  },
+  "@graph": [
+    {
+      "id": "../../mainGraph",
+      "@type": [
+        "apinatomy:GraphMetadata",
+        "owl:Ontology"
+      ],
+      "name": "",
+      "apinatomy:hasGraph": "https://apinatomy.org/uris/models/mainGraph/ids/mainGraph"
+    },
+    {
+      "id": "local:group_default",
+      "@type": "owl:NamedIndividual",
+      "rdf:type": {
+        "id": "elements:Group"
+      },
+      "name": "Ungrouped",
+      "apinatomy:coalescences": [],
+      "apinatomy:generated": true,
+      "apinatomy:groups": [],
+      "apinatomy:links": [],
+      "apinatomy:lyphs": [],
+      "apinatomy:nodes": []
+    },
+    {
+      "id": "local:mainGraph",
+      "@type": "owl:NamedIndividual",
+      "rdf:type": {
+        "id": "elements:Graph"
+      },
+      "apinatomy:coalescences": [],
+      "apinatomy:generated": true,
+      "apinatomy:groups": {
+        "id": "local:group_default"
+      },
+      "apinatomy:links": [],
+      "apinatomy:lyphs": [],
+      "apinatomy:nodes": []
+    }
+  ]
+}

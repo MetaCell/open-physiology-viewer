@@ -1,0 +1,22 @@
+{
+  "name": "wrapper",
+  "version": "1.0.0",
+  "description": "wrapper for apinatomy angular application",
+  "main": "bin/converter.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Dario Metacell",
+  "bin": {
+    "wrapper": "./bin/converter.js"
+  },
+  "license": "ISC",
+  "dependencies": {
+    "axios": "^0.21.1",
+    "fs": "0.0.1-security",
+    "util": "^0.12.3",
+    "xlsx": "^0.16.9",
+    "yargs": "^17.0.1",
+    "zone.js": "^0.11.4"
+  }
+}

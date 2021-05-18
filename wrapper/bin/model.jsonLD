@@ -1,0 +1,492 @@
+{
+  "@context": {
+    "@base": "https://apinatomy.org/uris/models/keast-bladder/ids/",
+    "local": "https://apinatomy.org/uris/models/keast-bladder/ids/",
+    "UBERON": {
+      "@id": "http://purl.obolibrary.org/obo/UBERON_",
+      "@prefix": true
+    },
+    "CHEBI": {
+      "@id": "http://purl.obolibrary.org/obo/CHEBI_",
+      "@prefix": true
+    },
+    "FMA": {
+      "@id": "http://purl.org/sig/ont/fma/fma",
+      "@prefix": true
+    },
+    "GO": {
+      "@id": "http://purl.obolibrary.org/obo/GO_",
+      "@prefix": true
+    },
+    "ILX": {
+      "@id": "http://uri.interlex.org/base/ilx_",
+      "@prefix": true
+    },
+    "NLX": {
+      "@id": "http://uri.neuinfo.org/nif/nifstd/nlx_",
+      "@prefix": true
+    },
+    "SAO": {
+      "@id": "http://uri.neuinfo.org/nif/nifstd/sao",
+      "@prefix": true
+    },
+    "PMID": {
+      "@id": "http://www.ncbi.nlm.nih.gov/pubmed/",
+      "@prefix": true
+    },
+    "EMAPA": {
+      "@id": "http://purl.obolibrary.org/obo/EMAPA_",
+      "@prefix": true
+    },
+    "CL": {
+      "@id": "http://purl.obolibrary.org/obo/CL_",
+      "@prefix": true
+    },
+    "NCBITaxon": {
+      "@id": "http://purl.obolibrary.org/obo/NCBITaxon_",
+      "@prefix": true
+    },
+    "ilxtr": {
+      "@id": "http://uri.interlex.org/tgbugs/uris/readable/",
+      "@prefix": true
+    },
+    "layout": "apinatomy:layout",
+    "hostedBy": {
+      "@id": "apinatomy:hostedBy",
+      "@type": "@id"
+    },
+    "internalIn": {
+      "@id": "apinatomy:internalIn",
+      "@type": "@id"
+    },
+    "onBorderInRegion": {
+      "@id": "apinatomy:onBorderInRegion",
+      "@type": "@id"
+    },
+    "sourceOf": {
+      "@id": "apinatomy:sourceOf",
+      "@type": "@id"
+    },
+    "targetOf": {
+      "@id": "apinatomy:targetOf",
+      "@type": "@id"
+    },
+    "partOf": "apinatomy:partOf",
+    "anchoredNode": {
+      "@id": "apinatomy:anchoredNode",
+      "@type": "@id"
+    },
+    "namespace": "apinatomy:namespace",
+    "version": "apinatomy:version",
+    "created": "apinatomy:created",
+    "lastUpdated": "apinatomy:lastUpdated",
+    "author": "apinatomy:author",
+    "borders": {
+      "@id": "apinatomy:borders",
+      "@type": "@id"
+    },
+    "host": {
+      "@id": "apinatomy:host",
+      "@type": "@id"
+    },
+    "root": {
+      "@id": "apinatomy:root",
+      "@type": "@id"
+    },
+    "leaf": {
+      "@id": "apinatomy:leaf",
+      "@type": "@id"
+    },
+    "lyphs": {
+      "@id": "apinatomy:lyphs",
+      "@type": "@id"
+    },
+    "lyphTemplate": {
+      "@id": "apinatomy:lyphTemplate",
+      "@type": "@id"
+    },
+    "numLevels": "apinatomy:numLevels",
+    "levels": {
+      "@id": "apinatomy:levels",
+      "@type": "@id"
+    },
+    "housingLyphs": {
+      "@id": "apinatomy:housingLyphs",
+      "@type": "@id"
+    },
+    "housingChain": {
+      "@id": "apinatomy:housingChain",
+      "@type": "@id"
+    },
+    "housingRange": "apinatomy:housingRange",
+    "housingLayers": "apinatomy:housingLayers",
+    "wiredTo": {
+      "@id": "apinatomy:wiredTo",
+      "@type": "@id"
+    },
+    "startFromLeaf": "apinatomy:startFromLeaf",
+    "materials": {
+      "@id": "apinatomy:materials",
+      "@type": "@id"
+    },
+    "instances": "apinatomy:instances",
+    "topology": {
+      "@id": "apinatomy:topology",
+      "@type": "@id",
+      "@context": {
+        "@base": "https://apinatomy.org/uris/readable/"
+      }
+    },
+    "abstract": "apinatomy:abstract",
+    "generatedFrom": {
+      "@id": "apinatomy:generatedFrom",
+      "@type": "@id"
+    },
+    "anchors": "apinatomy:anchors",
+    "wires": "apinatomy:wires",
+    "regions": {
+      "@id": "apinatomy:regions",
+      "@type": "@id"
+    },
+    "components": {
+      "@id": "apinatomy:components",
+      "@type": "@id"
+    },
+    "prefix": "apinatomy:prefix",
+    "stroke": "apinatomy:stroke",
+    "lineWidth": "apinatomy:lineWidth",
+    "arcCenter": {
+      "@id": "apinatomy:arcCenter",
+      "@type": "@id"
+    },
+    "length": "apinatomy:length",
+    "uri": "apinatomy:uri",
+    "type": "apinatomy:type",
+    "annotates": {
+      "@id": "apinatomy:annotates",
+      "@type": "@id"
+    },
+    "documents": {
+      "@id": "apinatomy:documents",
+      "@type": "@id"
+    },
+    "config": "apinatomy:config",
+    "inactive": "apinatomy:inactive",
+    "nodes": {
+      "@id": "apinatomy:nodes",
+      "@type": "@id"
+    },
+    "links": {
+      "@id": "apinatomy:links",
+      "@type": "@id"
+    },
+    "references": {
+      "@id": "apinatomy:references",
+      "@type": "@id"
+    },
+    "coalescences": {
+      "@id": "apinatomy:coalescences",
+      "@type": "@id"
+    },
+    "channels": {
+      "@id": "apinatomy:channels",
+      "@type": "@id"
+    },
+    "chains": {
+      "@id": "apinatomy:chains",
+      "@type": "@id"
+    },
+    "trees": {
+      "@id": "apinatomy:trees",
+      "@type": "@id"
+    },
+    "groups": {
+      "@id": "apinatomy:groups",
+      "@type": "@id"
+    },
+    "scaffolds": "apinatomy:scaffolds",
+    "scheme": "apinatomy:scheme",
+    "reversed": "apinatomy:reversed",
+    "offset": "apinatomy:offset",
+    "group": {
+      "@id": "apinatomy:group",
+      "@type": "@id"
+    },
+    "conveyingType": "apinatomy:conveyingType",
+    "source": {
+      "@id": "apinatomy:source",
+      "@type": "@id"
+    },
+    "target": {
+      "@id": "apinatomy:target",
+      "@type": "@id"
+    },
+    "hostedNodes": {
+      "@id": "apinatomy:hostedNodes",
+      "@type": "@id"
+    },
+    "conveyingLyph": {
+      "@id": "apinatomy:conveyingLyph",
+      "@type": "@id"
+    },
+    "conveyingMaterials": {
+      "@id": "apinatomy:conveyingMaterials",
+      "@type": "@id"
+    },
+    "onBorder": {
+      "@id": "apinatomy:onBorder",
+      "@type": "@id"
+    },
+    "levelIn": {
+      "@id": "apinatomy:levelIn",
+      "@type": "@id"
+    },
+    "fasciculatesIn": {
+      "@id": "apinatomy:fasciculatesIn",
+      "@type": "@id"
+    },
+    "collapsible": "apinatomy:collapsible",
+    "geometry": "apinatomy:geometry",
+    "infoFields": "apinatomy:infoFields",
+    "directed": "apinatomy:directed",
+    "strength": "apinatomy:strength",
+    "prev": {
+      "@id": "apinatomy:prev",
+      "@type": "@id"
+    },
+    "next": {
+      "@id": "apinatomy:next",
+      "@type": "@id"
+    },
+    "prevChainEndLevels": {
+      "@id": "apinatomy:prevChainEndLevels",
+      "@type": "@id"
+    },
+    "nextChainStartLevels": {
+      "@id": "apinatomy:nextChainStartLevels",
+      "@type": "@id"
+    },
+    "isTemplate": "apinatomy:isTemplate",
+    "thickness": "apinatomy:thickness",
+    "subtypes": {
+      "@id": "apinatomy:subtypes",
+      "@type": "@id"
+    },
+    "supertype": {
+      "@id": "apinatomy:supertype",
+      "@type": "@id"
+    },
+    "inheritedExternal": {
+      "@id": "apinatomy:inheritedExternal",
+      "@type": "@id"
+    },
+    "conveys": {
+      "@id": "apinatomy:conveys",
+      "@type": "@id"
+    },
+    "layers": {
+      "@id": "apinatomy:layers",
+      "@type": "@id"
+    },
+    "layerIn": {
+      "@id": "apinatomy:layerIn",
+      "@type": "@id"
+    },
+    "internalLyphs": {
+      "@id": "apinatomy:internalLyphs",
+      "@type": "@id"
+    },
+    "internalNodes": {
+      "@id": "apinatomy:internalNodes",
+      "@type": "@id"
+    },
+    "internalLyphColumns": "apinatomy:internalLyphColumns",
+    "internalLyphsInLayers": "apinatomy:internalLyphsInLayers",
+    "internalNodesInLayers": "apinatomy:internalNodesInLayers",
+    "bundles": {
+      "@id": "apinatomy:bundles",
+      "@type": "@id"
+    },
+    "bundlesChains": {
+      "@id": "apinatomy:bundlesChains",
+      "@type": "@id"
+    },
+    "inChain": {
+      "@id": "apinatomy:inChain",
+      "@type": "@id"
+    },
+    "villus": {
+      "@id": "apinatomy:villus",
+      "@type": "@id"
+    },
+    "inCoalescences": {
+      "@id": "apinatomy:inCoalescences",
+      "@type": "@id"
+    },
+    "angle": "apinatomy:angle",
+    "width": "apinatomy:width",
+    "height": "apinatomy:height",
+    "scale": "apinatomy:scale",
+    "create3d": "apinatomy:create3d",
+    "layerWidth": "apinatomy:layerWidth",
+    "inMaterials": {
+      "@id": "apinatomy:inMaterials",
+      "@type": "@id"
+    },
+    "transportedBy": {
+      "@id": "apinatomy:transportedBy",
+      "@type": "@id"
+    },
+    "controlNodes": {
+      "@id": "apinatomy:controlNodes",
+      "@type": "@id"
+    },
+    "fixed": "apinatomy:fixed",
+    "charge": "apinatomy:charge",
+    "collide": "apinatomy:collide",
+    "rootOf": {
+      "@id": "apinatomy:rootOf",
+      "@type": "@id"
+    },
+    "leafOf": {
+      "@id": "apinatomy:leafOf",
+      "@type": "@id"
+    },
+    "anchoredTo": {
+      "@id": "apinatomy:anchoredTo",
+      "@type": "@id"
+    },
+    "start": "apinatomy:start",
+    "end": "apinatomy:end",
+    "step": "apinatomy:step",
+    "x": "apinatomy:x",
+    "y": "apinatomy:y",
+    "z": "apinatomy:z",
+    "facets": {
+      "@id": "apinatomy:facets",
+      "@type": "@id"
+    },
+    "borderAnchors": {
+      "@id": "apinatomy:borderAnchors",
+      "@type": "@id"
+    },
+    "internalAnchors": {
+      "@id": "apinatomy:internalAnchors",
+      "@type": "@id"
+    },
+    "hostedGroup": {
+      "@id": "apinatomy:hostedGroup",
+      "@type": "@id"
+    },
+    "hostedLyphs": {
+      "@id": "apinatomy:hostedLyphs",
+      "@type": "@id"
+    },
+    "internalRegions": {
+      "@id": "apinatomy:internalRegions",
+      "@type": "@id"
+    },
+    "depth": "apinatomy:depth",
+    "id": "@id",
+    "name": "rdfs:label",
+    "class": {
+      "@id": "rdf:type",
+      "@type": "@id",
+      "@context": {
+        "@base": "https://apinatomy.org/uris/elements/"
+      }
+    },
+    "description": "apinatomy:description",
+    "localConventions": "apinatomy:localConventions",
+    "external": {
+      "@id": "apinatomy:external",
+      "@type": "@id"
+    },
+    "publications": {
+      "@id": "apinatomy:publications",
+      "@type": "@id"
+    },
+    "generated": "apinatomy:generated",
+    "assign": "apinatomy:assign",
+    "interpolate": "apinatomy:interpolate",
+    "border": {
+      "@id": "apinatomy:border",
+      "@type": "@id"
+    },
+    "points": "apinatomy:points",
+    "chain": {
+      "@id": "apinatomy:chain",
+      "@type": "@id"
+    },
+    "branchingFactors": "apinatomy:branchingFactors",
+    "numInstances": "apinatomy:numInstances",
+    "invisible": "apinatomy:invisible",
+    "val": "apinatomy:val",
+    "numLayers": "apinatomy:numLayers",
+    "villusOf": {
+      "@id": "apinatomy:villusOf",
+      "@type": "@id"
+    },
+    "color": "apinatomy:color",
+    "viewObjects": "apinatomy:viewObjects",
+    "labels": "apinatomy:labels",
+    "hidden": "apinatomy:hidden",
+    "skipLabel": "apinatomy:skipLabel",
+    "cloneOf": {
+      "@id": "apinatomy:cloneOf",
+      "@type": "@id"
+    },
+    "clones": {
+      "@id": "apinatomy:clones",
+      "@type": "@id"
+    },
+    "hostedAnchors": {
+      "@id": "apinatomy:hostedAnchors",
+      "@type": "@id"
+    },
+    "controlPoint": {
+      "@id": "apinatomy:controlPoint",
+      "@type": "@id"
+    },
+    "facetIn": {
+      "@id": "apinatomy:facetIn",
+      "@type": "@id"
+    },
+    "wiredChain": {
+      "@id": "apinatomy:wiredChain",
+      "@type": "@id"
+    },
+    "@version": 1.1,
+    "apinatomy": {
+      "@id": "https://apinatomy.org/uris/readable/",
+      "@prefix": true
+    },
+    "elements": {
+      "@id": "https://apinatomy.org/uris/elements/",
+      "@prefix": true
+    },
+    "owl": {
+      "@id": "http://www.w3.org/2002/07/owl#",
+      "@prefix": true
+    },
+    "rdf": {
+      "@id": "http://www.w3.org/1999/02/22-rdf-syntax-ns#",
+      "@prefix": true
+    },
+    "rdfs": {
+      "@id": "http://www.w3.org/2000/01/rdf-schema#",
+      "@prefix": true
+    }
+  },
+  "@graph": [
+    {
+      "@id": "https://apinatomy.org/uris/models/keast-bladder",
+      "@type": [
+        "apinatomy:GraphMetadata",
+        "owl:Ontology"
+      ],
+      "rdfs:label": "Keast Bladder Model",
+      "apinatomy:hasGraph": "https://apinatomy.org/uris/models/keast-bladder/ids/keast-bladder"
+    }
+  ]
+}
