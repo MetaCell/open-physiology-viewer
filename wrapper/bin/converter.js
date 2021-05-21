@@ -35,9 +35,22 @@ function readTextFile(file)
     let results2 = converter.fromJsonToGenerated(_json);
     fs.writeFileSync("model-generated.json", results2);
 
+    let _jsonLD = converter.convertToJsonLD(_xlsx, ".xlsx", "xlsx");
+    fs.writeFileSync("model2.jsonLD", _jsonLD);
+
     let _generated = fs.readFileSync("model-generated.json", 'binary');
     let results3 = converter.fromGeneratedToJsonLD(_generated);
     fs.writeFileSync("model.jsonLD", results3);
+
+    const _callback = function callback(res) {
+        let _flattened = JSON.stringify(res, null, 2);
+        fs.writeFileSync("model-flattened.jsonLD", _flattened);
+    };
+
+    // let _jsonLD2 = fs.readFileSync("model.jsonLD", 'binary');
+    // let results4 = converter.fromJsonLDToFlattened(_jsonLD2, _callback);
+    // fs.writeFileSync("model-flattened.jsonLD", results4);
+
 
 
     // fs.readFile(file, 'binary', function(err, data) {
@@ -56,7 +69,6 @@ function readTextFile(file)
     //         fs.writeFileSync("model-flattened.jsonLD", _flattened);
     //     };
     //     // converter.convertToJsonLDFlattened(data, ".xlsx", "xlsx", _callback);
-
     //     converter.convertToJsonLDFlattened2(fs.readFileSync("model-generated.json", 'binary'), _callback);
     // });
 }

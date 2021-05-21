@@ -19,6 +19,13 @@ import * as schema from "./graphScheme";
 
 import * as XLSX from 'xlsx';
 
+import * as jsonld from "jsonld/dist/node6/lib/jsonld";
+
+import {
+    getNewID,
+    getFullID
+} from "./utils";
+
 export const modelClasses = {
     /*Abstract */
     [$SchemaClass.Resource]       : Resource,
@@ -117,6 +124,85 @@ export function fromJSON(inputModel) {
     } else {
         return Graph.fromJSON(inputModel, modelClasses);
     }
+}
+
+/**
+ * 
+ * @param {*} inputModelA 
+ * @param {*} inputModelB 
+ * @param {*} flattenGroups 
+ * @returns 
+ */
+export function fromJSONGenerated(inputModel) {
+    var result = null
+    function typeCast(obj) {
+        if (obj instanceof Object && !(obj instanceof Array) && !(typeof obj === 'function') && obj['class'] !== undefined && modelClasses[obj['class']] !== undefined) {
+            var _new = Object.assign(modelClasses[obj['class']].prototype, obj);
+            return _new;
+        } else {
+            return obj
+        }
+    }
+
+    function iterateObj(obj) {
+        obj = typeCast(obj)
+
+        for (let key in obj) {
+            if (Array.isArray(obj[key])) {
+                for (let i = 0; i < obj[key].length; i++) {
+                    obj[key][i] = iterateObj(obj[key][i]);
+                }
+                // obj[key].forEach(function (arrayItem) {
+                //     iterateObj(arrayItem);
+                // });
+            } else if (typeof obj[key] === 'object' && obj[key] !== null) {
+                obj[key] = iterateObj(obj[key]);
+            }
+        }
+        return obj;
+    }
+
+    const skip = value => !value || value::isObject() && value::isEmpty() || value.class && (value instanceof modelClasses[value.class]);
+
+    var _classed_model = iterateObj(inputModel);
+
+    _classed_model.entitiesByID = {
+        waitingList: {}
+    };
+
+    let namespace = _classed_model.namespace;
+    let refFields = this.constructor.Model.relationships;
+    refFields.forEach(([key, spec]) => {
+        if (skip(_classed_model[key])) { return; }
+        if (Array.isArray(_classed_model[key])){
+            _classed_model[key].forEach(node => {
+                let fullResID = getFullID(namespace, node.id);
+                _classed_model.entitiesByID[fullResID] = node;
+            });
+        } else {
+            let fullResID = getFullID(namespace, _classed_model[key].id);
+            _classed_model.entitiesByID[fullResID] = _classed_model[key];
+        }
+    });
+
+    return _classed_model;
+}
+
+
+export function fromJsonLD(inputModel, callback) {
+    let context = {};
+    var res = inputModel;
+    res['@context']::entries().forEach(([k, v]) => {
+        if (!(v::isObject() && ("@id" in v) && v["@id"].includes("apinatomy:"))) {
+            if (!(typeof(v) === "string" && v.includes("apinatomy:"))) {
+                if (k !== "class") {
+                    //console.log(k, v);
+                    context[k] = v;
+                }
+            }
+        }
+    });
+    jsonld.flatten(res).then(flat => jsonld.compact(flat, context).then(compact => callback(compact)));
 }
 
 /**

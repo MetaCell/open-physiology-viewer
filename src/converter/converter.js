@@ -1,7 +1,7 @@
 import {$Field} from "../model/utils";
 import {Graph}   from '../model/graphModel';
 import {Scaffold} from '../model/scaffoldModel';
-import {loadModel, fromJSON, isScaffold} from '../model/modelClasses';
+import {loadModel, fromJSON, fromJSONGenerated, fromJsonLD} from '../model/modelClasses';
 
 
 // Mirroring what the UI does, this part will be removed for the PR, it is intended just to study the code and model
@@ -65,18 +65,15 @@ function fromJsonToGenerated(data) {
 
 function fromGeneratedToJsonLD(data) {
     let _generated = JSON.parse(data);
-    let _graph_scaffold = null;
-    if (isScaffold(_generated)) {
-        _graph_scaffold = Object.assign(Scaffold.prototype, _generated);
-    } else {
-        _graph_scaffold = Object.assign(Graph.prototype, _generated);
-    }
-    let result = JSON.stringify(_graph_scaffold.entitiesToJSONLD(), null, 2);
+    let _model = fromJSONGenerated(_generated);
+    let result = JSON.stringify(_model.entitiesToJSONLD(), null, 2);
     return result;
 }
 
-function fromJsonLDToFlattened(data) {
-    console.log("to be finished");
+function fromJsonLDToFlattened(data, _callback) {
+    let _jsonLD = JSON.parse(data);
+    let _result = fromJsonLD(_jsonLD, _callback);
+    return _result;
 }
 
 
