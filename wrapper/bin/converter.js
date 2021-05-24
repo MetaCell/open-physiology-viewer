@@ -42,10 +42,10 @@ function readTextFile(file)
     let results3 = converter.fromGeneratedToJsonLD(_generated);
     fs.writeFileSync("model.jsonLD", results3);
 
-    const _callback = function callback(res) {
-        let _flattened = JSON.stringify(res, null, 2);
-        fs.writeFileSync("model-flattened.jsonLD", _flattened);
-    };
+    // const _callback = function callback(res) {
+    //     let _flattened = JSON.stringify(res, null, 2);
+    //     fs.writeFileSync("model-flattened.jsonLD", _flattened);
+    // };
 
     // let _jsonLD2 = fs.readFileSync("model.jsonLD", 'binary');
     // let results4 = converter.fromJsonLDToFlattened(_jsonLD2, _callback);

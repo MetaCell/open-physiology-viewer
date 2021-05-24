@@ -71,9 +71,10 @@ function fromGeneratedToJsonLD(data) {
 }
 
 function fromJsonLDToFlattened(data, _callback) {
-    let _jsonLD = JSON.parse(data);
-    let _result = fromJsonLD(_jsonLD, _callback);
-    return _result;
+    // let _jsonLD = JSON.parse(data);
+    // let _result = fromJsonLD(_jsonLD, _callback);
+    // return _result;
+    console.log("to be finished");
 }
 
 
