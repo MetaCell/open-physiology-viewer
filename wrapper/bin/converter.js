@@ -16,11 +16,11 @@ const options = yargs
  .option("m", { alias: "method", describe: "From which step of the conversion we are starting", type: "string", choices: [ "id", "xlsx", "json", "json-resources", "json-ld" ], demandOption: true})
  .argv;
 
-// to_convert = new ConversionHandler(options.m, options.i);
-// to_convert.convertAll();
+to_convert = new ConversionHandler(options.m, options.i);
+to_convert.convertAll();
 
-let _path = options.i
-readTextFile(_path)
+// let _path = options.i
+// readTextFile(_path)
 
 
 
@@ -42,15 +42,20 @@ function readTextFile(file)
     let results3 = converter.fromGeneratedToJsonLD(_generated);
     fs.writeFileSync("model.jsonLD", results3);
 
-    // const _callback = function callback(res) {
-    //     let _flattened = JSON.stringify(res, null, 2);
-    //     fs.writeFileSync("model-flattened.jsonLD", _flattened);
-    // };
+    const _callback = function callback(res) {
+        let _flattened = JSON.stringify(res, null, 2);
+        fs.writeFileSync("model-flattened.jsonLD", _flattened);
+    };
 
-    // let _jsonLD2 = fs.readFileSync("model.jsonLD", 'binary');
-    // let results4 = converter.fromJsonLDToFlattened(_jsonLD2, _callback);
-    // fs.writeFileSync("model-flattened.jsonLD", results4);
+    let _jsonLD2 = fs.readFileSync("model2.jsonLD", 'binary');
+    converter.fromJsonLDToFlattened(_jsonLD2, _callback);
 
+    const _callback2 = function callback(res) {
+        let _flattened = JSON.stringify(res, null, 2);
+        fs.writeFileSync("model-flattened2.jsonLD", _flattened);
+    };
+
+    converter.convertToJsonLDFlattened(_xlsx, ".xlsx", "xlsx", _callback2);
 
 
     // fs.readFile(file, 'binary', function(err, data) {

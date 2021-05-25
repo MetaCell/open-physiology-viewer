@@ -13,7 +13,6 @@ import {Vertice, Anchor, Node} from './verticeModel';
 import {Edge, Wire, Link} from './edgeModel';
 import {Shape, Lyph, Region, Border} from './shapeModel'
 import {Coalescence}  from './coalescenceModel';
-import {$Field, $SchemaClass} from './utils';
 import {isString, isObject, isArray, isNumber, isEmpty, keys, merge, assign} from "lodash-bound";
 import * as schema from "./graphScheme";
 
@@ -21,10 +20,16 @@ import * as XLSX from 'xlsx';
 
 import * as jsonld from "jsonld/dist/node6/lib/jsonld";
 
+import { entries } from 'lodash-bound';
+
 import {
+    $Field,
+    $SchemaClass,
+    $SchemaType,
     getNewID,
     getFullID,
-    getClassName
+    getClassName,
+    isClassAbstract
 } from "./utils";
 
 export const modelClasses = {
@@ -129,54 +134,154 @@ export function fromJSON(inputModel) {
 
 /**
  * 
- * @param {*} inputModelA 
- * @param {*} inputModelB 
- * @param {*} flattenGroups 
+ * @param {*} inputModel
  * @returns 
  */
 export function fromJSONGenerated(inputModel) {
-    let namespace = inputModel.namespace;
-    let entitiesByID = {
+    var namespace = inputModel.namespace || undefined;
+    var entitiesByID = {
         waitingList: {}
     };
 
     const skip = value => !value || value::isObject() && value::isEmpty() || value.class && (value instanceof modelClasses[value.class]);
 
-    function typeCast(obj) {
-        if (!skip(obj)) {
-            let fullResID = getFullID(namespace, obj.id);
-            entitiesByID[fullResID] = obj;
+    function replaceIDs(modelClasses, entitiesByID, namespace, context){
+        const createObj = (res, key, value, spec) => {
+            if (skip(value)) { return value; }
+
+            let fullResID = getFullID(namespace, res.id);
+            if (value::isNumber()) {
+                value = value.toString();
+            }
+
+            let clsName = getClassName(spec);
+            if (!clsName){
+                return value;
+            }
+
+            if (value && value::isString()) {
+                let fullValueID = getFullID(namespace, value);
+                if (!entitiesByID[fullValueID]) {
+                    //put to a wait list instead
+                    entitiesByID.waitingList[value] = entitiesByID.waitingList[value] || [];
+                    entitiesByID.waitingList[value].push([res, key]);
+                    return value;
+                } else {
+                    return entitiesByID[fullValueID];
+                }
+            }
+
+            if (value.id) {
+                let fullValueID = getFullID(namespace, value.id);
+                if (entitiesByID[fullValueID]) {
+                    return entitiesByID[fullValueID];
+                }
+            }
+
+            //value is an object and it is not in the map
+            if (isClassAbstract(clsName)){
+                if (value.class) {
+                    clsName = value.class;
+                    if (!modelClasses[clsName]){
+                    }
+                } else {
+                    return null;
+                }
+            }
+            return typeCast(value);
+        };
+
+        if (!modelClasses[context.class]){
+            return;
         }
+
+        let refFields = context.constructor.Model.relationships;
+        let res = context;
+        refFields.forEach(([key, spec]) => {
+            if (skip(res[key])) { return; }
+            if (res[key]::isArray()){
+                res[key] = res[key].map(value => createObj(res, key, value, spec));
+            } else {
+                res[key] = createObj(res, key, res[key], spec);
+            }
+        });
+    };
+
+    function reviseWaitingList(waitingList, namespace, context){
+        let res = context;
+        (waitingList[res.id]||[]).forEach(([obj, key]) => {
+            if (obj[key]::isArray()){
+                obj[key].forEach((e, i) => {
+                    if (e === res.id){
+                       obj[key][i] = res;
+                    }
+                });
+            } else {
+                if (obj[key] === res.id){
+                    obj[key] = res;
+                }
+            }
+        });
+        delete waitingList[res.id];
+    }
+
+    function typeCast(obj) {
         if (obj instanceof Object && !(obj instanceof Array) && !(typeof obj === 'function') && obj['class'] !== undefined && modelClasses[obj['class']] !== undefined) {
             const cls = modelClasses[obj['class']];
             const res = new cls(obj.id);
             res.class = obj['class'];
             res::assign(obj);
+
+            if (entitiesByID){
+                if (!res.id) { res.id = getNewID(entitiesByID); }
+                if (res.id::isNumber()) {
+                    res.id = res.id.toString();
+                }
+                let fullResID = getFullID(namespace, res.id);
+                if (entitiesByID[fullResID]) {
+                    if (entitiesByID[fullResID] !== res){
+                        console.log("duplicate resource " + fullResID);
+                        //logger.warn($LogMsg.RESOURCE_NOT_UNIQUE, entitiesByID[fullResID], res);
+                    }
+                } else {
+                    entitiesByID[fullResID] = res;
+                    reviseWaitingList(entitiesByID.waitingList, namespace, res);
+                    replaceIDs(modelClasses, entitiesByID, namespace, res);
+                }
+            }
             return res;
         } else {
             return obj
         }
     }
 
-    function iterateObj(obj) {
-        obj = typeCast(obj)
-
-        for (let key in obj) {
-            if (Array.isArray(obj[key])) {
-                for (let i = 0; i < obj[key].length; i++) {
-                    obj[key][i] = iterateObj(obj[key][i]);
-                }
-            } else if (typeof obj[key] === 'object' && obj[key] !== null) {
-                obj[key] = iterateObj(obj[key]);
-            }
-        }
-        return obj;
-    }
-
-    var _classed_model = iterateObj(inputModel);
+    var _classed_model = typeCast(inputModel);
     _classed_model.entitiesByID = entitiesByID;
+    return _classed_model;
+}
 
-return _classed_model;
+
+/**
+ * 
+ * @param {*} inputModel
+ * @returns 
+ */
+
+
+export function fromJsonLD(inputModel, callback) {
+    let res = inputModel;
+    let context = {};
+    res['@context']::entries().forEach(([k, v]) => {
+        if (v::isObject() && "@id" in v && v["@id"].includes("apinatomy:")) {
+        } else if (typeof(v) === "string" && v.includes("apinatomy:")) {
+        } else if (k === "class") { // class uses @context @base which is not 1.0 compatible
+        } else {
+            context[k] = v;
+        }});
+    // TODO reattach context for rdflib-jsonld prefix construction
+    jsonld.flatten(res).then(flat => {
+        jsonld.compact(flat, context).then(compact => {
+            callback(compact)})});
 }
 
 /**

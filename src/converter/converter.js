@@ -31,16 +31,10 @@ function convertToJsonLD(content, name, extension, isBinary = true){
     return result;
 }
 
-function convertToJsonLDFlattened(content, name, extension, callback, isBinary = true){
-    // let model = loadModel(content, name, extension);
+function convertToJsonLDFlattened(content, name, extension, callback){
+    let model = loadModel(content, name, extension);
     let graphData = fromJSON(model);
-    return graphData.entitiesToJSONLDFlat(callback);
-}
-
-function convertToJsonLDFlattened2(model, _callback){
-    // let model = loadModel(content, name, extension);
-    let graphData = fromJSON(model);
-    return graphData.entitiesToJSONLDFlat(_callback);
+    graphData.entitiesToJSONLDFlat(callback);
 }
 
 // ####  remove end here  #####
@@ -70,11 +64,9 @@ function fromGeneratedToJsonLD(data) {
     return result;
 }
 
-function fromJsonLDToFlattened(data, _callback) {
-    // let _jsonLD = JSON.parse(data);
-    // let _result = fromJsonLD(_jsonLD, _callback);
-    // return _result;
-    console.log("to be finished");
+async function fromJsonLDToFlattened(data, _callback) {
+    let _jsonLD = JSON.parse(data);
+    await fromJsonLD(_jsonLD, _callback);
 }
 
 
@@ -89,4 +81,3 @@ exports.convertToJson = convertToJson;
 exports.convertToJsonLD = convertToJsonLD;
 exports.convertToJsonGenerated = convertToJsonGenerated;
 exports.convertToJsonLDFlattened = convertToJsonLDFlattened;
-exports.convertToJsonLDFlattened2 = convertToJsonLDFlattened2;

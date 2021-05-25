@@ -34,13 +34,13 @@ class ConversionHandler {
             return this.#fromXlsxToJson(input)
         },
         "json": (input) => {
-
+            return this.#fromJsonToGenerated(input)
         },
         "json-resources": (input) => {
-
+            return this.#fromGeneratedToLD(input)
         },
-        "json-ld": (input) => {
-
+        "json-ld": async (input) => {
+            return this.#fromLDToFlattened(input)
         }
     };
 
@@ -70,10 +70,60 @@ class ConversionHandler {
             if (fs.existsSync(file)) {
                 let filename = this._destination_folder + "/model.json";
                 let _xlsx = fs.readFileSync(file, 'binary');
-                let model = converter.loadModel(_xlsx, ".xlsx", "xlsx");
-                let _json_model = JSON.stringify(model, null, 4);
+                let _json_model = converter.fromXLSXToJson(_xlsx);
                 fs.writeFileSync(filename, _json_model);
                 return filename;
+            } else {
+                throw new Error('The file given in input does not exist or is not located where specified.')
+            }
+        } catch(err) {
+            throw new Error('An error has been encoutered during the conversion from XLSX to Json.')
+        }
+    }
+
+    #fromJsonToGenerated(file) {
+        try {
+            if (fs.existsSync(file)) {
+                let filename = this._destination_folder + "/model-generated.json";
+                let _json = fs.readFileSync(file, 'binary');
+                let _generated = converter.fromJsonToGenerated(_json);
+                fs.writeFileSync(filename, _generated);
+                return filename;
+            } else {
+                throw new Error('The file given in input does not exist or is not located where specified.')
+            }
+        } catch(err) {
+            throw new Error('An error has been encoutered during the conversion from XLSX to Json.')
+        }
+    }
+
+    #fromGeneratedToLD(file) {
+        try {
+            if (fs.existsSync(file)) {
+                let filename = this._destination_folder + "/model.jsonLD";
+                let _generated = fs.readFileSync(file, 'binary');
+                let result = converter.fromGeneratedToJsonLD(_generated);
+                fs.writeFileSync(filename, result);
+                return filename;
+            } else {
+                throw new Error('The file given in input does not exist or is not located where specified.')
+            }
+        } catch(err) {
+            throw new Error('An error has been encoutered during the conversion from XLSX to Json.')
+        }
+    }
+
+    #fromLDToFlattened(file) {
+        try {
+            if (fs.existsSync(file)) {
+                var filename = this._destination_folder + "/model-flattened.jsonLD";
+                var _jsonld = fs.readFileSync(file, 'binary');
+                const _callback = function callback(res) {
+                    let _flattened = JSON.stringify(res, null, 2);
+                    fs.writeFileSync(filename, _flattened);
+                    return filename;
+                };
+                converter.fromJsonLDToFlattened(_jsonld, _callback);
             } else {
                 throw new Error('The file given in input does not exist or is not located where specified.')
             }
