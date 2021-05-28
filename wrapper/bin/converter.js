@@ -1,5 +1,8 @@
 #!/usr/bin/env node
 
+global.self = {};
+global.window = {};
+
 const yargs = require("yargs");
 const ConversionHandler = require('./model/filehandler');
 
