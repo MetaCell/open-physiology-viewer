@@ -212,8 +212,8 @@ export function fromJSONGenerated(inputModel) {
         (waitingList[res.id]||[]).forEach(([obj, key]) => {
             if (obj[key]::isArray()){
                 obj[key].forEach((e, i) => {
-                    if (e === res.id){
-                       obj[key][i] = res;
+                    if (e === res.id) {
+                        obj[key][i] = res;
                     }
                 });
             } else {
@@ -255,9 +255,112 @@ export function fromJSONGenerated(inputModel) {
         }
     }
 
-    var _classed_model = typeCast(inputModel);
-    _classed_model.entitiesByID = entitiesByID;
-    return _classed_model;
+    function _createResource(id, clsName, group, modelClasses, entitiesByID, namespace){
+        let e = typeCast({
+            [$Field.id]: id,
+            [$Field.class]: clsName,
+            [$Field.generated]: true
+        })
+
+        //Do not show labels for generated visual resources
+        if (e.prototype instanceof modelClasses.VisualResource){
+            e.skipLabel = true;
+        }
+
+        //Include newly created entity to the main graph
+        let prop = modelClasses[group.class].Model.selectedRelNames(clsName)[0];
+        if (prop) {
+            group[prop] = group[prop] ||[];
+            group[prop].push(e);
+        }
+        let fullID = getFullID(namespace, e.id);
+        entitiesByID[fullID] = e;
+        return e;
+    }
+
+    function processGraphWaitingList(model, entitiesList) {
+        let added = [];
+        (entitiesList.waitingList)::entries().forEach(([id, refs]) => {
+            let [obj, key] = refs[0];
+            if (obj && obj.class){
+                let clsName = modelClasses[obj.class].Model.relClassNames[key];
+                if (clsName && !modelClasses[clsName].Model.schema.abstract){
+                    let e = _createResource(id, clsName, model, modelClasses, entitiesList, namespace);
+                    added.push(e.id);
+                    //A created link needs end nodes
+                    if (e instanceof modelClasses.Link) {
+                        let i = 0;
+                        const related = [$Field.sourceOf, $Field.targetOf];
+                        e.applyToEndNodes(end => {
+                            if (end::isString()) {
+                                let s = _createResource(end, $SchemaClass.Node, model, modelClasses, entitiesList, namespace);
+                                added.push(s.id);
+                                s[related[i]] = [e];
+                            }
+                        });
+                    }
+                }
+            }
+        });
+
+        if (added.length > 0){
+            added.map(id => delete entitiesList.waitingList[id]);
+            const resources = added.filter(id => entitiesList[getFullID(namespace,id)].class !== $SchemaClass.External);
+            const externals = added.filter(id => entitiesList[getFullID(namespace,id)].class === $SchemaClass.External);
+        }
+
+        model.syncRelationships(modelClasses, entitiesList, namespace);
+        model.entitiesByID = entitiesList;
+    }
+
+    function processScaffoldWaitingList(model, entitiesList) {
+        //Auto-create missing definitions for used references
+        let added = [];
+        (entitiesList.waitingList)::entries().forEach(([id, refs]) => {
+            let [obj, key] = refs[0];
+            if (obj && obj.class) {
+                let clsName = modelClasses[obj.class].Model.relClassNames[key];
+                if (clsName && !modelClasses[clsName].Model.schema.abstract) {
+                    let e = typeCast({
+                        [$Field.id]: id,
+                        [$Field.class]: clsName,
+                        [$Field.generated]: true
+                    })
+
+                    //Include newly created entity to the main graph
+                    let prop = modelClasses[this.name].Model.selectedRelNames(clsName)[0];
+                    if (prop) {
+                        model[prop] = model[prop] || [];
+                        model[prop].push(e);
+                    }
+                    let fullID = getFullID(namespace, e.id);
+                    entitiesList[fullID] = e;
+                    added.push(e.id);
+                }
+            }
+        });
+
+        if (added.length > 0) {
+            added.forEach(id => delete entitiesList.waitingList[id]);
+            let resources = added.filter(id => entitiesList[getFullID(namespace,id)].class !== $SchemaClass.External);
+            if (resources.length > 0) {
+                logger.warn($LogMsg.AUTO_GEN, resources);
+            }
+        }
+        model.syncRelationships(modelClasses, entitiesList, namespace);
+        model.entitiesByID = entitiesList;
+        delete model.waitingList;
+    };
+
+    var _casted_model = typeCast(inputModel);
+    if (_casted_model.class == "Graph") {
+        processGraphWaitingList(_casted_model, entitiesByID);
+    }
+    if (_casted_model.class == "Scaffold") {
+        processScaffoldWaitingList(_casted_model, entitiesByID);
+    }
+
+    return _casted_model;
 }
 
 

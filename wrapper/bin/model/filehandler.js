@@ -1,27 +1,46 @@
 const fs = require('fs');
 const axios = require("axios");
 const converter = require('../../../dist/converter');
-const conversionSteps = [
-    "id",
-    "xlsx",
-    "json",
-    "json-resources",
-    "json-ld",
-];
+const keys = require('lodash-bound/keys');
+const conversionSteps = {
+    "id": "xlsx",
+    "xlsx": "json",
+    "json": "json-resources",
+    "json-resources": "json-ld",
+    "json-ld": "json-flattened",
+};
+
+const convertedExtensions = {
+    "xlsx": ".xlsx",
+    "json": ".json",
+    "json-resources": "-generated.json",
+    "json-ld": ".jsonld",
+    "json-flattened": "-flattened.jsonld",
+};
 
 
 class ConversionHandler {
     _date = new Date();
-    _destination_folder = "converted-"+ this._date.toISOString().replace('T', '_').replace(/:|\./g, '-');
-    constructor(step, input) {
-        if (step === undefined || input === undefined) {
+    _destination_folder = "converted-" + this._date.toISOString().replace('T', '_').replace(/:|\./g, '-');
+    constructor(from, to, input, output) {
+        if (from === undefined || input === undefined) {
             throw new Error('The input has not been provided.');
+        }
+
+        if (output) {
+            this._destination_folder = output;
         }
 
         if (!fs.existsSync(this._destination_folder)) {
             fs.mkdirSync(this._destination_folder);
+        } else {
+            this._destination_folder = this._destination_folder + this._date.toISOString().replace('T', '_').replace(/:|\./g, '-');
+            fs.mkdirSync(this._destination_folder);
+            console.log("The output folder given already exists, the data are saved in " + this._destination_folder);
         }
-        this.step = step;
+
+        this.to = to;
+        this.from = from;
         this.input = input;
         this.result = this.input;
     }
@@ -44,12 +63,6 @@ class ConversionHandler {
         }
     };
 
-    sleep(ms) {
-        // special Reserved IPv4 Address(RFC 5736): 192.0.0.0
-        // refer: https://en.wikipedia.org/wiki/Reserved_IP_addresses
-        execSync(`start /b ping 192.0.0.0 -n 1 -w ${ms} > nul`)
-    }
-
     async #fromIdToXlsx(id) {
         var that = this;
         const url = "https://docs.google.com/spreadsheets/d/" + id + "/export?format=xlsx";
@@ -68,7 +81,7 @@ class ConversionHandler {
     #fromXlsxToJson(file) {
         try {
             if (fs.existsSync(file)) {
-                let filename = this._destination_folder + "/model.json";
+                let filename = this._destination_folder + "/model" + convertedExtensions["json"];
                 let _xlsx = fs.readFileSync(file, 'binary');
                 let _json_model = converter.fromXLSXToJson(_xlsx);
                 fs.writeFileSync(filename, _json_model);
@@ -84,7 +97,7 @@ class ConversionHandler {
     #fromJsonToGenerated(file) {
         try {
             if (fs.existsSync(file)) {
-                let filename = this._destination_folder + "/model-generated.json";
+                let filename = this._destination_folder + "/model" + convertedExtensions["json-resources"];
                 let _json = fs.readFileSync(file, 'binary');
                 let _generated = converter.fromJsonToGenerated(_json);
                 fs.writeFileSync(filename, _generated);
@@ -100,7 +113,7 @@ class ConversionHandler {
     #fromGeneratedToLD(file) {
         try {
             if (fs.existsSync(file)) {
-                let filename = this._destination_folder + "/model.jsonLD";
+                let filename = this._destination_folder + "/model" + convertedExtensions["json-ld"];
                 let _generated = fs.readFileSync(file, 'binary');
                 let result = converter.fromGeneratedToJsonLD(_generated);
                 fs.writeFileSync(filename, result);
@@ -116,7 +129,7 @@ class ConversionHandler {
     #fromLDToFlattened(file) {
         try {
             if (fs.existsSync(file)) {
-                var filename = this._destination_folder + "/model-flattened.jsonLD";
+                var filename = this._destination_folder + "/model" + convertedExtensions["json-flattened"];
                 var _jsonld = fs.readFileSync(file, 'binary');
                 const _callback = function callback(res) {
                     let _flattened = JSON.stringify(res, null, 2);
@@ -132,12 +145,34 @@ class ConversionHandler {
         }
     }
 
+    #cancelIntermediateSteps() {
+        for (const step of keys(convertedExtensions)) {
+            if (step == this.to) {
+                break;
+            }
+            fs.unlinkSync(this._destination_folder + "/model" + convertedExtensions[step]);
+        }
+    }
+
     async convertAll() {
         var startConverting = false;
-        for (const step of conversionSteps) {
-            if (step === this.step || startConverting) {
-                startConverting = true;
-                this.result = await this._conversion_methods[step](this.result);
+        if (this.to !== undefined) {
+            for (const step of keys(conversionSteps)) {
+                if (step === this.step || startConverting) {
+                    startConverting = true;
+                    this.result = await this._conversion_methods[step](this.result);
+                }
+                if (conversionSteps[step] == this.to) {
+                    break;
+                }
+            }
+            this.#cancelIntermediateSteps();
+        } else {
+            for (const step of keys(conversionSteps)) {
+                if (step === this.step || startConverting) {
+                    startConverting = true;
+                    this.result = await this._conversion_methods[step](this.result);
+                }
             }
         }
     }
