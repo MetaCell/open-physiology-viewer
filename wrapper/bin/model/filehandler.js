@@ -159,7 +159,7 @@ class ConversionHandler {
     }
 
     async convertAll() {
-        var startConverting = false;
+        let startConverting = false;
         if (this.to !== undefined) {
             for (const step of Object.keys(conversionSteps)) {
                 if (step === this.from || startConverting) {
