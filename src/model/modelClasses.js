@@ -197,7 +197,7 @@ export function fromJSONGenerated(inputModel) {
 
         let refFields = context.constructor.Model.relationships;
         let res = context;
-        refFields.forEach(([key, spec]) => {
+        refFields.map(([key, spec]) => {
             if (skip(res[key])) { return; }
             if (res[key]::isArray()){
                 res[key] = res[key].map(value => createObj(res, key, value, spec));
@@ -209,9 +209,9 @@ export function fromJSONGenerated(inputModel) {
 
     function reviseWaitingList(waitingList, namespace, context){
         let res = context;
-        (waitingList[res.id]||[]).forEach(([obj, key]) => {
+        (waitingList[res.id]||[]).map(([obj, key]) => {
             if (obj[key]::isArray()){
-                obj[key].forEach((e, i) => {
+                obj[key].map((e, i) => {
                     if (e === res.id) {
                         obj[key][i] = res;
                     }
@@ -280,7 +280,7 @@ export function fromJSONGenerated(inputModel) {
 
     function processGraphWaitingList(model, entitiesList) {
         let added = [];
-        (entitiesList.waitingList)::entries().forEach(([id, refs]) => {
+        (entitiesList.waitingList)::entries().map(([id, refs]) => {
             let [obj, key] = refs[0];
             if (obj && obj.class){
                 let clsName = modelClasses[obj.class].Model.relClassNames[key];
@@ -316,7 +316,7 @@ export function fromJSONGenerated(inputModel) {
     function processScaffoldWaitingList(model, entitiesList) {
         //Auto-create missing definitions for used references
         let added = [];
-        (entitiesList.waitingList)::entries().forEach(([id, refs]) => {
+        (entitiesList.waitingList)::entries().map(([id, refs]) => {
             let [obj, key] = refs[0];
             if (obj && obj.class) {
                 let clsName = modelClasses[obj.class].Model.relClassNames[key];
@@ -341,11 +341,8 @@ export function fromJSONGenerated(inputModel) {
         });
 
         if (added.length > 0) {
-            added.forEach(id => delete entitiesList.waitingList[id]);
+            added.map(id => delete entitiesList.waitingList[id]);
             let resources = added.filter(id => entitiesList[getFullID(namespace,id)].class !== $SchemaClass.External);
-            if (resources.length > 0) {
-                logger.warn($LogMsg.AUTO_GEN, resources);
-            }
         }
         model.syncRelationships(modelClasses, entitiesList, namespace);
         model.entitiesByID = entitiesList;
@@ -355,8 +352,7 @@ export function fromJSONGenerated(inputModel) {
     var _casted_model = typeCast(inputModel);
     if (_casted_model.class == "Graph") {
         processGraphWaitingList(_casted_model, entitiesByID);
-    }
-    if (_casted_model.class == "Scaffold") {
+    } else if (_casted_model.class == "Scaffold") {
         processScaffoldWaitingList(_casted_model, entitiesByID);
     }
 

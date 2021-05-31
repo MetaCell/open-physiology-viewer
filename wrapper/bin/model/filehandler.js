@@ -66,7 +66,7 @@ class ConversionHandler {
 
     async #fromIdToXlsx(id) {
         var that = this;
-        let file_id = that._destination_folder + "/model_id.txt"
+        const file_id = that._destination_folder + "/model_id.txt"
         fs.writeFileSync(file_id, id);
         const url = "https://docs.google.com/spreadsheets/d/" + id + "/export?format=xlsx";
         return await axios.get(
@@ -76,7 +76,7 @@ class ConversionHandler {
                 headers: {
                     Accept: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
         }}).then(res => {
-            let _filename = that._destination_folder + "/model" + convertedExtensions["xlsx"];
+            const _filename = that._destination_folder + "/model" + convertedExtensions["xlsx"];
             fs.writeFileSync(_filename, res.data);
             return _filename;
         });
@@ -85,9 +85,9 @@ class ConversionHandler {
     #fromXlsxToJson(file) {
         try {
             if (fs.existsSync(file)) {
-                let filename = this._destination_folder + "/model" + convertedExtensions["json"];
-                let _xlsx = fs.readFileSync(file, 'binary');
-                let _json_model = converter.fromXLSXToJson(_xlsx);
+                const filename = this._destination_folder + "/model" + convertedExtensions["json"];
+                const _xlsx = fs.readFileSync(file, 'binary');
+                const _json_model = converter.fromXLSXToJson(_xlsx);
                 fs.writeFileSync(filename, _json_model);
                 return filename;
             } else {
@@ -101,9 +101,9 @@ class ConversionHandler {
     #fromJsonToGenerated(file) {
         try {
             if (fs.existsSync(file)) {
-                let filename = this._destination_folder + "/model" + convertedExtensions["json-resources"];
-                let _json = fs.readFileSync(file, 'binary');
-                let _generated = converter.fromJsonToGenerated(_json);
+                const filename = this._destination_folder + "/model" + convertedExtensions["json-resources"];
+                const _json = fs.readFileSync(file, 'binary');
+                const _generated = converter.fromJsonToGenerated(_json);
                 fs.writeFileSync(filename, _generated);
                 return filename;
             } else {
@@ -117,9 +117,9 @@ class ConversionHandler {
     #fromGeneratedToLD(file) {
         try {
             if (fs.existsSync(file)) {
-                let filename = this._destination_folder + "/model" + convertedExtensions["json-ld"];
-                let _generated = fs.readFileSync(file, 'binary');
-                let result = converter.fromGeneratedToJsonLD(_generated);
+                const filename = this._destination_folder + "/model" + convertedExtensions["json-ld"];
+                const _generated = fs.readFileSync(file, 'binary');
+                const result = converter.fromGeneratedToJsonLD(_generated);
                 fs.writeFileSync(filename, result);
                 return filename;
             } else {
@@ -133,10 +133,10 @@ class ConversionHandler {
     #fromLDToFlattened(file) {
         try {
             if (fs.existsSync(file)) {
-                var filename = this._destination_folder + "/model" + convertedExtensions["json-flattened"];
-                var _jsonld = fs.readFileSync(file, 'binary');
+                const filename = this._destination_folder + "/model" + convertedExtensions["json-flattened"];
+                const _jsonld = fs.readFileSync(file, 'binary');
                 const _callback = function callback(res) {
-                    let _flattened = JSON.stringify(res, null, 2);
+                    const _flattened = JSON.stringify(res, null, 2);
                     fs.writeFileSync(filename, _flattened);
                     return filename;
                 };
