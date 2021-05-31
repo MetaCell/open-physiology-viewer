@@ -1,4 +1,5 @@
 const fs = require('fs');
+const XLSX = require('xlsx');
 const axios = require("axios");
 const converter = require('../../../dist/converter');
 const keys = require('lodash-bound/keys');
@@ -65,14 +66,17 @@ class ConversionHandler {
 
     async #fromIdToXlsx(id) {
         var that = this;
+        let file_id = that._destination_folder + "/model_id.txt"
+        fs.writeFileSync(file_id, id);
         const url = "https://docs.google.com/spreadsheets/d/" + id + "/export?format=xlsx";
         return await axios.get(
             url,
             {
+                responseType: 'arraybuffer',
                 headers: {
                     Accept: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
         }}).then(res => {
-            let _filename = that._destination_folder + "/" + res.headers['content-disposition'].match(/filename=".*"/g)[0].replace(/filename=\"|\"/g, '');
+            let _filename = that._destination_folder + "/model" + convertedExtensions["xlsx"];
             fs.writeFileSync(_filename, res.data);
             return _filename;
         });
@@ -146,19 +150,19 @@ class ConversionHandler {
     }
 
     #cancelIntermediateSteps() {
-        for (const step of keys(convertedExtensions)) {
-            if (step == this.to) {
+        for (const step of Object.keys(conversionSteps)) {
+            if (conversionSteps[step] == this.to) {
                 break;
             }
-            fs.unlinkSync(this._destination_folder + "/model" + convertedExtensions[step]);
+            fs.unlinkSync(this._destination_folder + "/model" + convertedExtensions[conversionSteps[step]]);
         }
     }
 
     async convertAll() {
         var startConverting = false;
         if (this.to !== undefined) {
-            for (const step of keys(conversionSteps)) {
-                if (step === this.step || startConverting) {
+            for (const step of Object.keys(conversionSteps)) {
+                if (step === this.from || startConverting) {
                     startConverting = true;
                     this.result = await this._conversion_methods[step](this.result);
                 }
@@ -168,8 +172,8 @@ class ConversionHandler {
             }
             this.#cancelIntermediateSteps();
         } else {
-            for (const step of keys(conversionSteps)) {
-                if (step === this.step || startConverting) {
+            for (const step of Object.keys(conversionSteps)) {
+                if (step === this.from || startConverting) {
                     startConverting = true;
                     this.result = await this._conversion_methods[step](this.result);
                 }
