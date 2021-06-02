@@ -1,8 +1,6 @@
 const fs = require('fs');
-const XLSX = require('xlsx');
 const axios = require("axios");
 const converter = require('../../../dist/converter');
-const keys = require('lodash-bound/keys');
 const conversionSteps = {
     "id": "xlsx",
     "xlsx": "json",
@@ -44,23 +42,23 @@ class ConversionHandler {
         this.from = from;
         this.input = input;
         this.result = this.input;
-    }
+    };
 
     _conversion_methods = {
         "id": async (input) => {
-            return this.#fromIdToXlsx(input)
+            return this.#fromIdToXlsx(input);
         },
         "xlsx": (input) => {
-            return this.#fromXlsxToJson(input)
+            return this.#fromXlsxToJson(input);
         },
         "json": (input) => {
-            return this.#fromJsonToGenerated(input)
+            return this.#fromJsonToGenerated(input);
         },
         "json-resources": (input) => {
-            return this.#fromGeneratedToLD(input)
+            return this.#fromGeneratedToLD(input);
         },
         "json-ld": async (input) => {
-            return this.#fromLDToFlattened(input)
+            return this.#fromLDToFlattened(input);
         }
     };
 

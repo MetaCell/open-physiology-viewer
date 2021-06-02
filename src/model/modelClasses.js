@@ -113,9 +113,9 @@ export function isScaffold(inputModel){
  */
 export function excelToJSON(inputModel) {
     if (isScaffold(inputModel)){
-       return Scaffold.excelToJSON(inputModel, modelClasses);
+        return Scaffold.excelToJSON(inputModel, modelClasses);
     } else {
-       return Graph.excelToJSON(inputModel, modelClasses);
+        return Graph.excelToJSON(inputModel, modelClasses);
     }
 }
 
@@ -133,9 +133,8 @@ export function fromJSON(inputModel) {
 }
 
 /**
- * 
  * @param {*} inputModel
- * @returns 
+ * @returns
  */
 export function fromJSONGenerated(inputModel) {
     var namespace = inputModel.namespace || undefined;
@@ -361,23 +360,21 @@ export function fromJSONGenerated(inputModel) {
 
 
 /**
- * 
  * @param {*} inputModel
- * @returns 
+ * @returns
  */
 
 
 export function fromJsonLD(inputModel, callback) {
     let res = inputModel;
     let context = {};
-    res['@context']::entries().forEach(([k, v]) => {
+    res['@context']::entries().map(([k, v]) => {
         if (v::isObject() && "@id" in v && v["@id"].includes("apinatomy:")) {
         } else if (typeof(v) === "string" && v.includes("apinatomy:")) {
         } else if (k === "class") { // class uses @context @base which is not 1.0 compatible
         } else {
             context[k] = v;
         }});
-    // TODO reattach context for rdflib-jsonld prefix construction
     jsonld.flatten(res).then(flat => {
         jsonld.compact(flat, context).then(compact => {
             callback(compact)})});

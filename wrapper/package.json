@@ -4,19 +4,21 @@
   "description": "wrapper for apinatomy angular application",
   "main": "bin/converter.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "mocha --reported tests/test1.js"
   },
   "author": "Dario Metacell",
   "bin": {
-    "wrapper": "./bin/converter.js"
+    "wrapper": "bin/converter.js"
   },
   "license": "Apache-2.0",
   "dependencies": {
     "axios": "^0.21.1",
     "fs": "0.0.1-security",
     "util": "^0.12.3",
-    "xlsx": "^0.16.9",
-    "yargs": "^17.0.1",
-    "zone.js": "^0.11.4"
+    "yargs": "^17.0.1"
+  },
+  "devDependencies": {
+    "chai": "^4.3.4",
+    "mocha": "^8.4.0"
   }
 }
