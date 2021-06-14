@@ -148,18 +148,18 @@ export function fromJSONGenerated(inputModel) {
         const createObj = (res, key, value, spec) => {
             if (skip(value)) { return value; }
 
-            let fullResID = getFullID(namespace, res.id);
+            const fullResID = getFullID(namespace, res.id);
             if (value::isNumber()) {
                 value = value.toString();
             }
 
-            let clsName = getClassName(spec);
+            const clsName = getClassName(spec);
             if (!clsName){
                 return value;
             }
 
             if (value && value::isString()) {
-                let fullValueID = getFullID(namespace, value);
+                const fullValueID = getFullID(namespace, value);
                 if (!entitiesByID[fullValueID]) {
                     //put to a wait list instead
                     entitiesByID.waitingList[value] = entitiesByID.waitingList[value] || [];
@@ -171,7 +171,7 @@ export function fromJSONGenerated(inputModel) {
             }
 
             if (value.id) {
-                let fullValueID = getFullID(namespace, value.id);
+                const fullValueID = getFullID(namespace, value.id);
                 if (entitiesByID[fullValueID]) {
                     return entitiesByID[fullValueID];
                 }
@@ -194,7 +194,7 @@ export function fromJSONGenerated(inputModel) {
             return;
         }
 
-        let refFields = context.constructor.Model.relationships;
+        const refFields = context.constructor.Model.relationships;
         let res = context;
         refFields.map(([key, spec]) => {
             if (skip(res[key])) { return; }
@@ -255,7 +255,7 @@ export function fromJSONGenerated(inputModel) {
     }
 
     function _createResource(id, clsName, group, modelClasses, entitiesByID, namespace){
-        let e = typeCast({
+        const e = typeCast({
             [$Field.id]: id,
             [$Field.class]: clsName,
             [$Field.generated]: true
@@ -267,28 +267,28 @@ export function fromJSONGenerated(inputModel) {
         }
 
         //Include newly created entity to the main graph
-        let prop = modelClasses[group.class].Model.selectedRelNames(clsName)[0];
+        const prop = modelClasses[group.class].Model.selectedRelNames(clsName)[0];
         if (prop) {
             group[prop] = group[prop] ||[];
             group[prop].push(e);
         }
-        let fullID = getFullID(namespace, e.id);
+        const fullID = getFullID(namespace, e.id);
         entitiesByID[fullID] = e;
         return e;
     }
 
     function processGraphWaitingList(model, entitiesList) {
-        let added = [];
+        const added = [];
         (entitiesList.waitingList)::entries().map(([id, refs]) => {
-            let [obj, key] = refs[0];
+            const [obj, key] = refs[0];
             if (obj && obj.class){
-                let clsName = modelClasses[obj.class].Model.relClassNames[key];
+                const clsName = modelClasses[obj.class].Model.relClassNames[key];
                 if (clsName && !modelClasses[clsName].Model.schema.abstract){
-                    let e = _createResource(id, clsName, model, modelClasses, entitiesList, namespace);
+                    const e = _createResource(id, clsName, model, modelClasses, entitiesList, namespace);
                     added.push(e.id);
                     //A created link needs end nodes
                     if (e instanceof modelClasses.Link) {
-                        let i = 0;
+                        const i = 0;
                         const related = [$Field.sourceOf, $Field.targetOf];
                         e.applyToEndNodes(end => {
                             if (end::isString()) {
@@ -304,8 +304,6 @@ export function fromJSONGenerated(inputModel) {
 
         if (added.length > 0){
             added.map(id => delete entitiesList.waitingList[id]);
-            const resources = added.filter(id => entitiesList[getFullID(namespace,id)].class !== $SchemaClass.External);
-            const externals = added.filter(id => entitiesList[getFullID(namespace,id)].class === $SchemaClass.External);
         }
 
         model.syncRelationships(modelClasses, entitiesList, namespace);
@@ -314,25 +312,25 @@ export function fromJSONGenerated(inputModel) {
 
     function processScaffoldWaitingList(model, entitiesList) {
         //Auto-create missing definitions for used references
-        let added = [];
+        const added = [];
         (entitiesList.waitingList)::entries().map(([id, refs]) => {
-            let [obj, key] = refs[0];
+            const [obj, key] = refs[0];
             if (obj && obj.class) {
-                let clsName = modelClasses[obj.class].Model.relClassNames[key];
+                const clsName = modelClasses[obj.class].Model.relClassNames[key];
                 if (clsName && !modelClasses[clsName].Model.schema.abstract) {
-                    let e = typeCast({
+                    const e = typeCast({
                         [$Field.id]: id,
                         [$Field.class]: clsName,
                         [$Field.generated]: true
                     })
 
                     //Include newly created entity to the main graph
-                    let prop = modelClasses[this.name].Model.selectedRelNames(clsName)[0];
+                    const prop = modelClasses[this.name].Model.selectedRelNames(clsName)[0];
                     if (prop) {
                         model[prop] = model[prop] || [];
                         model[prop].push(e);
                     }
-                    let fullID = getFullID(namespace, e.id);
+                    const fullID = getFullID(namespace, e.id);
                     entitiesList[fullID] = e;
                     added.push(e.id);
                 }
@@ -341,7 +339,6 @@ export function fromJSONGenerated(inputModel) {
 
         if (added.length > 0) {
             added.map(id => delete entitiesList.waitingList[id]);
-            let resources = added.filter(id => entitiesList[getFullID(namespace,id)].class !== $SchemaClass.External);
         }
         model.syncRelationships(modelClasses, entitiesList, namespace);
         model.entitiesByID = entitiesList;
