@@ -79,7 +79,7 @@ const fileExtensionRe = /(?:\.([^.]+))?$/;
         <!--Views-->
 
         <section id="main-panel">
-            <section id="repo-panel" *ngIf="showRepoPanel" class="w3-quarter w3-gray w3-border-right w3-border-white">
+            <section id="repo-panel" *ngIf="showRepoPanel" class="w3-quarter w3-gray w3-border-right w3-border-white" style="position:absolute; z-index: 100;">
                 <section class="w3-padding-small">
                     <i class="fa fa-database"> Model Repository </i>
                 </section>
