@@ -208,20 +208,18 @@ const fileExtensionRe = /(?:\.([^.]+))?$/;
         #main-panel{            
             margin-top : 40px;
             margin-left: 48px; 
-            width : calc(100% - 48px);
+            //width : calc(100% - 48px);
             height : 90vh
-<<<<<<< HEAD
-=======
+
         }
 
         #main-panel mat-tab-group{            
             height : inherit;
-            // width : calc(100%);
+            width : calc(100%);
         }
 
         #viewer-panel {
             width : 100%;
->>>>>>> 0bbea442f57fc638a0271d03ad2dcc0cc079f2c8
         }
 
         #main-panel mat-tab-group{            
