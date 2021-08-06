@@ -178,7 +178,6 @@ export class WebGLSceneComponent {
     labelRelSize   = 0.1 * this.scaleFactor;
     lockControls   = false;
     isConnectivity = true;
-    needsRendering = false ;
 
     queryCounter = 0;
 
@@ -417,10 +416,6 @@ export class WebGLSceneComponent {
         }
     }
 
-    setNeedsRendering() {
-      this.needsRendering = true ;
-    }
-
     animate(render) {
       if(render)
       {
@@ -515,8 +510,7 @@ export class WebGLSceneComponent {
 
     updateGraph(){
         if (this.graph) {
-            this.graph.graphData(this._graphData);
-            this.setNeedsRendering();
+            this.graph.graphData(this._graphData);            
         }
     }
 
