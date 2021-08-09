@@ -110,6 +110,6 @@
     "three-window-resize": "^1.0.4",
     "tinycolor2": "^1.4.1",
     "xlsx": "^0.14.1",
-    "zone.js": "^0.8.26"
+    "zone.js": "^0.11.4"
   }
 }

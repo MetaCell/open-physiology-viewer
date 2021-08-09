@@ -1,4 +1,4 @@
-import {NgModule, Component, ViewChild, ElementRef, Input, Output, EventEmitter, ChangeDetectionStrategy} from '@angular/core';
+import {NgModule, Component, ViewChild, ElementRef, Input, Output, EventEmitter, ChangeDetectionStrategy, NgZone} from '@angular/core';
 import {CommonModule} from '@angular/common';
 import {FormsModule} from '@angular/forms';
 import {MatSliderModule} from '@angular/material/slider';
@@ -24,7 +24,7 @@ const WindowResize = require('three-window-resize');
  */
 @Component({
     selector: 'webGLScene',
-    changeDetection: ChangeDetectionStrategy.Default,
+    changeDetection: ChangeDetectionStrategy.OnPush,
     template: `
         <section id="apiLayoutPanel" class="w3-row">            
             <section id="apiLayoutContainer" [class.w3-threequarter]="showPanel">
@@ -243,8 +243,9 @@ export class WebGLSceneComponent {
 
     @Output() scaffoldUpdated = new EventEmitter();
 
-    constructor(dialog: MatDialog) {
+    constructor(dialog: MatDialog, ngZone: NgZone) {
         this.dialog = dialog;
+        this.ngZone = ngZone;
         this.defaultConfig = {
             "layout": {
                 "showLyphs"       : true,
@@ -266,6 +267,9 @@ export class WebGLSceneComponent {
             "selected"   : true
         };
         this.config = this.defaultConfig::cloneDeep();
+        //window.__Zone_disable_requestAnimationFrame = true; 
+        // Same for scroll and mousemove or any other event youll add
+        //window.__zone_symbol__BLACK_LISTED_EVENTS = ['scroll', 'mousemove'];
     }
 
     onScaleChange(newLabelScale){
@@ -282,14 +286,6 @@ export class WebGLSceneComponent {
 
         this.renderer = new THREE.WebGLRenderer({canvas: this.canvas.nativeElement, antialias: this.antialias, alpha: true});
         this.renderer.setClearColor(0xffffff, 0.5);
-
-        this.canvas.nativeElement.addEventListener('focus', () => { this.animate(true) ; });
-        this.canvas.nativeElement.addEventListener('blur', () => { this.animate(true) ; });
-        this.canvas.nativeElement.addEventListener('mousemove', () => { this.animate(true) ; });
-        this.canvas.nativeElement.addEventListener('mouseout', () => { this.animate(true) ; });
-        this.canvas.nativeElement.addEventListener('mouseup', () => { this.animate(true) ; });
-        this.canvas.nativeElement.addEventListener('onmousewheel', () => { this.animate(true) ; });
-        this.canvas.nativeElement.addEventListener('mouseover', () => { this.animate(true) ; });
 
         this.container = document.getElementById('apiLayoutContainer');
         let width = this.container.clientWidth;
@@ -328,7 +324,8 @@ export class WebGLSceneComponent {
         this.resizeToDisplaySize();
         this.createHelpers();
         this.createGraph();
-        this.animate(true);
+        
+        this.animate();
     }
 
     processQuery(){
@@ -416,17 +413,16 @@ export class WebGLSceneComponent {
         }
     }
 
-    animate(render) {
-      if(render)
-      {
+    animate() {
+      //this.ngZone.runOutsideAngular(() => {
         this.resizeToDisplaySize();
         if (this.graph) {
             this.graph.tickFrame();
         }
-        this.controls.update();        
+        this.controls.update();
         this.renderer.render(this.scene, this.camera);
-        window.requestAnimationFrame(() => this.animate(false));
-      }
+        window.requestAnimationFrame(() => this.animate());
+      //});
     }
 
     createHelpers() {
@@ -510,7 +506,7 @@ export class WebGLSceneComponent {
 
     updateGraph(){
         if (this.graph) {
-            this.graph.graphData(this._graphData);            
+            this.graph.graphData(this._graphData);
         }
     }
 
