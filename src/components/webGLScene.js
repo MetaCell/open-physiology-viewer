@@ -5,7 +5,7 @@ import {MatSliderModule} from '@angular/material/slider';
 import {MatDialog, MatDialogModule} from '@angular/material/dialog';
 
 import FileSaver  from 'file-saver';
-import {keys, values, defaults, isObject, cloneDeep, isArray} from 'lodash-bound';
+import {keys, values, defaults, isObject, cloneDeep, isArray } from 'lodash-bound';
 import * as THREE from 'three';
 import ThreeForceGraph from '../view/threeForceGraph';
 import {forceX, forceY, forceZ} from 'd3-force-3d';
@@ -278,7 +278,8 @@ export class WebGLSceneComponent {
     }
 
     get graphData() {
-        return this._graphData;
+      window.requestAnimationFrame(() => this.animate());
+      return this._graphData;
     }
 
     ngAfterViewInit() {
@@ -299,6 +300,19 @@ export class WebGLSceneComponent {
         this.scene = new THREE.Scene();
 
         this.controls = new OrbitControls(this.camera, this.renderer.domElement);
+
+        // Object.assign( this.controls, {
+        //   autoRotate      : false,
+        //   autoRotateSpeed : 5.0,
+        //   enableKeys      : false,
+        //   enableDamping   : true,
+        //   dampingFactor   : 0.96
+        // });
+    
+        this.controls.addEventListener('change', () => {
+          window.requestAnimationFrame(() => this.animate());
+        });
+        //this.controls.addEventListener('zoomupdated', bind(this.onOrbitControlZoomUpdated,this));
 
         this.controls.minDistance = 10;
         this.controls.maxDistance = 4000 - 100 * this.scaleFactor;
@@ -323,9 +337,7 @@ export class WebGLSceneComponent {
         this.createEventListeners(); // keyboard / mouse events
         this.resizeToDisplaySize();
         this.createHelpers();
-        this.createGraph();
-        
-        this.animate();
+        this.createGraph();      
     }
 
     processQuery(){
@@ -414,15 +426,14 @@ export class WebGLSceneComponent {
     }
 
     animate() {
-      //this.ngZone.runOutsideAngular(() => {
-        this.resizeToDisplaySize();
+      this.ngZone.runOutsideAngular(() => {        
+        this.resizeToDisplaySize();        
         if (this.graph) {
             this.graph.tickFrame();
         }
         this.controls.update();
-        this.renderer.render(this.scene, this.camera);
-        window.requestAnimationFrame(() => this.animate());
-      //});
+        this.renderer.render(this.scene, this.camera);       
+      });
     }
 
     createHelpers() {
@@ -485,7 +496,9 @@ export class WebGLSceneComponent {
 
         this.graph.labelRelSize(this.labelRelSize);
         this.graph.showLabels(this.config["labels"]);
-        this.scene.add(this.graph);
+        this.scene.add(this.graph);        
+        window.requestAnimationFrame(() => this.animate());
+        this.animate();
     }
 
     resetCamera(positionPoint, lookupPoint) {
@@ -502,6 +515,7 @@ export class WebGLSceneComponent {
         this.camera.position.set(...position);
         this.camera.up.set(...lookup);
         this.camera.updateProjectionMatrix();
+        window.requestAnimationFrame(() => this.animate());
     }
 
     updateGraph(){
@@ -610,6 +624,7 @@ export class WebGLSceneComponent {
     createEventListeners() {
         window.addEventListener('mousemove', evt => this.onMouseMove(evt), false);
         window.addEventListener('dblclick', () => this.onDblClick(), false );
+        window.addEventListener('resize', () => { window.requestAnimationFrame(() => this.animate()); } )
     }
 
     onMouseMove(evt) {
