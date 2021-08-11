@@ -300,19 +300,10 @@ export class WebGLSceneComponent {
         this.scene = new THREE.Scene();
 
         this.controls = new OrbitControls(this.camera, this.renderer.domElement);
-
-        // Object.assign( this.controls, {
-        //   autoRotate      : false,
-        //   autoRotateSpeed : 5.0,
-        //   enableKeys      : false,
-        //   enableDamping   : true,
-        //   dampingFactor   : 0.96
-        // });
     
         this.controls.addEventListener('change', () => {
           window.requestAnimationFrame(() => this.animate());
-        });
-        //this.controls.addEventListener('zoomupdated', bind(this.onOrbitControlZoomUpdated,this));
+        });        
 
         this.controls.minDistance = 10;
         this.controls.maxDistance = 4000 - 100 * this.scaleFactor;
@@ -432,7 +423,7 @@ export class WebGLSceneComponent {
             this.graph.tickFrame();
         }
         this.controls.update();
-        this.renderer.render(this.scene, this.camera);       
+        this.renderer.render(this.scene, this.camera);             
       });
     }
 
@@ -495,10 +486,11 @@ export class WebGLSceneComponent {
                 (d.source && d.source.fixed && d.target && d.target.fixed || !d.length) ? 0 : 1));
 
         this.graph.labelRelSize(this.labelRelSize);
-        this.graph.showLabels(this.config["labels"]);
-        this.scene.add(this.graph);        
-        window.requestAnimationFrame(() => this.animate());
-        this.animate();
+        this.graph.showLabels(this.config["labels"]);                        
+        this.graph.onAfterRender(()=>{
+          this.animate();
+        });
+        this.scene.add(this.graph);
     }
 
     resetCamera(positionPoint, lookupPoint) {
