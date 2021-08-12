@@ -470,6 +470,9 @@ export class WebGLSceneComponent {
                 this.graph.graphData(this.graphData);
                 this.scaffoldUpdated.emit(obj);
             })
+            .onFinishLoading(() => {
+              this.animate();
+            })
             .graphData(this.graphData);
 
         const isLayoutDimValid = (layout, key) => layout::isObject() && (key in layout) && (typeof layout[key] !== 'undefined');
@@ -487,9 +490,6 @@ export class WebGLSceneComponent {
 
         this.graph.labelRelSize(this.labelRelSize);
         this.graph.showLabels(this.config["labels"]);                        
-        this.graph.onAfterRender(()=>{
-          this.animate();
-        });
         this.scene.add(this.graph);
     }
 
