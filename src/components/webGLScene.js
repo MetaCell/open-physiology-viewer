@@ -178,6 +178,7 @@ export class WebGLSceneComponent {
     labelRelSize   = 0.1 * this.scaleFactor;
     lockControls   = false;
     isConnectivity = true;
+    lastNow = performance.now();
 
     queryCounter = 0;
 
@@ -278,7 +279,7 @@ export class WebGLSceneComponent {
     }
 
     get graphData() {
-      window.requestAnimationFrame(() => this.animate());
+      this.requestFrame();
       return this._graphData;
     }
 
@@ -302,7 +303,7 @@ export class WebGLSceneComponent {
         this.controls = new OrbitControls(this.camera, this.renderer.domElement);
     
         this.controls.addEventListener('change', () => {
-          window.requestAnimationFrame(() => this.animate());
+          this.requestFrame();
         });        
 
         this.controls.minDistance = 10;
@@ -416,14 +417,22 @@ export class WebGLSceneComponent {
         }
     }
 
+    skipRender() {
+      if (performance.now() - this.lastNow < 1000/30) return true;
+      this.lastNow = performance.now();
+      return false;
+    }
+
     animate() {
       this.ngZone.runOutsideAngular(() => {        
-        this.resizeToDisplaySize();        
+        //if (this.skipRender()) return;
+
+        this.resizeToDisplaySize();
         if (this.graph) {
             this.graph.tickFrame();
         }
         this.controls.update();
-        this.renderer.render(this.scene, this.camera);             
+        this.renderer.render(this.scene, this.camera);           
       });
     }
 
@@ -507,7 +516,7 @@ export class WebGLSceneComponent {
         this.camera.position.set(...position);
         this.camera.up.set(...lookup);
         this.camera.updateProjectionMatrix();
-        window.requestAnimationFrame(() => this.animate());
+        this.requestFrame()
     }
 
     updateGraph(){
@@ -613,10 +622,14 @@ export class WebGLSceneComponent {
         this.selected = this.getMouseOverEntity();
     }
 
+    requestFrame() {
+      window.requestAnimationFrame( () => { this.animate(); })
+    }
+
     createEventListeners() {
         window.addEventListener('mousemove', evt => this.onMouseMove(evt), false);
         window.addEventListener('dblclick', () => this.onDblClick(), false );
-        window.addEventListener('resize', () => { window.requestAnimationFrame(() => this.animate()); } )
+        window.addEventListener('resize', () => this.requestFrame(), false );
     }
 
     onMouseMove(evt) {
