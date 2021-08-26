@@ -268,9 +268,6 @@ export class WebGLSceneComponent {
             "selected"   : true
         };
         this.config = this.defaultConfig::cloneDeep();
-        //window.__Zone_disable_requestAnimationFrame = true; 
-        // Same for scroll and mousemove or any other event youll add
-        //window.__zone_symbol__BLACK_LISTED_EVENTS = ['scroll', 'mousemove'];
     }
 
     onScaleChange(newLabelScale){

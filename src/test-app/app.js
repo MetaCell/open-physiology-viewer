@@ -208,7 +208,6 @@ const fileExtensionRe = /(?:\.([^.]+))?$/;
         #main-panel{            
             margin-top : 40px;
             margin-left: 48px; 
-            //width : calc(100% - 48px);
             height : 90vh
 
         }
