@@ -25,8 +25,6 @@ import * as jsonld from "jsonld/dist/node6/lib/jsonld";
 import { entries } from 'lodash-bound';
 
 import {
-    $Field,
-    $SchemaClass,
     $SchemaType,
     getNewID,
     getFullID,

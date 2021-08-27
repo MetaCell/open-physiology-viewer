@@ -84,7 +84,6 @@ Group.prototype.updateViewObjects = function(state){
     (this.scaffolds||[]).forEach(scaffold => scaffold.updateViewObjects(state));
 
     //Update nodes positions
-    this.visibleNodes.forEach(node => node.updateViewObjects(state));
 
     (this.chains||[]).forEach(chain => {
         if (!chain.root || !chain.leaf){ return; }

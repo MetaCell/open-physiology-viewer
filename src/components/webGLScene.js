@@ -16,6 +16,7 @@ import {SettingsPanelModule} from "./settingsPanel";
 import {OrbitControls} from "three/examples/jsm/controls/OrbitControls";
 import {$Field, $SchemaClass} from "../model";
 import {QuerySelectModule, QuerySelectDialog} from "./gui/querySelectDialog";
+import {HotkeyModule, HotkeysService, Hotkey} from 'angular2-hotkeys';
 
 const WindowResize = require('three-window-resize');
 
@@ -243,8 +244,9 @@ export class WebGLSceneComponent {
 
     @Output() scaffoldUpdated = new EventEmitter();
 
-    constructor(dialog: MatDialog) {
+    constructor(dialog: MatDialog, hotkeysService: HotkeysService) {
         this.dialog = dialog;
+        this.hotkeysService = hotkeysService ;
         this.defaultConfig = {
             "layout": {
                 "showLyphs"       : true,
@@ -266,6 +268,10 @@ export class WebGLSceneComponent {
             "selected"   : true
         };
         this.config = this.defaultConfig::cloneDeep();
+        this.hotkeysService.add(new Hotkey('meta+shift+g', (event: KeyboardEvent): boolean => {
+          console.log('Typed hotkey');
+          return false; // Prevent bubbling
+      }));
     }
 
     onScaleChange(newLabelScale){
@@ -274,8 +280,8 @@ export class WebGLSceneComponent {
     }
 
     get graphData() {
-        return this._graphData;
-    }
+      return this._graphData;
+  }
 
     ngAfterViewInit() {
         if (this.renderer) {  return; }
@@ -629,7 +635,7 @@ export class WebGLSceneComponent {
 }
 
 @NgModule({
-    imports: [CommonModule, FormsModule, MatSliderModule, MatDialogModule, LogInfoModule, SettingsPanelModule, QuerySelectModule],
+    imports: [CommonModule, FormsModule, MatSliderModule, MatDialogModule, LogInfoModule, SettingsPanelModule, QuerySelectModule, HotkeyModule.forRoot()],
     declarations: [WebGLSceneComponent],
     entryComponents: [LogInfoDialog, QuerySelectDialog],
     exports: [WebGLSceneComponent]
