@@ -27,6 +27,7 @@ const WindowResize = require('three-window-resize');
     selector: 'webGLScene',
     changeDetection: ChangeDetectionStrategy.Default,
     template: `
+        <hotkeys-cheatsheet></hotkeys-cheatsheet>
         <section id="apiLayoutPanel" class="w3-row">            
             <section id="apiLayoutContainer" [class.w3-threequarter]="showPanel">
                 <section class="w3-padding-right" style="position:relative;">
@@ -268,10 +269,16 @@ export class WebGLSceneComponent {
             "selected"   : true
         };
         this.config = this.defaultConfig::cloneDeep();
-        this.hotkeysService.add(new Hotkey('meta+shift+g', (event: KeyboardEvent): boolean => {
+
+        this.hotkeysService.add(new Hotkey('meta+g', (event: KeyboardEvent): boolean => {
           console.log('Typed hotkey');
           return false; // Prevent bubbling
-      }));
+        }, undefined, 'Send a secret message to the console'));
+
+        this.hotkeysService.add(new Hotkey('meta+r', (event: KeyboardEvent): boolean => {
+          this.resetCamera();
+          return false; // Prevent bubbling
+        }, undefined, 'Reset camera'));
     }
 
     onScaleChange(newLabelScale){
