@@ -11,7 +11,7 @@
  *  resolution: <Vector2>, // to be set by renderer
  * }
  */
-import {THREE} from '../utils';
+import {THREE} from '../util/utils';
 
 THREE.UniformsLib.line = {
 

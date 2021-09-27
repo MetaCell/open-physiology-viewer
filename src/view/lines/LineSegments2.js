@@ -1,4 +1,4 @@
-import {THREE} from '../utils';
+import {THREE} from '../util/utils';
 
 /**
  * Creates a line segment with given geometry and material

@@ -3,9 +3,9 @@ import {SpriteText2D} from "three-text2d";
 
 import {
     copyCoords,
-} from "./utils";
+} from "../view2/util/utils";
 
-import './lines/Line2.js';
+import '../view2/lines/Line2.js.js';
 
 const {VisualResource} = modelClasses;
 

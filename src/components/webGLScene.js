@@ -7,7 +7,7 @@ import {MatDialog, MatDialogModule} from '@angular/material/dialog';
 import FileSaver  from 'file-saver';
 import {keys, values, defaults, isObject, cloneDeep, isArray} from 'lodash-bound';
 import * as THREE from 'three';
-import ThreeForceGraph from '../view/threeForceGraph';
+import ThreeForceGraph from '../view/render/threeForceGraph';
 import {forceX, forceY, forceZ} from 'd3-force-3d';
 
 import {LogInfoModule, LogInfoDialog} from "./gui/logInfoDialog";

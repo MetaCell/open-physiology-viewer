@@ -341,6 +341,30 @@ export class Chain extends GroupTemplate {
         }
     }
 
+    update(curve, start, end){
+      if ( !start || !end){ return; }
+      let length = (curve && curve.getLength)? curve.getLength(): end.distanceTo(start);
+      if (length < 10){ return; }
+      this.length = length;
+      copyCoords(chain.root.layout, start);
+      this.root.fixed = true;
+      for (let i = 0; i < chain.levels.length; i++) {
+          //Interpolate chain node positions for quicker layout
+          this.levels[i].length = this.length / this.levels.length;
+          const lyph = this.levels[i].conveyingLyph;
+          if (lyph){
+              lyph.updateSize();
+          }
+          let node = this.levels[i].target;
+          if (node && !node.anchoredTo) {
+              let p = getPoint(curve, start, end, (i + 1) / this.levels.length);
+              copyCoords(node.layout, p);
+              node.fixed = true;
+          }
+      }
+      copyCoords(this.leaf.layout, end);
+    }
+
     /**
      * Align chain levels along housing lyphs
      * @param parentGroup

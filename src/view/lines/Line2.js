@@ -2,7 +2,7 @@
  * based on thick line implementation by WestLangley / http://github.com/WestLangley
  */
 
-import {THREE} from '../utils';
+import {THREE} from '../util/utils';
 import './LineSegments2.js';
 import './LineSegmentsGeometry.js';
 import './LineGeometry.js';
