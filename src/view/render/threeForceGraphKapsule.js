@@ -10,6 +10,7 @@ import {drag as d3Drag } from 'd3-drag';
 import Kapsule from 'kapsule';
 import {modelClasses} from '../../model/index';
 import {extractCoords} from '../util/utils';
+import './modelView'
 
 const {Graph} = modelClasses;
 /**

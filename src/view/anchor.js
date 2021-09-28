@@ -1,4 +1,4 @@
-import {copyCoords, extractCoords } from "./utils";
+import {copyCoords, extractCoords } from "./util/utils";
 import {modelClasses} from "../model";
 const { Vertice, Anchor} = modelClasses;
 

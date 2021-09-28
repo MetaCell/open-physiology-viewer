@@ -1,7 +1,7 @@
 import {values} from 'lodash-bound';
 import {modelClasses} from "../model";
 import {ForceEdgeBundling} from "../algorithms/forceEdgeBundling";
-import {copyCoords, extractCoords } from "./utils";
+import {copyCoords, extractCoords } from "./util/utils";
 import './render/visualResourceView';
 
 const {Group, Link, Coalescence, Component, Chain, Node, Region} = modelClasses;
@@ -27,7 +27,7 @@ const {Group, Link, Coalescence, Component, Chain, Node, Region} = modelClasses;
       let {start, end} = chain.getWiredChainEnds();
       start = extractCoords(start);
       end   = extractCoords(end);
-      let curve = chain.wiredTo? chain.wiredTo.getCurve(start, end): null;
+      let curve = chain.wiredTo?.getCurve(start, end);
       chain.update(curve, start, end);
   });
 
@@ -62,7 +62,7 @@ Group.prototype.updateViewObjects = function(state){
       let {start, end} = chain.getWiredChainEnds();
       start = extractCoords(start);
       end   = extractCoords(end);
-      let curve = chain.wiredTo? chain.wiredTo.getCurve(start, end): null;
+      let curve = chain.wiredTo?.getCurve(start, end);
       //update if chain ends are dynamic
       if (start && start.hostedBy || end && end.hostedBy) {
           chain.update(curve, start, end);

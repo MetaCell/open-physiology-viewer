@@ -1,11 +1,11 @@
-import {modelClasses} from "../model";
+import {modelClasses} from "../../model";
 import {SpriteText2D} from "three-text2d";
 
 import {
     copyCoords,
-} from "../view2/util/utils";
+} from "../util/utils";
 
-import '../view2/lines/Line2.js.js';
+import '../lines/Line2';
 
 const {VisualResource} = modelClasses;
 

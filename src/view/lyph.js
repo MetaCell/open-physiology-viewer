@@ -10,7 +10,7 @@ import {
     layerShape,
     lyphShape,
     THREE
-} from "./utils";
+} from "./util/utils";
 
 const { Lyph, Shape} = modelClasses;
 

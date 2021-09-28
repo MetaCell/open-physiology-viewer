@@ -4,7 +4,7 @@ import {
     getCenterOfMass,
     extractCoords,
     THREE
-} from "./utils";
+} from "./util/utils";
 
 const {Region, Wire, Shape} = modelClasses;
 

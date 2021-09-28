@@ -1,6 +1,7 @@
 import * as three from 'three';
 export const THREE = window.THREE || three;
 import {MaterialFactory} from './materialFactory';
+import { defaults } from 'lodash-bound';
 import tinycolor from 'tinycolor2';
 const ThreeBSP = require('three-js-csg')(THREE);
 

@@ -3,6 +3,7 @@ import {Lyph} from "./shapeModel";
 import {Node} from "./verticeModel";
 import {Link} from "./edgeModel";
 import {Coalescence} from "./coalescenceModel";
+import {copyCoords, getPoint } from "../view/util/utils"
 
 import {
     mergeGenResource,
@@ -19,6 +20,7 @@ import {
 } from "./utils";
 import {logger, $LogMsg} from './logger';
 import {defaults, isObject, isArray, flatten} from 'lodash-bound';
+
 
 /**
  * Chain model
@@ -346,9 +348,9 @@ export class Chain extends GroupTemplate {
       let length = (curve && curve.getLength)? curve.getLength(): end.distanceTo(start);
       if (length < 10){ return; }
       this.length = length;
-      copyCoords(chain.root.layout, start);
+      copyCoords(this.root.layout, start);
       this.root.fixed = true;
-      for (let i = 0; i < chain.levels.length; i++) {
+      for (let i = 0; i < this.levels.length; i++) {
           //Interpolate chain node positions for quicker layout
           this.levels[i].length = this.length / this.levels.length;
           const lyph = this.levels[i].conveyingLyph;

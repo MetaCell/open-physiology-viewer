@@ -1,3 +1,4 @@
+import {modelClasses} from "../model";
 const { Edge, Link } = modelClasses;
 
 import {
@@ -9,7 +10,7 @@ import {
   rectangleCurve,
   getPoint,
   arcCurve
-} from "./utils";
+} from "./util/utils";
 
 import './lines/Line2.js';
 import {MaterialFactory} from "./util/materialFactory";

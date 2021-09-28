@@ -1,4 +1,4 @@
-import {copyCoords, THREE} from "./utils";
+import {copyCoords, THREE} from "./util/utils";
 import {MaterialFactory} from "./util/materialFactory";
 import {modelClasses} from "../model";
 const {VisualResource, Vertice, Node, Anchor} = modelClasses;

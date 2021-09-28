@@ -1,3 +1,6 @@
+import {modelClasses} from "../model";
+const {Edge, VisualResource} = modelClasses;
+
 Edge.prototype.createViewObjects = function(state) {
   VisualResource.prototype.createViewObjects.call(this, state);
 };

@@ -1,3 +1,7 @@
+
+import {modelClasses} from "../model";
+const { Shape, VisualResource} = modelClasses;
+
 /**
  * Create visual object for shape
  */

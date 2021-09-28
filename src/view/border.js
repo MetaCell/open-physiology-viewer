@@ -3,8 +3,9 @@ import {merge, values} from 'lodash-bound';
 import {
     copyCoords,
     getCenterOfMass,
-    THREE
-} from "./utils";
+    THREE,
+    isInRange
+} from "./util/utils";
 
 const { Border, VisualResource } = modelClasses;
 

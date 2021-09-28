@@ -1,3 +1,4 @@
+import {modelClasses} from "../model";
 const {Edge, Link, Wire} = modelClasses;
 
 import {
@@ -6,7 +7,7 @@ import {
   copyCoords,
   getPoint,
   arcCurve, getDefaultControlPoint
-} from "./utils";
+} from "./util/utils";
 
 import './lines/Line2.js';
 import {MaterialFactory} from "./util/materialFactory";

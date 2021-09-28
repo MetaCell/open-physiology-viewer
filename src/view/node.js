@@ -1,4 +1,4 @@
-import {copyCoords, getCenterOfMass, THREE} from "./utils";
+import {copyCoords, getCenterOfMass, THREE} from "./util/utils";
 import {modelClasses} from "../model";
 const { Vertice, Node } = modelClasses;
 
