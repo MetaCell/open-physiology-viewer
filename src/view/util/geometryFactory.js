@@ -103,19 +103,19 @@ export class GeometryFactory {
       return new THREE.LineBasicMaterial(params);
     }
   }
-  createLineSegments2(params = {}) { 
+  static createLineSegments2(params = {}) { 
     if(params.ENGINE == geometryEngine.THREE || params.ENGINE === undefined )
     {
       return new THREE.createLineSegments2(params);
     }
   }
-  createMesh(params = {}) { 
+  static createMesh(params = {}) { 
     if(params.ENGINE == geometryEngine.THREE || params.ENGINE === undefined )
     {
       return new THREE.Mesh()
     }
   }
-  createMeshBasicMaterial(params = {}) { 
+  static createMeshBasicMaterial(params = {}) { 
     if(params.ENGINE == geometryEngine.THREE || params.ENGINE === undefined )
     {
       return new THREE.MeshBasicMaterial(params);
@@ -152,7 +152,7 @@ export class GeometryFactory {
   static createVector2(x, y, engine = geometryEngine.THREE) { 
     if( engine == geometryEngine.THREE)
     {
-      return new GeometryFactory.Vector2(x, y);
+      return GeometryFactory.Vector2(x, y);
     }
   }
   static createVector3(x, y, z, engine = geometryEngine.THREE) { 

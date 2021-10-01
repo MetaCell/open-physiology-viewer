@@ -11,7 +11,7 @@ const {VisualResource, Vertice, Node, Anchor} = modelClasses;
   VisualResource.prototype.createViewObjects.call(this, state);
   if (this.invisible){ return; }
   if (!this.viewObjects["main"]) {
-      let geometry = new GeometryFactory.createSphereGeometry(this.val * state.verticeRelSize,
+      let geometry = GeometryFactory.createSphereGeometry(this.val * state.verticeRelSize,
           state.verticeResolution, state.verticeResolution);
       let material = MaterialFactory.createMeshLambertMaterial({
           color: this.color,

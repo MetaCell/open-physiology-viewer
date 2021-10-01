@@ -29,7 +29,7 @@ export class MaterialFactory {
         let p       = defaultParams::clone()::merge(params);
         p.color     = colorStr2Hex(p.color);
         p.lineWidth = p.lineWidth || 0.003;
-        return new GeometryFactory.createLineMaterial(p);
+        return GeometryFactory.createLineMaterial(p);
     }
 
     static createLineBasicMaterial(params = {}) {

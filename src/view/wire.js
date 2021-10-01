@@ -56,9 +56,9 @@ Object.defineProperty(Wire.prototype, "polygonOffsetFactor", {
       } else {
           //Thick lines
           if (this.stroke === Link.EDGE_STROKE.DASHED) {
-              geometry = new GeometryFactory.createGeometry();
+              geometry = GeometryFactory.createGeometry();
           } else {
-              geometry = new GeometryFactory.createBufferGeometry();
+              geometry = GeometryFactory.createBufferGeometry();
           }
           obj = new THREE.Line(geometry, material);
       }

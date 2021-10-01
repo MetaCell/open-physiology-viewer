@@ -11,7 +11,7 @@ THREE.LineSegments2 = function (geometry, material) {
     THREE.Mesh.call(this);
     this.type = 'LineSegments2';
     this.geometry = geometry !== undefined ? geometry : new THREE.LineSegmentsGeometry();
-    this.material = material !== undefined ? material : new GeometryFactory.createLineMaterial({color: Math.random() * 0xffffff});
+    this.material = material !== undefined ? material : GeometryFactory.createLineMaterial({color: Math.random() * 0xffffff});
 };
 
 /**
