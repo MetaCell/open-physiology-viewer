@@ -1,6 +1,5 @@
-import { GeometryFactory } from '../util/geometryFactory';
 import {THREE} from '../util/utils';
-
+import { GeometryFactory } from '../util/geometryFactory'
 /**
  * Creates a line segment with given geometry and material
  * @param geometry
@@ -11,7 +10,7 @@ THREE.LineSegments2 = function (geometry, material) {
     THREE.Mesh.call(this);
     this.type = 'LineSegments2';
     this.geometry = geometry !== undefined ? geometry : new THREE.LineSegmentsGeometry();
-    this.material = material !== undefined ? material : GeometryFactory.createLineMaterial({color: Math.random() * 0xffffff});
+    this.material = material !== undefined ? material : new THREE.LineMaterial({color: Math.random() * 0xffffff});
 };
 
 /**

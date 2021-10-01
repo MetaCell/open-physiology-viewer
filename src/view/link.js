@@ -48,14 +48,14 @@ import {MaterialFactory} from "./util/materialFactory";
 
       let geometry, obj;
       if (this.stroke === Link.EDGE_STROKE.THICK) {
-          geometry = new GeometryFactory.createLineGeometry();
-          obj = new THREE.Line2(geometry, material);
+          geometry = GeometryFactory.createLineGeometry();
+          obj = GeometryFactory.createLine2(geometry, material);
       } else {
           //Thick lines
           if (this.stroke === Link.EDGE_STROKE.DASHED) {
-              geometry = new THREE.Geometry();
+              geometry = GeometryFactory.createGeometry();
           } else {
-              geometry = new GeometryFactory.createBufferGeometry();
+              geometry = new THREE.BufferGeometry();
           }
           obj = new THREE.Line(geometry, material);
       }
@@ -67,13 +67,15 @@ import {MaterialFactory} from "./util/materialFactory";
       } else {
           //Buffered geometry
           if (this.stroke !== Link.EDGE_STROKE.THICK){
-              geometry.setAttribute('position', GeometryFactory.createBufferAttribute(this.pointLength));
-            }
+              geometry.setAttribute('position', new THREE.BufferAttribute(new Float32Array(this.pointLength * 3), 3));
+          }
       }
 
       if (this.directed){
           let dir    = direction(this.source, this.target);
-          let arrow = GeometryFactory.createArrowHelper(dir.normalize(), extractCoords(this.target), state.arrowLength, material.color.getHex() )
+          let arrow  = GeometryFactory.createArrowHelper(dir.normalize(), extractCoords(this.target),
+              state.arrowLength, material.color.getHex(),
+              state.arrowLength, state.arrowLength * 0.75);
           obj.add(arrow);
       }
 
@@ -115,7 +117,7 @@ import {MaterialFactory} from "./util/materialFactory";
 };
 
 Link.prototype.getCurve = function(start, end){
-  let curve = new THREE.Line3(start, end);
+  let curve = GeometryFactory.createLine3(start, end);
   switch (this.geometry) {
       case Link.LINK_GEOMETRY.SEMICIRCLE:
           curve = semicircleCurve(start, end);
@@ -140,7 +142,7 @@ Link.prototype.getCurve = function(start, end){
                   : GeometryFactory.createQuadraticBezierCurve3(start, start.clone().add(prev), end);
           } else {
               if (next) {
-                  curve = GeometryFactory.createQuadraticBezierCurve3(start, end.clone().add(next), end);
+                  curve = new GeometryFactory.createQuadraticBezierCurve3(start, end.clone().add(next), end);
               }
           }
   }

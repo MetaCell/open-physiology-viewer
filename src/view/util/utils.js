@@ -3,9 +3,8 @@ export const THREE = window.THREE || three;
 import {MaterialFactory} from './materialFactory';
 import { defaults } from 'lodash-bound';
 import tinycolor from 'tinycolor2';
+import { GeometryFactory } from './geometryFactory';
 const ThreeBSP = require('three-js-csg')(THREE);
-import { GeometryFactory } from './geometryFactory'
-import { Geometry } from 'three';
 
 /**
  * Get a point on a curve
@@ -68,13 +67,13 @@ export function geometryDifference(smallGeom, largeGeom, params){
  * @param cupTop     - top border
  * @param cupBottom  - bottom border
  * @param offset     - distance to shift cups wrt the tube center
- * @returns {Geometry|SEA3D.Geometry|*|THREE.Geometry}
+ * @returns {Geometry|SEA3D.Geometry|*|GeometryFactory.createGeometry}
  */
 export function mergedGeometry(tube, cupTop, cupBottom, offset){
-    let singleGeometry = new THREE.Geometry();
-    let tubeMesh       = new THREE.Mesh(tube);
-    let cupTopMesh     = new THREE.Mesh(cupTop);
-    let cupBottomMesh  = new THREE.Mesh(cupBottom);
+    let singleGeometry = GeometryFactory.createGeometry();
+    let tubeMesh       = GeometryFactory.createMesh(tube);
+    let cupTopMesh     = GeometryFactory.createMesh(cupTop);
+    let cupBottomMesh  = GeometryFactory.createMesh(cupBottom);
     cupTopMesh.translateY(offset);
     cupBottomMesh.translateY(-offset);
     cupTopMesh.updateMatrix();
@@ -116,21 +115,21 @@ export function d3Layer(inner, outer, params) {
 
     let smallGeometry, largeGeometry;
     if ($top || $bottom){
-        let $tube = new GeometryFactory.createCylinderGeometry($thickness, $thickness, a * $height);
-        let $cupTop = new GeometryFactory.createCylinderGeometry($top ? $thickness - $radius : $thickness, $thickness, b * $height);
-        let $cupBottom = new GeometryFactory.createCylinderGeometry($thickness, $bottom ? $thickness - $radius : $thickness, b * $height);
+        let $tube = GeometryFactory.createCylinderGeometry($thickness, $thickness, a * $height);
+        let $cupTop = GeometryFactory.createCylinderGeometry($top ? $thickness - $radius : $thickness, $thickness, b * $height);
+        let $cupBottom = GeometryFactory.createCylinderGeometry($thickness, $bottom ? $thickness - $radius : $thickness, b * $height);
         smallGeometry = mergedGeometry($tube, $cupTop, $cupBottom, (a + b) * 0.5 * $height);
     } else {
-        smallGeometry = new GeometryFactory.createCylinderGeometry($thickness, $thickness, $height);
+        smallGeometry = GeometryFactory.createCylinderGeometry($thickness, $thickness, $height);
     }
 
     if (top || bottom) {
-        let tube = new GeometryFactory.createCylinderGeometry(thickness, thickness, a * height);
-        let cupTop = new GeometryFactory.createCylinderGeometry(top ? thickness - radius : thickness, thickness, b * height);
-        let cupBottom = new GeometryFactory.createCylinderGeometry(thickness, bottom ? thickness - radius : thickness, b * height);
+        let tube = GeometryFactory.createCylinderGeometry(thickness, thickness, a * height);
+        let cupTop = GeometryFactory.createCylinderGeometry(top ? thickness - radius : thickness, thickness, b * height);
+        let cupBottom = GeometryFactory.createCylinderGeometry(thickness, bottom ? thickness - radius : thickness, b * height);
         largeGeometry = mergedGeometry(tube, cupTop, cupBottom, (a + b) * 0.5 * height);
     } else {
-        largeGeometry = new GeometryFactory.createCylinderGeometry(thickness, thickness, height);
+        largeGeometry = GeometryFactory.createCylinderGeometry(thickness, thickness, height);
     }
 
     return geometryDifference(smallGeometry, largeGeometry, params);
@@ -143,14 +142,14 @@ export function d3Lyph(outer, params) {
     if (top || bottom) {  
         const a = 0.5;
         const b = 0.5 * (1 - a);
-        let tube = new GeometryFactory.createCylinderGeometry(thickness, thickness, a * height);
-        let cupTop = new GeometryFactory.createCylinderGeometry(top ? thickness - radius : thickness, thickness, b * height);
-        let cupBottom = new GeometryFactory.createCylinderGeometry(thickness, bottom ? thickness - radius : thickness, b * height);
+        let tube = GeometryFactory.createCylinderGeometry(thickness, thickness, a * height);
+        let cupTop = GeometryFactory.createCylinderGeometry(top ? thickness - radius : thickness, thickness, b * height);
+        let cupBottom = GeometryFactory.createCylinderGeometry(thickness, bottom ? thickness - radius : thickness, b * height);
         geometry = mergedGeometry(tube, cupTop, cupBottom, (a + b) * 0.5 * height);
     } else {
-        geometry = new GeometryFactory.createCylinderGeometry(thickness, thickness, height);
+        geometry = GeometryFactory.createCylinderGeometry(thickness, thickness, height);
     }
-    return new THREE.Mesh(geometry, MaterialFactory.createMeshBasicMaterial(params));
+    return GeometryFactory.createMesh(geometry, MaterialFactory.createMeshBasicMaterial(params));
 }
 
 /**
@@ -162,7 +161,7 @@ export function d3Lyph(outer, params) {
 export function layerShape(inner, outer) {
     const [$thickness, $height, $radius, $top, $bottom] = inner;
     const [thickness, height, radius, top, bottom] = outer;
-    const shape = GeometryFactory.createShape();
+    const shape = new THREE.Shape();
     shape.moveTo(0, 0);
     //draw top of the preceding layer geometry
     if ($thickness) {
@@ -215,7 +214,7 @@ export function layerShape(inner, outer) {
 export function lyphShape(params) {
     let [thickness, height, radius, top, bottom] = params;
 
-    const shape = new GeometryFactory.createShape()
+    const shape = new THREE.Shape();
 
     //Axial border
     shape.moveTo(0, -height / 2);
@@ -251,9 +250,9 @@ export function lyphShape(params) {
  */
 export function createMeshWithBorder(shape, params = {}, includeBorder = true) {
     let geometry = new THREE.ShapeBufferGeometry(shape);
-    let obj = new THREE.Mesh(geometry, MaterialFactory.createMeshBasicMaterial(params));
+    let obj = GeometryFactory.createMesh(geometry, MaterialFactory.createMeshBasicMaterial(params));
     if (includeBorder) {
-        let lineBorderGeometry = new THREE.Geometry();
+        let lineBorderGeometry = GeometryFactory.createGeometry();
         shape.getPoints().forEach(point => {
             point.z = 0;
             lineBorderGeometry.vertices.push(point);
@@ -291,15 +290,16 @@ export function rectangleCurve(startV, endV){
         endV.clone().add(quarter),
         endV.clone()
     ];
+    
+    let curvePath = []; //new THREE.CurvePath();
+    curvePath.push(GeometryFactory.createLineCurve3(p[0], p[1]));
+    curvePath.push(GeometryFactory.createQuadraticBezierCurve3(p[1], p[2], p[3]));
+    curvePath.push(GeometryFactory.createcreateLineCurve3(p[3], p[4]));
+    curvePath.push(GeometryFactory.createQuadraticBezierCurve3(p[4], p[5], p[6]));
+    curvePath.push(GeometryFactory.createLineCurve3(p[6], p[7]));
+    let curve = GeometryFactory.curvePath(curvePath);
 
-    let curvePath = []; 
-    curvePath.add(GeometryFactory.createLineCurve3(p[0], p[1]));
-    curvePath.add(GeometryFactory.createQuadraticBezierCurve3(p[1], p[2], p[3]));
-    curvePath.add(GeometryFactory.createLineCurve3(p[3], p[4]));
-    curvePath.add(GeometryFactory.createQuadraticBezierCurve3(p[4], p[5], p[6]));
-    curvePath.add(GeometryFactory.createLineCurve3(p[6], p[7]));
-
-    return GeometryFactory.createCurvePath(curvePath);
+    return curve;
 }
 
 export function arcCurve(source, target, arcCenter){
@@ -349,7 +349,7 @@ export function semicircleCurve(startV, endV){
     let insetV  = edgeV.multiplyScalar(0.05);
     let offsetV = pEdgeV.multiplyScalar(2/3);
 
-    return new THREE.CubicBezierCurve3(
+    return GeometryFactory.createCubicBezierCurve3(
         startV.clone(),
         startV.clone().add(insetV).add(offsetV),
         endV.clone().sub(insetV).add(offsetV),

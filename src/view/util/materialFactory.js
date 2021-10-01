@@ -1,8 +1,7 @@
 import * as three from 'three';
-const THREE = window.THREE || three;
 import {clone, merge} from 'lodash-bound';
 import tinycolor from 'tinycolor2';
-import { GeometryFactory } from './geometryFactory';
+import { GeometryFactory } from './geometryFactory'
 
 const defaultParams = {
     transparent: true,
@@ -35,7 +34,7 @@ export class MaterialFactory {
     static createLineBasicMaterial(params = {}) {
         let p       = defaultParams::clone()::merge(params);
         p.color     = colorStr2Hex(p.color);
-        return new THREE.LineBasicMaterial(p);
+        return GeometryFactory.createLineBasicMaterial(p);
     }
 
     static createLineDashedMaterial(params = {}) {
@@ -44,19 +43,19 @@ export class MaterialFactory {
         p.scale    = p.scale    || 1;
         p.gapSize  = p.gapSize  || 2;
         p.dashSize = p.dashSize || 3;
-        return new THREE.LineDashedMaterial(p);
+        return new GeometryFactory.createLineDashedMaterial(p);
     }
 
     static createMeshBasicMaterial(params = {}){
         let p   = defaultParams::clone()::merge(params);
         p.color = colorStr2Hex(p.color);
-        return new THREE.MeshBasicMaterial(p);
+        return new GeometryFactory.createMeshBasicMaterial(p);
     }
 
     static createMeshLambertMaterial(params = {}){
         let p   = defaultParams::clone()::merge(params);
         p.color = colorStr2Hex(p.color);
-        return new THREE.MeshLambertMaterial(p);
+        return new GeometryFactory.createMeshLambertMaterial(p);
     }
 }
 

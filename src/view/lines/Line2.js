@@ -7,8 +7,8 @@ import './LineSegments2.js';
 import './LineSegmentsGeometry.js';
 import './LineGeometry.js';
 import './LineMaterial.js';
-import { GeometryFactory } from '../util/geometryFactory';
-import { Geometry } from 'three';
+
+import { GeometryFactory } from '../util/geometryFactory'
 
 /**
  * Extends three.js with Line2 type to enable thick lines
@@ -22,9 +22,9 @@ THREE.Line2 = function ( geometry, material ) {
 
 	this.type = 'Line2';
 
-	this.geometry = geometry !== undefined ? geometry : GeometryFactory.createLineGeometry();
+	this.geometry = geometry !== undefined ? geometry : new GeometryFactory.createLineGeometry();
 
-	this.material = material !== undefined ? material : GeometryFactory.createLineMaterial( { color: Math.random() * 0xffffff } );
+	this.material = material !== undefined ? material : new THREE.LineMaterial( { color: Math.random() * 0xffffff } );
 
 };
 

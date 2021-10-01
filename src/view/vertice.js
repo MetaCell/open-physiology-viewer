@@ -1,8 +1,9 @@
 import {copyCoords, THREE} from "./util/utils";
 import {MaterialFactory} from "./util/materialFactory";
 import {modelClasses} from "../model";
-import { GeometryFactory } from "./util/geometryFactory";
 const {VisualResource, Vertice, Node, Anchor} = modelClasses;
+
+import { GeometryFactory } from './util/geometryFactory'
 
 /**
  * Create visual object for vertice
@@ -17,7 +18,7 @@ const {VisualResource, Vertice, Node, Anchor} = modelClasses;
           color: this.color,
           polygonOffsetFactor: this.polygonOffsetFactor
       });
-      let obj = new THREE.Mesh(geometry, material);
+      let obj = GeometryFactory.createMesh(geometry, material);
       // Attach vertice data
       obj.userData = this;
       this.viewObjects["main"] = obj;

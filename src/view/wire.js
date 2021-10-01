@@ -11,7 +11,7 @@ import {
 
 import './lines/Line2.js';
 import {MaterialFactory} from "./util/materialFactory";
-import { GeometryFactory } from "./util/geometryFactory";
+import { GeometryFactory } from './util/geometryFactory'
 
 Object.defineProperty(Wire.prototype, "polygonOffsetFactor", {
   get: function() {
@@ -51,14 +51,14 @@ Object.defineProperty(Wire.prototype, "polygonOffsetFactor", {
       if (this.geometry === Wire.WIRE_GEOMETRY.INVISIBLE)  { return; }
       let geometry, obj;
       if (this.stroke === Link.EDGE_STROKE.THICK) {
-          geometry = GeometryFactory.createLineGeometry();
-          obj = new THREE.Line2(geometry, material);
+          geometry = new GeometryFactory.createLineGeometry();
+          obj = new GeometryFactory.createLine2(geometry, material);
       } else {
           //Thick lines
           if (this.stroke === Link.EDGE_STROKE.DASHED) {
               geometry = GeometryFactory.createGeometry();
           } else {
-              geometry = GeometryFactory.createBufferGeometry();
+              geometry = new THREE.BufferGeometry();
           }
           obj = new THREE.Line(geometry, material);
       }
@@ -70,7 +70,7 @@ Object.defineProperty(Wire.prototype, "polygonOffsetFactor", {
       } else {
           //Buffered geometry
           if (this.stroke !== Link.EDGE_STROKE.THICK){
-              geometry.setAttribute('position', GeometryFactory.createBufferAttribute(this.pointLength));
+              geometry.setAttribute('position', new THREE.BufferAttribute(new Float32Array(this.pointLength * 3), 3));
           }
       }
 
@@ -82,14 +82,14 @@ Object.defineProperty(Wire.prototype, "polygonOffsetFactor", {
 };
 
 Wire.prototype.getCurve = function(start, end){
-  let curve = new THREE.Line3(start, end);
+  let curve = GeometryFactory.createLine3(start, end);
   switch (this.geometry) {
       case Wire.WIRE_GEOMETRY.ARC:
           curve = arcCurve(start, end, extractCoords(this.arcCenter));
           break;
       case Wire.WIRE_GEOMETRY.SPLINE:
           const control = this.controlPoint? extractCoords(this.controlPoint): getDefaultControlPoint(start, end);
-          curve = new THREE.QuadraticBezierCurve3(start, control, end);
+          curve = GeometryFactory.createQuadraticBezierCurve3(start, control, end);
   }
   return curve;
 };

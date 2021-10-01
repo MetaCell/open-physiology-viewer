@@ -1,5 +1,4 @@
 import {THREE} from '../util/utils'
-
 import { GeometryFactory } from '../util/geometryFactory'
 
 THREE.LineSegmentsGeometry = function () {

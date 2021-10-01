@@ -17,6 +17,8 @@ import {OrbitControls} from "three/examples/jsm/controls/OrbitControls";
 import {$Field, $SchemaClass} from "../model";
 import {QuerySelectModule, QuerySelectDialog} from "./gui/querySelectDialog";
 
+import { GeometryFactory } from '../view/util/geometryFactory'
+
 const WindowResize = require('three-window-resize');
 
 /**
@@ -315,7 +317,7 @@ export class WebGLSceneComponent {
         pointLight.position.set(300, 0, 300);
         this.scene.add(pointLight);
 
-        this.mouse = new THREE.Vector2(0, 0);
+        this.mouse = GeometryFactory.createVector2(0, 0);
         this.createEventListeners(); // keyboard / mouse events
         this.resizeToDisplaySize();
         this.createHelpers();

@@ -8,7 +8,6 @@ import {
 } from "./util/utils";
 
 const { Border, VisualResource } = modelClasses;
-
 import { GeometryFactory } from './util/geometryFactory'
 
 /**

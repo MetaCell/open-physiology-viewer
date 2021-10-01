@@ -12,10 +12,8 @@ import {
     THREE
 } from "./util/utils";
 
-import { GeometryFactory } from './util/geometryFactory'
-
 const { Lyph, Shape} = modelClasses;
-
+import { GeometryFactory } from './util/geometryFactory'
 
 /**
  * @property polygonOffsetFactor

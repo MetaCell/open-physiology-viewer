@@ -1,5 +1,4 @@
 import {modelClasses} from "../model";
-import { GeometryFactory } from "./util/geometryFactory";
 import {
     createMeshWithBorder,
     getCenterOfMass,
@@ -8,6 +7,8 @@ import {
 } from "./util/utils";
 
 const {Region, Wire, Shape} = modelClasses;
+
+import { GeometryFactory } from './util/geometryFactory'
 
 /**
  * @property polygonOffsetFactor
@@ -81,7 +82,7 @@ Region.prototype.createViewObjects = function(state) {
   Shape.prototype.createViewObjects.call(this, state);
   if (!this.viewObjects["main"]) {
       this.updatePoints(state.edgeResolution);
-      let shape = GeometryFactory.createShape(this.points);
+      let shape = new THREE.Shape(this.points.map(p => GeometryFactory.createVector2(p.x, p.y))); //Expects Vector2
       let obj = createMeshWithBorder(shape, {
               color: this.color,
               polygonOffsetFactor: this.polygonOffsetFactor
