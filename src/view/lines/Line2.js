@@ -7,6 +7,8 @@ import './LineSegments2.js';
 import './LineSegmentsGeometry.js';
 import './LineGeometry.js';
 import './LineMaterial.js';
+import { GeometryFactory } from '../util/geometryFactory';
+import { Geometry } from 'three';
 
 /**
  * Extends three.js with Line2 type to enable thick lines
@@ -20,9 +22,9 @@ THREE.Line2 = function ( geometry, material ) {
 
 	this.type = 'Line2';
 
-	this.geometry = geometry !== undefined ? geometry : new THREE.LineGeometry();
+	this.geometry = geometry !== undefined ? geometry : GeometryFactory.createLineGeometry();
 
-	this.material = material !== undefined ? material : new THREE.LineMaterial( { color: Math.random() * 0xffffff } );
+	this.material = material !== undefined ? material : GeometryFactory.createLineMaterial( { color: Math.random() * 0xffffff } );
 
 };
 
@@ -62,10 +64,10 @@ THREE.Line2.prototype = Object.assign( Object.create( THREE.LineSegments2.protot
 			inverseMatrix.getInverse( matrixWorld );
 			ray.copy( raycaster.ray ).applyMatrix4( inverseMatrix );
 
-			let vStart = new THREE.Vector3();
-			let vEnd   = new THREE.Vector3();
-			let interSegment = new THREE.Vector3();
-			let interRay = new THREE.Vector3();
+			let vStart = GeometryFactory.createVector3();
+			let vEnd   = GeometryFactory.createVector3();
+			let interSegment = GeometryFactory.createVector3();
+			let interRay = GeometryFactory.createVector3();
 			let step = (this && this.isLineSegments) ? 2 : 1;
 
 			if ( geometry.isBufferGeometry ) {

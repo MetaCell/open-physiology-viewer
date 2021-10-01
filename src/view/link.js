@@ -12,6 +12,8 @@ import {
   arcCurve
 } from "./util/utils";
 
+import { GeometryFactory } from './util/geometryFactory'
+
 import './lines/Line2.js';
 import {MaterialFactory} from "./util/materialFactory";
 
@@ -46,14 +48,14 @@ import {MaterialFactory} from "./util/materialFactory";
 
       let geometry, obj;
       if (this.stroke === Link.EDGE_STROKE.THICK) {
-          geometry = new THREE.LineGeometry();
+          geometry = new GeometryFactory.createLineGeometry();
           obj = new THREE.Line2(geometry, material);
       } else {
           //Thick lines
           if (this.stroke === Link.EDGE_STROKE.DASHED) {
               geometry = new THREE.Geometry();
           } else {
-              geometry = new THREE.BufferGeometry();
+              geometry = new GeometryFactory.createBufferGeometry();
           }
           obj = new THREE.Line(geometry, material);
       }
@@ -61,19 +63,17 @@ import {MaterialFactory} from "./util/materialFactory";
       this.pointLength = (!this.geometry || this.geometry === Link.LINK_GEOMETRY.LINK)? 2 : (this.geometry === Link.LINK_GEOMETRY.PATH)? 67 : state.edgeResolution;
       if (this.stroke === Link.EDGE_STROKE.DASHED) {
           geometry.vertices = new Array(this.pointLength);
-          for (let i = 0; i < this.pointLength; i++ ){ geometry.vertices[i] = new THREE.Vector3(0, 0, 0); }
+          for (let i = 0; i < this.pointLength; i++ ){ geometry.vertices[i] = GeometryFactory.createVector3(0, 0, 0); }
       } else {
           //Buffered geometry
           if (this.stroke !== Link.EDGE_STROKE.THICK){
-              geometry.setAttribute('position', new THREE.BufferAttribute(new Float32Array(this.pointLength * 3), 3));
-          }
+              geometry.setAttribute('position', GeometryFactory.createBufferAttribute(this.pointLength));
+            }
       }
 
       if (this.directed){
           let dir    = direction(this.source, this.target);
-          let arrow  = new THREE.ArrowHelper(dir.normalize(), extractCoords(this.target),
-              state.arrowLength, material.color.getHex(),
-              state.arrowLength, state.arrowLength * 0.75);
+          let arrow = GeometryFactory.createArrowHelper(dir.normalize(), extractCoords(this.target), state.arrowLength, material.color.getHex() )
           obj.add(arrow);
       }
 
@@ -128,7 +128,7 @@ Link.prototype.getCurve = function(start, end){
           break;
       case Link.LINK_GEOMETRY.PATH:
           if (this.path){
-              curve = new THREE.CatmullRomCurve3(this.path);
+              curve = GeometryFactory.createCatmullRomCurve3(this.path);
           }
           break;
       case Link.LINK_GEOMETRY.SPLINE:
@@ -136,11 +136,11 @@ Link.prototype.getCurve = function(start, end){
           let next = this.next ? direction(this.next.center, end).multiplyScalar(2) : null;
           if (prev) {
               curve = next
-                  ? new THREE.CubicBezierCurve3(start, start.clone().add(prev), end.clone().add(next), end)
-                  : new THREE.QuadraticBezierCurve3(start, start.clone().add(prev), end);
+                  ? GeometryFactory.createCubicBezierCurve3(start, start.clone().add(prev), end.clone().add(next), end)
+                  : GeometryFactory.createQuadraticBezierCurve3(start, start.clone().add(prev), end);
           } else {
               if (next) {
-                  curve = new THREE.QuadraticBezierCurve3(start, end.clone().add(next), end);
+                  curve = GeometryFactory.createQuadraticBezierCurve3(start, end.clone().add(next), end);
               }
           }
   }
@@ -162,7 +162,7 @@ Link.prototype.updateViewObjects = function(state) {
   this.points = curve.getPoints? curve.getPoints(this.pointLength): [start, end];
 
   if (this.geometry === Link.LINK_GEOMETRY.ARC){
-      this.points = this.points.map(p => new THREE.Vector3(p.x, p.y, 0));
+      this.points = this.points.map(p => GeometryFactory.createVector3(p.x, p.y, 0));
   }
 
   //Merge nodes of a collapsible link

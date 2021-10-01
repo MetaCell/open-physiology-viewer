@@ -4,6 +4,8 @@ import {MaterialFactory} from './materialFactory';
 import { defaults } from 'lodash-bound';
 import tinycolor from 'tinycolor2';
 const ThreeBSP = require('three-js-csg')(THREE);
+import { GeometryFactory } from './geometryFactory'
+import { Geometry } from 'three';
 
 /**
  * Get a point on a curve
@@ -15,7 +17,7 @@ const ThreeBSP = require('three-js-csg')(THREE);
  */
 export const getPoint = (curve, s, t, offset) => (curve && curve.getPoint)
     ? curve.getPoint(offset)
-    : (s && t)? s.clone().add(t.clone().sub(s).multiplyScalar(offset)): new THREE.Vector3();
+    : (s && t)? s.clone().add(t.clone().sub(s).multiplyScalar(offset)): GeometryFactory.createVector3();
 
 /**
  * Checks that the angle is between given angles
@@ -114,21 +116,21 @@ export function d3Layer(inner, outer, params) {
 
     let smallGeometry, largeGeometry;
     if ($top || $bottom){
-        let $tube = new THREE.CylinderGeometry($thickness, $thickness, a * $height, 10, 4);
-        let $cupTop = new THREE.CylinderGeometry($top ? $thickness - $radius : $thickness, $thickness, b * $height, 10, 4);
-        let $cupBottom = new THREE.CylinderGeometry($thickness, $bottom ? $thickness - $radius : $thickness, b * $height, 10, 4);
+        let $tube = new GeometryFactory.createCylinderGeometry($thickness, $thickness, a * $height);
+        let $cupTop = new GeometryFactory.createCylinderGeometry($top ? $thickness - $radius : $thickness, $thickness, b * $height);
+        let $cupBottom = new GeometryFactory.createCylinderGeometry($thickness, $bottom ? $thickness - $radius : $thickness, b * $height);
         smallGeometry = mergedGeometry($tube, $cupTop, $cupBottom, (a + b) * 0.5 * $height);
     } else {
-        smallGeometry = new THREE.CylinderGeometry($thickness, $thickness, $height, 10, 4);
+        smallGeometry = new GeometryFactory.createCylinderGeometry($thickness, $thickness, $height);
     }
 
     if (top || bottom) {
-        let tube = new THREE.CylinderGeometry(thickness, thickness, a * height, 10, 4);
-        let cupTop = new THREE.CylinderGeometry(top ? thickness - radius : thickness, thickness, b * height, 10, 4);
-        let cupBottom = new THREE.CylinderGeometry(thickness, bottom ? thickness - radius : thickness, b * height, 10, 4);
+        let tube = new GeometryFactory.createCylinderGeometry(thickness, thickness, a * height);
+        let cupTop = new GeometryFactory.createCylinderGeometry(top ? thickness - radius : thickness, thickness, b * height);
+        let cupBottom = new GeometryFactory.createCylinderGeometry(thickness, bottom ? thickness - radius : thickness, b * height);
         largeGeometry = mergedGeometry(tube, cupTop, cupBottom, (a + b) * 0.5 * height);
     } else {
-        largeGeometry = new THREE.CylinderGeometry(thickness, thickness, height, 10, 4);
+        largeGeometry = new GeometryFactory.createCylinderGeometry(thickness, thickness, height);
     }
 
     return geometryDifference(smallGeometry, largeGeometry, params);
@@ -141,12 +143,12 @@ export function d3Lyph(outer, params) {
     if (top || bottom) {  
         const a = 0.5;
         const b = 0.5 * (1 - a);
-        let tube = new THREE.CylinderGeometry(thickness, thickness, a * height, 10, 4);
-        let cupTop = new THREE.CylinderGeometry(top ? thickness - radius : thickness, thickness, b * height, 10, 4);
-        let cupBottom = new THREE.CylinderGeometry(thickness, bottom ? thickness - radius : thickness, b * height, 10, 4);
+        let tube = new GeometryFactory.createCylinderGeometry(thickness, thickness, a * height);
+        let cupTop = new GeometryFactory.createCylinderGeometry(top ? thickness - radius : thickness, thickness, b * height);
+        let cupBottom = new GeometryFactory.createCylinderGeometry(thickness, bottom ? thickness - radius : thickness, b * height);
         geometry = mergedGeometry(tube, cupTop, cupBottom, (a + b) * 0.5 * height);
     } else {
-        geometry = new THREE.CylinderGeometry(thickness, thickness, height, 10, 4);
+        geometry = new GeometryFactory.createCylinderGeometry(thickness, thickness, height);
     }
     return new THREE.Mesh(geometry, MaterialFactory.createMeshBasicMaterial(params));
 }
@@ -160,7 +162,7 @@ export function d3Lyph(outer, params) {
 export function layerShape(inner, outer) {
     const [$thickness, $height, $radius, $top, $bottom] = inner;
     const [thickness, height, radius, top, bottom] = outer;
-    const shape = new THREE.Shape();
+    const shape = GeometryFactory.createShape();
     shape.moveTo(0, 0);
     //draw top of the preceding layer geometry
     if ($thickness) {
@@ -213,7 +215,7 @@ export function layerShape(inner, outer) {
 export function lyphShape(params) {
     let [thickness, height, radius, top, bottom] = params;
 
-    const shape = new THREE.Shape();
+    const shape = new GeometryFactory.createShape()
 
     //Axial border
     shape.moveTo(0, -height / 2);
@@ -275,7 +277,7 @@ export function createMeshWithBorder(shape, params = {}, includeBorder = true) {
  */
 export function rectangleCurve(startV, endV){
     let edgeV   = endV.clone().sub(startV);
-    let pEdgeV  = edgeV.clone().applyAxisAngle( new THREE.Vector3( 0, 0, 1 ), Math.PI / 2);
+    let pEdgeV  = edgeV.clone().applyAxisAngle( GeometryFactory.createVector3( 0, 0, 1 ), Math.PI / 2);
 
     let quarterX = edgeV.multiplyScalar(0.25);
     let quarter  = pEdgeV.clone().multiplyScalar(0.25);
@@ -290,14 +292,14 @@ export function rectangleCurve(startV, endV){
         endV.clone()
     ];
 
-    let curvePath = new THREE.CurvePath();
-    curvePath.add(new THREE.LineCurve3(p[0], p[1]));
-    curvePath.add(new THREE.QuadraticBezierCurve3(p[1], p[2], p[3]));
-    curvePath.add(new THREE.LineCurve3(p[3], p[4]));
-    curvePath.add(new THREE.QuadraticBezierCurve3(p[4], p[5], p[6]));
-    curvePath.add(new THREE.LineCurve3(p[6], p[7]));
+    let curvePath = []; 
+    curvePath.add(GeometryFactory.createLineCurve3(p[0], p[1]));
+    curvePath.add(GeometryFactory.createQuadraticBezierCurve3(p[1], p[2], p[3]));
+    curvePath.add(GeometryFactory.createLineCurve3(p[3], p[4]));
+    curvePath.add(GeometryFactory.createQuadraticBezierCurve3(p[4], p[5], p[6]));
+    curvePath.add(GeometryFactory.createLineCurve3(p[6], p[7]));
 
-    return curvePath;
+    return GeometryFactory.createCurvePath(curvePath);
 }
 
 export function arcCurve(source, target, arcCenter){
@@ -306,7 +308,7 @@ export function arcCurve(source, target, arcCenter){
     const sum = v1.clone().add(v2);
     const q = sum.x > 0? (sum.y > 0? 1: 4): sum.y > 0? 2: 3;
 
-    return new THREE.EllipseCurve(
+    return GeometryFactory.createEllipseCurve(
         arcCenter.x,  arcCenter.y, // ax, aY
         v1.length(), v2.length(), // xRadius, yRadius
         0, Math.PI / 2,  // aStartAngle, aEndAngle
@@ -322,7 +324,7 @@ export function arcCurve(source, target, arcCenter){
 //  * @param centerV - center of the ellipse
 //  * @returns {EllipseCurve}
 //  */
-// export function arcCurve(startV, endV, centerV = new THREE.Vector3()){
+// export function arcCurve(startV, endV, centerV = GeometryFactory.createVector3()){
 //     let p = startV.clone().sub(centerV);
 //     let q = endV.clone().sub(centerV);
 //
@@ -343,7 +345,7 @@ export function arcCurve(source, target, arcCenter){
  */
 export function semicircleCurve(startV, endV){
     let edgeV   = endV.clone().sub(startV);
-    let pEdgeV  = edgeV.clone().applyAxisAngle( new THREE.Vector3( 0, 0, 1 ), Math.PI / 2);
+    let pEdgeV  = edgeV.clone().applyAxisAngle( GeometryFactory.createVector3( 0, 0, 1 ), Math.PI / 2);
     let insetV  = edgeV.multiplyScalar(0.05);
     let offsetV = pEdgeV.multiplyScalar(2/3);
 
@@ -361,7 +363,7 @@ export function semicircleCurve(startV, endV){
  */
 export function extractCoords(source){
     if (source) {
-        return new THREE.Vector3(source.x || 0, source.y || 0, source.z || 0);
+        return GeometryFactory.createVector3(source.x || 0, source.y || 0, source.z || 0);
     }
 }
 
@@ -375,7 +377,7 @@ export function align(link, obj, reversed = false){
     if (!obj || !link) { return; }
     let axis = direction(link.source, link.target).normalize();
     if (reversed){ axis.multiplyScalar(-1); }
-    obj.quaternion.setFromUnitVectors(new THREE.Vector3(0, 1, 0), axis);
+    obj.quaternion.setFromUnitVectors(GeometryFactory.createVector3(0, 1, 0), axis);
 }
 
 /**
@@ -396,8 +398,8 @@ export function angle(v1, v2){
  * @returns {null}
  */
 export function direction(source, target){
-    if (!source || !target) { return new THREE.Vector3(0,0,0); }
-    return (new THREE.Vector3(
+    if (!source || !target) { return GeometryFactory.createVector3(0,0,0); }
+    return (GeometryFactory.createVector3(
         target.x - source.x,
         target.y - source.y,
         target.z - source.z
@@ -410,7 +412,7 @@ export function direction(source, target){
  * @returns {Object}               coordinates of the center of mass
  */
 export function getCenterOfMass(points){
-    let middle = new THREE.Vector3(0, 0, 0);
+    let middle = GeometryFactory.createVector3(0, 0, 0);
     (points||[]).forEach(p => {
         middle.x += p.x;
         middle.y += p.y;
@@ -427,7 +429,7 @@ export function getCenterOfMass(points){
  */
 export function getCenterPoint(mesh) {
     let boundingBox = getBoundingBox(mesh);
-    let center = new THREE.Vector3();
+    let center = GeometryFactory.createVector3();
     if (boundingBox) { boundingBox.getCenter(center); }
     mesh.localToWorld(center);
     return center;
@@ -442,10 +444,10 @@ export function getCenterPoint(mesh) {
  */
 export function getDefaultControlPoint(startV, endV){
     if (!startV || !endV){
-        return new THREE.Vector3();
+        return GeometryFactory.createVector3();
     }
     let edgeV  = endV.clone().sub(startV);
-    let pEdgeV = edgeV.clone().applyAxisAngle( new THREE.Vector3( 0, 0, 1 ), Math.PI / 2);
+    let pEdgeV = edgeV.clone().applyAxisAngle( GeometryFactory.createVector3( 0, 0, 1 ), Math.PI / 2);
     let center = startV.clone().add(endV).multiplyScalar(0.5);
     return center.add(pEdgeV.multiplyScalar(0.25));
 }

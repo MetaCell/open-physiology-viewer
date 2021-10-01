@@ -1,3 +1,4 @@
+import { GeometryFactory } from '../util/geometryFactory';
 import {THREE} from '../util/utils';
 
 /**
@@ -10,7 +11,7 @@ THREE.LineSegments2 = function (geometry, material) {
     THREE.Mesh.call(this);
     this.type = 'LineSegments2';
     this.geometry = geometry !== undefined ? geometry : new THREE.LineSegmentsGeometry();
-    this.material = material !== undefined ? material : new THREE.LineMaterial({color: Math.random() * 0xffffff});
+    this.material = material !== undefined ? material : new GeometryFactory.createLineMaterial({color: Math.random() * 0xffffff});
 };
 
 /**
@@ -21,8 +22,8 @@ THREE.LineSegments2.prototype = Object.assign(Object.create(THREE.Mesh.prototype
     constructor: THREE.LineSegments2,
     isLineSegments2: true,
     computeLineDistances: ( function () { // for backwards-compatability, but could be a method of LineSegmentsGeometry...
-        let start = new THREE.Vector3();
-        let end   = new THREE.Vector3();
+        let start = GeometryFactory.createVector3();
+        let end   = GeometryFactory.createVector3();
         return function computeLineDistances() {
             let geometry = this.geometry;
             let instanceStart = geometry.attributes.instanceStart;

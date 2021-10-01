@@ -1,4 +1,5 @@
 import {modelClasses} from "../model";
+import { GeometryFactory } from "./util/geometryFactory";
 import {
     createMeshWithBorder,
     getCenterOfMass,
@@ -68,7 +69,7 @@ Region.prototype.updatePoints = function(edgeResolution){
           }
       });
   }
-  this.points = this.points.map(p => new THREE.Vector3(p.x, p.y,0));
+  this.points = this.points.map(p => GeometryFactory.createVector3(p.x, p.y,0));
   this.center = getCenterOfMass(this.points);
 }
 
@@ -80,7 +81,7 @@ Region.prototype.createViewObjects = function(state) {
   Shape.prototype.createViewObjects.call(this, state);
   if (!this.viewObjects["main"]) {
       this.updatePoints(state.edgeResolution);
-      let shape = new THREE.Shape(this.points.map(p => new THREE.Vector2(p.x, p.y))); //Expects Vector2
+      let shape = GeometryFactory.createShape(this.points);
       let obj = createMeshWithBorder(shape, {
               color: this.color,
               polygonOffsetFactor: this.polygonOffsetFactor
@@ -144,7 +145,7 @@ Region.prototype.resize = function (anchor, delta, epsilon = 5) {
       (anchor.sourceOf||[]).forEach(wire => relocateAdjacent(wire, "target"));
       (anchor.targetOf||[]).forEach(wire => relocateAdjacent(wire, "source"));
       const anchors = [...relocate];
-      let _delta = new THREE.Vector3(0, 0, 0);
+      let _delta = GeometryFactory.createVector3(0, 0, 0);
       _delta[dim] = delta[dim];
       anchors.forEach(anchor => anchor.relocate(_delta, false));
   });

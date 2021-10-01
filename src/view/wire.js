@@ -11,6 +11,7 @@ import {
 
 import './lines/Line2.js';
 import {MaterialFactory} from "./util/materialFactory";
+import { GeometryFactory } from "./util/geometryFactory";
 
 Object.defineProperty(Wire.prototype, "polygonOffsetFactor", {
   get: function() {
@@ -50,14 +51,14 @@ Object.defineProperty(Wire.prototype, "polygonOffsetFactor", {
       if (this.geometry === Wire.WIRE_GEOMETRY.INVISIBLE)  { return; }
       let geometry, obj;
       if (this.stroke === Link.EDGE_STROKE.THICK) {
-          geometry = new THREE.LineGeometry();
+          geometry = GeometryFactory.createLineGeometry();
           obj = new THREE.Line2(geometry, material);
       } else {
           //Thick lines
           if (this.stroke === Link.EDGE_STROKE.DASHED) {
-              geometry = new THREE.Geometry();
+              geometry = new GeometryFactory.createGeometry();
           } else {
-              geometry = new THREE.BufferGeometry();
+              geometry = new GeometryFactory.createBufferGeometry();
           }
           obj = new THREE.Line(geometry, material);
       }
@@ -65,11 +66,11 @@ Object.defineProperty(Wire.prototype, "polygonOffsetFactor", {
       this.pointLength = (!this.geometry || this.geometry === Wire.WIRE_GEOMETRY.LINK)? 2 : state.edgeResolution;
       if (this.stroke === Link.EDGE_STROKE.DASHED) {
           geometry.vertices = new Array(this.pointLength);
-          for (let i = 0; i < this.pointLength; i++ ){ geometry.vertices[i] = new THREE.Vector3(0, 0, 0); }
+          for (let i = 0; i < this.pointLength; i++ ){ geometry.vertices[i] = GeometryFactory.createVector3(0, 0, 0); }
       } else {
           //Buffered geometry
           if (this.stroke !== Link.EDGE_STROKE.THICK){
-              geometry.setAttribute('position', new THREE.BufferAttribute(new Float32Array(this.pointLength * 3), 3));
+              geometry.setAttribute('position', GeometryFactory.createBufferAttribute(this.pointLength));
           }
       }
 
@@ -121,13 +122,13 @@ Wire.prototype.updateViewObjects = function(state) {
   this.points = curve.getPoints? curve.getPoints(this.pointLength): [start, end];
 
   if (this.geometry === Link.LINK_GEOMETRY.ARC){
-      this.points = this.points.map(p => new THREE.Vector3(p.x, p.y, 0));
+      this.points = this.points.map(p => GeometryFactory.createVector3(p.x, p.y, 0));
   }
 
   (this.hostedAnchors||[]).forEach((anchor, i) => {
       let d_i = anchor.offset? anchor.offset: 1. / (this.hostedAnchors.length + 1) * (i + 1);
       let pos = getPoint(curve, start, end, d_i);
-      pos = new THREE.Vector3(pos.x, pos.y, 0); //Arc wires are rendered in 2d
+      pos = GeometryFactory.createVector3(pos.x, pos.y, 0); //Arc wires are rendered in 2d
       copyCoords(anchor, pos);
       if (anchor.viewObjects["main"]) {
           copyCoords(anchor.viewObjects["main"].position, anchor);

@@ -1,6 +1,7 @@
 import {copyCoords, THREE} from "./util/utils";
 import {MaterialFactory} from "./util/materialFactory";
 import {modelClasses} from "../model";
+import { GeometryFactory } from "./util/geometryFactory";
 const {VisualResource, Vertice, Node, Anchor} = modelClasses;
 
 /**
@@ -10,7 +11,7 @@ const {VisualResource, Vertice, Node, Anchor} = modelClasses;
   VisualResource.prototype.createViewObjects.call(this, state);
   if (this.invisible){ return; }
   if (!this.viewObjects["main"]) {
-      let geometry = new THREE.SphereGeometry(this.val * state.verticeRelSize,
+      let geometry = new GeometryFactory.createSphereGeometry(this.val * state.verticeRelSize,
           state.verticeResolution, state.verticeResolution);
       let material = MaterialFactory.createMeshLambertMaterial({
           color: this.color,

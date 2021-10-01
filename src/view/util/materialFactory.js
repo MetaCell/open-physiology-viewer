@@ -2,6 +2,7 @@ import * as three from 'three';
 const THREE = window.THREE || three;
 import {clone, merge} from 'lodash-bound';
 import tinycolor from 'tinycolor2';
+import { GeometryFactory } from './geometryFactory';
 
 const defaultParams = {
     transparent: true,
@@ -28,7 +29,7 @@ export class MaterialFactory {
         let p       = defaultParams::clone()::merge(params);
         p.color     = colorStr2Hex(p.color);
         p.lineWidth = p.lineWidth || 0.003;
-        return new THREE.LineMaterial(p);
+        return new GeometryFactory.createLineMaterial(p);
     }
 
     static createLineBasicMaterial(params = {}) {

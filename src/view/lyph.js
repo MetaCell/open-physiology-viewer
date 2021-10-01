@@ -12,6 +12,8 @@ import {
     THREE
 } from "./util/utils";
 
+import { GeometryFactory } from './util/geometryFactory'
+
 const { Lyph, Shape} = modelClasses;
 
 
@@ -31,7 +33,7 @@ const { Lyph, Shape} = modelClasses;
  */
  Object.defineProperty(Lyph.prototype, "center", {
   get: function() {
-      let res = new THREE.Vector3();
+      let res = GeometryFactory.createVector3();
       //Note: Do not use lyph borders to compute center as border translation relies on this method
       if (this.axis){
           res = this.axis.center || res;
@@ -64,7 +66,7 @@ Object.defineProperty(Lyph.prototype, "points", {
  */
  Object.defineProperty(Lyph.prototype, "center", {
   get: function() {
-      let res = new THREE.Vector3();
+      let res = GeometryFactory.createVector3();
       //Note: Do not use lyph borders to compute center as border translation relies on this method
       if (this.axis){
           res = this.axis.center || res;
@@ -176,11 +178,11 @@ Lyph.prototype.createViewObjects = function(state) {
         }
 
         this._points = [
-            new THREE.Vector3(offset, -this.height / 2, 0),
-            new THREE.Vector3(offset, this.height / 2, 0),
-            new THREE.Vector3(offset + this.width, this.height / 2, 0),
-            new THREE.Vector3(offset + this.width, -this.height / 2, 0),
-            new THREE.Vector3(offset, -this.height / 2, 0)
+            GeometryFactory.createVector3(offset, -this.height / 2, 0),
+            GeometryFactory.createVector3(offset, this.height / 2, 0),
+            GeometryFactory.createVector3(offset + this.width, this.height / 2, 0),
+            GeometryFactory.createVector3(offset + this.width, -this.height / 2, 0),
+            GeometryFactory.createVector3(offset, -this.height / 2, 0)
         ];
 
         //Border uses corner points
