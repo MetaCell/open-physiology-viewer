@@ -48,12 +48,12 @@ import {MaterialFactory} from "./util/materialFactory";
 
       let geometry, obj;
       if (this.stroke === Link.EDGE_STROKE.THICK) {
-          geometry = GeometryFactory.createLineGeometry();
-          obj = GeometryFactory.createLine2(geometry, material);
+          geometry = GeometryFactory.instance().createLineGeometry();
+          obj = GeometryFactory.instance().createLine2(geometry, material);
       } else {
           //Thick lines
           if (this.stroke === Link.EDGE_STROKE.DASHED) {
-              geometry = GeometryFactory.createGeometry();
+              geometry = GeometryFactory.instance().createGeometry();
           } else {
               geometry = new THREE.BufferGeometry();
           }
@@ -63,7 +63,7 @@ import {MaterialFactory} from "./util/materialFactory";
       this.pointLength = (!this.geometry || this.geometry === Link.LINK_GEOMETRY.LINK)? 2 : (this.geometry === Link.LINK_GEOMETRY.PATH)? 67 : state.edgeResolution;
       if (this.stroke === Link.EDGE_STROKE.DASHED) {
           geometry.vertices = new Array(this.pointLength);
-          for (let i = 0; i < this.pointLength; i++ ){ geometry.vertices[i] = GeometryFactory.createVector3(0, 0, 0); }
+          for (let i = 0; i < this.pointLength; i++ ){ geometry.vertices[i] = GeometryFactory.instance().createVector3(0, 0, 0); }
       } else {
           //Buffered geometry
           if (this.stroke !== Link.EDGE_STROKE.THICK){
@@ -73,7 +73,7 @@ import {MaterialFactory} from "./util/materialFactory";
 
       if (this.directed){
           let dir    = direction(this.source, this.target);
-          let arrow  = GeometryFactory.createArrowHelper(dir.normalize(), extractCoords(this.target),
+          let arrow  = GeometryFactory.instance().createArrowHelper(dir.normalize(), extractCoords(this.target),
               state.arrowLength, material.color.getHex(),
               state.arrowLength, state.arrowLength * 0.75);
           obj.add(arrow);
@@ -117,7 +117,7 @@ import {MaterialFactory} from "./util/materialFactory";
 };
 
 Link.prototype.getCurve = function(start, end){
-  let curve = GeometryFactory.createLine3(start, end);
+  let curve = GeometryFactory.instance().createLine3(start, end);
   switch (this.geometry) {
       case Link.LINK_GEOMETRY.SEMICIRCLE:
           curve = semicircleCurve(start, end);
@@ -130,7 +130,7 @@ Link.prototype.getCurve = function(start, end){
           break;
       case Link.LINK_GEOMETRY.PATH:
           if (this.path){
-              curve = GeometryFactory.createCatmullRomCurve3(this.path);
+              curve = GeometryFactory.instance().createCatmullRomCurve3(this.path);
           }
           break;
       case Link.LINK_GEOMETRY.SPLINE:
@@ -138,11 +138,11 @@ Link.prototype.getCurve = function(start, end){
           let next = this.next ? direction(this.next.center, end).multiplyScalar(2) : null;
           if (prev) {
               curve = next
-                  ? GeometryFactory.createCubicBezierCurve3(start, start.clone().add(prev), end.clone().add(next), end)
-                  : GeometryFactory.createQuadraticBezierCurve3(start, start.clone().add(prev), end);
+                  ? GeometryFactory.instance().createCubicBezierCurve3(start, start.clone().add(prev), end.clone().add(next), end)
+                  : GeometryFactory.instance().createQuadraticBezierCurve3(start, start.clone().add(prev), end);
           } else {
               if (next) {
-                  curve = new GeometryFactory.createQuadraticBezierCurve3(start, end.clone().add(next), end);
+                  curve = GeometryFactory.instance().createQuadraticBezierCurve3(start, end.clone().add(next), end);
               }
           }
   }
@@ -164,7 +164,7 @@ Link.prototype.updateViewObjects = function(state) {
   this.points = curve.getPoints? curve.getPoints(this.pointLength): [start, end];
 
   if (this.geometry === Link.LINK_GEOMETRY.ARC){
-      this.points = this.points.map(p => GeometryFactory.createVector3(p.x, p.y, 0));
+      this.points = this.points.map(p => GeometryFactory.instance().createVector3(p.x, p.y, 0));
   }
 
   //Merge nodes of a collapsible link

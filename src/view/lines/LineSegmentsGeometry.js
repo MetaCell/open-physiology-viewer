@@ -180,7 +180,7 @@ THREE.LineSegmentsGeometry.prototype = Object.assign( Object.create( THREE.Insta
 
 	computeBoundingSphere: function () {
 
-		let vector = GeometryFactory.createVector3();
+		let vector = GeometryFactory.instance().createVector3();
 
 		return function computeBoundingSphere() {
 

@@ -1,9 +1,10 @@
 // import '../lines/LineSegments2'
 // import '../lines/Line2'
 // import '../lines/LineGeometry'  
+import { geometry_THREE } from './geometry_THREE'
 
   export const geometryEngine = {
-    THREE: 'THREE'
+    renderer: 'THREE'
   }
 
   export const geometryEngineK = {
@@ -12,196 +13,131 @@
     BUFFER_ATTRIBUTE_LENGTH : 3
   }
 
-  export class GeometryFactory {
-    static createArrowHelper(normalize, targetCoords, arrowLength, colorHex, engine = geometryEngine.THREE) { 
-      if( engine == geometryEngine.THREE )
-      {
-        return THREE.ArrowHelper(normalize
-        , targetCoords
-        , arrowLength
-        , colorHex
-        , arrowLength
-        , arrowLength * 0.75);
-      }
-    }
-    static createCatmullRomCurve3(path, engine = geometryEngine.THREE) { 
-      if( engine == geometryEngine.THREE )
-      {
-        return THREE.CatmullRomCurve3(path);
-      }
-    }
-    static createCubicBezierCurve3(start, p0, p1, end, engine = geometryEngine.THREE ) { 
-      if( path == geometryEngine.THREE )
-      {
-        return THREE.CubicBezierCurve3(start
-          , p0
-          , p1
-          , end);
-      }
-    }
-    static createCurvePath(paths, engine = geometryEngine.THREE ) { 
-      if( path == geometryEngine.THREE )
-      {
-        let path = THREE.CurvePath()
-        params.paths.forEach((p)=>{
-          path.add(p);
-        });
-        return path;
-      }
-    }
-    static createCylinderGeometry(thickness, a, height, engine = geometryEngine.THREE) { 
-      if( engine == geometryEngine.THREE )
-      {
-        return new THREE.CylinderGeometry(thickness
-          , thickness
-          , a * height
-          , geometryEngineK.CYLINDER_TA_END
-          , geometryEngineK.CYLINDER_TA_END)
-      }
-    }
-    static createEllipseCurve(aX, aY, xRadius, yRadius, aStartAngle, aEndAngle, aClockwise, aRotation, engine = geometryEngine.THREE ) { 
-      if( engine == geometryEngine.THREE )
-      {
-        return new THREE.EllipseCurve(
-          aX, aY,
-          xRadius, yRadius,
-          aStartAngle, aEndAngle,  // aStartAngle, aEndAngle
-          aClockwise,               // aClockwise
-          aRotation // aRotation
-        );
-      }
-    }
-    static createLineCurve3(p0, p1, engine = geometryEngine.THREE ) {
-      if ( engine == geometryEngine.THREE )
-      {
-        return new THREE.LineCurve3(p0, p1);
-      }
-    }
-    static createLine2(geometry, material, engine = geometryEngine.THREE ) { 
-      if ( engine == geometryEngine.THREE )
-      {
-        return new THREE.Line2(geometry, material);
-      }
-    }
-    static createLine3(start, end, engine = geometryEngine.THREE) { 
-      if ( engine == geometryEngine.THREE )
-      {
-        return new THREE.Line3(start, end);
-      }
-    }
-    static createLineGeometry(params = {}, engine = geometryEngine.THREE) { 
-      if ( engine == geometryEngine.THREE )
-      {
-        return new THREE.LineGeometry(params);
-      }
-    }
-    static createLineBasicMaterial(params = {}, engine = geometryEngine.THREE) { 
-      if(engine == geometryEngine.THREE)
-      {
-        return new THREE.LineBasicMaterial(params);
-      }
-    }
-    static createLineMaterial(params = {}, engine = geometryEngine.THREE) { 
-      if(engine == geometryEngine.THREE)
-      {
-        return new THREE.LineMaterial(params);
-      }
-    }
-    static createLineSegments2(params = {}, engine = geometryEngine.THREE) { 
-      if(engine == geometryEngine.THREE)
-      {
-        return new THREE.LineSegments2(params);
-      }
-    }
-    static createMesh(geometry, material, engine = geometryEngine.THREE) { 
-      if(engine == geometryEngine.THREE)
-      {
-        return new THREE.Mesh(geometry, material)
-      }
-    }
-    static createMeshBasicMaterial(params = {}, engine = geometryEngine.THREE) { 
-      if(engine == geometryEngine.THREE)
-      {
-        return new THREE.MeshBasicMaterial(params);
-      }
-    }
-    static createQuadraticBezierCurve(start, control, end, engine = geometryEngine.THREE ) {
-      if(engine == geometryEngine.THREE)
-      {
-        return new THREE.QuadraticBezierCurve(start, control, end);
-      }
-    }
-    static createQuadraticBezierCurve3(start, control, end, engine = geometryEngine.THREE ) { 
-      if(engine == geometryEngine.THREE )
-      {
-        return new THREE.QuadraticBezierCurve3(start
-                                              ,control
-                                              ,end)
-      }
-    }
-    static createShape(pieces, engine = geometryEngine.THREE ) { 
-      if( engine == geometryEngine.THREE)
-      {
-        return new THREE.Shape(pieces);
-      }
-    }
-    static createSphereGeometry(verticeRelSize, verticeResolution, engine = geometryEngine.THREE) {
-      if( engine == geometryEngine.THREE)
-      { 
-        return new THREE.SphereGeometry(verticeRelSize,
-                                        verticeResolution,
-                                        verticeResolution);
-      }
-    }
-    static createVector2(x, y, engine = geometryEngine.THREE) { 
-      if( engine == geometryEngine.THREE)
-      {
-        return new THREE.Vector2(x, y);
-      }
-    }
-    static createVector3(x, y, z, engine = geometryEngine.THREE) { 
-      if( engine == geometryEngine.THREE)
-      {
-        return new THREE.Vector3(x, y, z);
-      }
-    }
-    static createBufferAttribute(pointLength, engine = geometryEngine.THREE) {
-      if( engine == geometryEngine.THREE)
-      {
-        return new THREE.BufferAttribute(new Float32Array(pointLength * geometryEngineK.BUFFER_ATTRIBUTE_LENGTH)
-                                                          , geometryEngineK.BUFFER_ATTRIBUTE_LENGTH)
-      }
-    }
-    static createBufferGeometry(engine = geometryEngine.THREE) { 
-      if( engine == geometryEngine.THREE)
-      {
-        return new THREE.BufferGeometry();
-      }
-    }
-    static createGeometry(engine = geometryEngine.THREE) { 
-      if( engine == geometryEngine.THREE)
-      {
-        return new THREE.Geometry();
-      }
-    }
+class GeometryFactorySingleton {
+  renderer = null ;
 
-    static createLineDashedMaterial(params = {}, engine = geometryEngine.THREE) { 
-      if(engine == geometryEngine.THREE)
-      {
-        return new THREE.LineDashedMaterial(params);
-      }
-    }
-
-    static createMeshBasicMaterial(params = {}, engine = geometryEngine.THREE) { 
-      if(engine == geometryEngine.THREE)
-      {
-        return new THREE.MeshBasicMaterial(params);
-      }
-    }
-    static createMeshLambertMaterial(params = {}, engine = geometryEngine.THREE) { 
-      if(engine == geometryEngine.THREE)
-      {
-        return new THREE.MeshLambertMaterial(params);
-      }
+  constructor(engineType = geometryEngine.THREE ) {
+    if (this.renderer == null) {
+      if (engineType == geometryEngine.THREE)
+        this.renderer = geometry_THREE ;
     }
   }
+  
+  engine() {
+    return this.renderer;
+  }
+  
+  createArrowHelper(normalize, targetCoords, arrowLength, colorHex) { 
+      return this.renderer.createArrowHelper(normalize
+      , targetCoords
+      , arrowLength
+      , colorHex
+      , arrowLength
+      , arrowLength * 0.75);
+  }
+  createCatmullRomCurve3(path) { 
+    return this.renderer.createCatmullRomCurve3(path);
+  }
+  createCubicBezierCurve3(start, p0, p1, end ) { 
+    return this.renderer.createCubicBezierCurve3(start
+      , p0
+      , p1
+      , end);
+  }
+  createCurvePath(paths ) { 
+    let path = this.renderer.createCurvePath()
+    params.paths.forEach((p)=>{
+      path.add(p);
+    });
+    return path;
+  }
+  createCylinderGeometry(thickness, a, height) { 
+    return this.renderer.createCylinderGeometry(thickness
+      , thickness
+      , a * height
+      , geometryEngineK.CYLINDER_TA_END
+      , geometryEngineK.CYLINDER_TA_END)
+  }
+  createEllipseCurve(aX, aY, xRadius, yRadius, aStartAngle, aEndAngle, aClockwise, aRotation ) { 
+    return this.renderer.createEllipseCurve(
+      aX, aY,
+      xRadius, yRadius,
+      aStartAngle, aEndAngle,  // aStartAngle, aEndAngle
+      aClockwise,               // aClockwise
+      aRotation // aRotation
+    );
+  }
+  createLineCurve3(p0, p1 ) {
+    return this.renderer.createLineCurve3(p0, p1);
+  }
+  createLine2(geometry, material ) { 
+    return this.renderer.createLine2(geometry, material);
+  }
+  createLine3(start, end) { 
+    return this.renderer.createLine3(start, end);
+  }
+  createLineGeometry(params = {}) { 
+    return this.renderer.createLineGeometry(params);
+  }
+  createLineBasicMaterial(params = {}) { 
+    return this.renderer.createLineBasicMaterial(params);
+  }
+  createLineMaterial(params = {}) { 
+    return this.renderer.createLineMaterial(params);
+  }
+  createLineSegments2(params = {}) { 
+    return this.renderer.createLineSegments2(params);
+  }
+  createMesh(geometry, material) { 
+    return this.renderer.createMesh(geometry, material)
+  }
+  createMeshBasicMaterial(params = {}) { 
+    return this.renderer.createMeshBasicMaterial(params);
+  }
+  createQuadraticBezierCurve(start, control, end ) {
+    return this.renderer.createQuadraticBezierCurve(start, control, end);
+  }
+  createQuadraticBezierCurve3(start, control, end ) { 
+      return this.renderer.createQuadraticBezierCurve3(start
+                                            ,control
+                                            ,end)
+  }
+  createShape(pieces ) { 
+      return this.renderer.createShape(pieces);
+  }
+  createSphereGeometry(verticeRelSize, verticeResolution) {
+    return this.renderer.createSphereGeometry(verticeRelSize,
+                                    verticeResolution,
+                                    verticeResolution);
+  }
+  createVector2(x, y) { 
+    return this.renderer.createVector2(x, y);
+  }
+  createVector3(x, y, z) { 
+    return this.renderer.createVector3(x, y, z);
+  }
+  createBufferAttribute(pointLength) {
+    return this.renderer.createBufferAttribute(new Float32Array(pointLength * geometryEngineK.BUFFER_ATTRIBUTE_LENGTH)
+                                                      , geometryEngineK.BUFFER_ATTRIBUTE_LENGTH)
+  }
+  createBufferGeometry() { 
+      return this.renderer.createBufferGeometry();
+  }
+  createGeometry() { 
+    return this.renderer.createGeometry();
+  }
+  createLineDashedMaterial(params = {}) { 
+    return this.renderer.createLineDashedMaterial(params);
+  }
+  createMeshBasicMaterial(params = {}) { 
+    return this.renderer.createMeshBasicMaterial(params);
+  }
+  createMeshLambertMaterial(params = {}) { 
+    return this.renderer.createMeshLambertMaterial(params);
+  }
+}
+
+export class GeometryFactory {
+  static _instance = new GeometryFactorySingleton();
+  static instance() { return this._instance; }
+}

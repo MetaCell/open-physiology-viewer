@@ -28,13 +28,13 @@ export class MaterialFactory {
         let p       = defaultParams::clone()::merge(params);
         p.color     = colorStr2Hex(p.color);
         p.lineWidth = p.lineWidth || 0.003;
-        return GeometryFactory.createLineMaterial(p);
+        return GeometryFactory.instance().createLineMaterial(p);
     }
 
     static createLineBasicMaterial(params = {}) {
         let p       = defaultParams::clone()::merge(params);
         p.color     = colorStr2Hex(p.color);
-        return GeometryFactory.createLineBasicMaterial(p);
+        return GeometryFactory.instance().createLineBasicMaterial(p);
     }
 
     static createLineDashedMaterial(params = {}) {
@@ -43,19 +43,19 @@ export class MaterialFactory {
         p.scale    = p.scale    || 1;
         p.gapSize  = p.gapSize  || 2;
         p.dashSize = p.dashSize || 3;
-        return new GeometryFactory.createLineDashedMaterial(p);
+        return GeometryFactory.instance().createLineDashedMaterial(p);
     }
 
     static createMeshBasicMaterial(params = {}){
         let p   = defaultParams::clone()::merge(params);
         p.color = colorStr2Hex(p.color);
-        return new GeometryFactory.createMeshBasicMaterial(p);
+        return GeometryFactory.instance().createMeshBasicMaterial(p);
     }
 
     static createMeshLambertMaterial(params = {}){
         let p   = defaultParams::clone()::merge(params);
         p.color = colorStr2Hex(p.color);
-        return new GeometryFactory.createMeshLambertMaterial(p);
+        return GeometryFactory.instance().createMeshLambertMaterial(p);
     }
 }
 

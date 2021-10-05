@@ -12,13 +12,13 @@ import { GeometryFactory } from './util/geometryFactory'
   VisualResource.prototype.createViewObjects.call(this, state);
   if (this.invisible){ return; }
   if (!this.viewObjects["main"]) {
-      let geometry = GeometryFactory.createSphereGeometry(this.val * state.verticeRelSize,
+      let geometry = GeometryFactory.instance().createSphereGeometry(this.val * state.verticeRelSize,
           state.verticeResolution, state.verticeResolution);
       let material = MaterialFactory.createMeshLambertMaterial({
           color: this.color,
           polygonOffsetFactor: this.polygonOffsetFactor
       });
-      let obj = GeometryFactory.createMesh(geometry, material);
+      let obj = GeometryFactory.instance().createMesh(geometry, material);
       // Attach vertice data
       obj.userData = this;
       this.viewObjects["main"] = obj;

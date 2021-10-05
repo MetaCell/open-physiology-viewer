@@ -51,12 +51,12 @@ Object.defineProperty(Wire.prototype, "polygonOffsetFactor", {
       if (this.geometry === Wire.WIRE_GEOMETRY.INVISIBLE)  { return; }
       let geometry, obj;
       if (this.stroke === Link.EDGE_STROKE.THICK) {
-          geometry = new GeometryFactory.createLineGeometry();
-          obj = new GeometryFactory.createLine2(geometry, material);
+          geometry = GeometryFactory.instance().createLineGeometry();
+          obj = GeometryFactory.instance().createLine2(geometry, material);
       } else {
           //Thick lines
           if (this.stroke === Link.EDGE_STROKE.DASHED) {
-              geometry = GeometryFactory.createGeometry();
+              geometry = GeometryFactory.instance().createGeometry();
           } else {
               geometry = new THREE.BufferGeometry();
           }
@@ -66,7 +66,7 @@ Object.defineProperty(Wire.prototype, "polygonOffsetFactor", {
       this.pointLength = (!this.geometry || this.geometry === Wire.WIRE_GEOMETRY.LINK)? 2 : state.edgeResolution;
       if (this.stroke === Link.EDGE_STROKE.DASHED) {
           geometry.vertices = new Array(this.pointLength);
-          for (let i = 0; i < this.pointLength; i++ ){ geometry.vertices[i] = GeometryFactory.createVector3(0, 0, 0); }
+          for (let i = 0; i < this.pointLength; i++ ){ geometry.vertices[i] = GeometryFactory.instance().createVector3(0, 0, 0); }
       } else {
           //Buffered geometry
           if (this.stroke !== Link.EDGE_STROKE.THICK){
@@ -82,14 +82,14 @@ Object.defineProperty(Wire.prototype, "polygonOffsetFactor", {
 };
 
 Wire.prototype.getCurve = function(start, end){
-  let curve = GeometryFactory.createLine3(start, end);
+  let curve = GeometryFactory.instance().createLine3(start, end);
   switch (this.geometry) {
       case Wire.WIRE_GEOMETRY.ARC:
           curve = arcCurve(start, end, extractCoords(this.arcCenter));
           break;
       case Wire.WIRE_GEOMETRY.SPLINE:
           const control = this.controlPoint? extractCoords(this.controlPoint): getDefaultControlPoint(start, end);
-          curve = GeometryFactory.createQuadraticBezierCurve3(start, control, end);
+          curve = GeometryFactory.instance().createQuadraticBezierCurve3(start, control, end);
   }
   return curve;
 };
@@ -122,13 +122,13 @@ Wire.prototype.updateViewObjects = function(state) {
   this.points = curve.getPoints? curve.getPoints(this.pointLength): [start, end];
 
   if (this.geometry === Link.LINK_GEOMETRY.ARC){
-      this.points = this.points.map(p => GeometryFactory.createVector3(p.x, p.y, 0));
+      this.points = this.points.map(p => GeometryFactory.instance().createVector3(p.x, p.y, 0));
   }
 
   (this.hostedAnchors||[]).forEach((anchor, i) => {
       let d_i = anchor.offset? anchor.offset: 1. / (this.hostedAnchors.length + 1) * (i + 1);
       let pos = getPoint(curve, start, end, d_i);
-      pos = GeometryFactory.createVector3(pos.x, pos.y, 0); //Arc wires are rendered in 2d
+      pos = GeometryFactory.instance().createVector3(pos.x, pos.y, 0); //Arc wires are rendered in 2d
       copyCoords(anchor, pos);
       if (anchor.viewObjects["main"]) {
           copyCoords(anchor.viewObjects["main"].position, anchor);

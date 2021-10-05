@@ -70,7 +70,7 @@ Region.prototype.updatePoints = function(edgeResolution){
           }
       });
   }
-  this.points = this.points.map(p => GeometryFactory.createVector3(p.x, p.y,0));
+  this.points = this.points.map(p => GeometryFactory.instance().createVector3(p.x, p.y,0));
   this.center = getCenterOfMass(this.points);
 }
 
@@ -82,7 +82,7 @@ Region.prototype.createViewObjects = function(state) {
   Shape.prototype.createViewObjects.call(this, state);
   if (!this.viewObjects["main"]) {
       this.updatePoints(state.edgeResolution);
-      let shape = new THREE.Shape(this.points.map(p => GeometryFactory.createVector2(p.x, p.y))); //Expects Vector2
+      let shape = new THREE.Shape(this.points.map(p => GeometryFactory.instance().createVector2(p.x, p.y))); //Expects Vector2
       let obj = createMeshWithBorder(shape, {
               color: this.color,
               polygonOffsetFactor: this.polygonOffsetFactor
@@ -146,7 +146,7 @@ Region.prototype.resize = function (anchor, delta, epsilon = 5) {
       (anchor.sourceOf||[]).forEach(wire => relocateAdjacent(wire, "target"));
       (anchor.targetOf||[]).forEach(wire => relocateAdjacent(wire, "source"));
       const anchors = [...relocate];
-      let _delta = GeometryFactory.createVector3(0, 0, 0);
+      let _delta = GeometryFactory.instance().createVector3(0, 0, 0);
       _delta[dim] = delta[dim];
       anchors.forEach(anchor => anchor.relocate(_delta, false));
   });

@@ -22,7 +22,7 @@ THREE.Line2 = function ( geometry, material ) {
 
 	this.type = 'Line2';
 
-	this.geometry = geometry !== undefined ? geometry : new GeometryFactory.createLineGeometry();
+	this.geometry = geometry !== undefined ? geometry : GeometryFactory.instance().createLineGeometry();
 
 	this.material = material !== undefined ? material : new THREE.LineMaterial( { color: Math.random() * 0xffffff } );
 
@@ -64,10 +64,10 @@ THREE.Line2.prototype = Object.assign( Object.create( THREE.LineSegments2.protot
 			inverseMatrix.getInverse( matrixWorld );
 			ray.copy( raycaster.ray ).applyMatrix4( inverseMatrix );
 
-			let vStart = GeometryFactory.createVector3();
-			let vEnd   = GeometryFactory.createVector3();
-			let interSegment = GeometryFactory.createVector3();
-			let interRay = GeometryFactory.createVector3();
+			let vStart = GeometryFactory.instance().createVector3();
+			let vEnd   = GeometryFactory.instance().createVector3();
+			let interSegment = GeometryFactory.instance().createVector3();
+			let interRay = GeometryFactory.instance().createVector3();
 			let step = (this && this.isLineSegments) ? 2 : 1;
 
 			if ( geometry.isBufferGeometry ) {

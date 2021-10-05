@@ -78,7 +78,7 @@ Border.prototype.updateViewObjects = function(state){
       //TODO make projection if hosting layer is not on xy plane
 
       avgZ = avgZ / (this.host.points||[]).length;
-      let p = [GeometryFactory.createVector3(maxX, minY, 1), GeometryFactory.createVector3(minX, minY, 1), GeometryFactory.createVector3(minX, maxY, 1)];
+      let p = [GeometryFactory.instance().createVector3(maxX, minY, 1), GeometryFactory.instance().createVector3(minX, minY, 1), GeometryFactory.instance().createVector3(minX, maxY, 1)];
 
       let isReversed = link.reversed || isInRange(90, 270, link.conveyingLyph.angle);
       let numRows = Math.ceil(length / numCols);
@@ -120,8 +120,8 @@ Border.prototype.updateViewObjects = function(state){
       let [min, max] = this.getBoundingBox();
       let dX = max.x - min.x; let dY = max.y - min.y;
       let r  = Math.min(dX, dY) / 4;
-      let offset = GeometryFactory.createVector3( r, 0, 0 );
-      let axis   = GeometryFactory.createVector3( 0, 0, 1);
+      let offset = GeometryFactory.instance().createVector3( r, 0, 0 );
+      let axis   = GeometryFactory.instance().createVector3( 0, 0, 1);
       let angle  = 4 * Math.PI * i / n;
       offset.applyAxisAngle( axis, angle );
       let pos = center.clone().add(offset);
