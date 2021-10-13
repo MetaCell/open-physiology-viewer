@@ -371,6 +371,31 @@ export class TestApp {
         }
     }
 
+    removeDisconnectedObjects(graph, joinModel) {
+      let connected = [];
+      let graphObjects = [];
+      //join model connections
+      connected = [ ...connected, ...joinModel.chains.map((c)=> { return c.root }) ]
+      connected = [ ...connected, ...joinModel.chains.map((c)=> { return c.leaf }) ]
+      connected = [ ...connected, ...joinModel.chains.map((c)=> { return c.wiredTo }) ]
+      connected = [ ...connected, ...joinModel.links.map((c)=> { return c.source }) ]
+      connected = [ ...connected, ...joinModel.links.map((c)=> { return c.target }) ]
+      //graph model object ids
+      graphObjects = [ ...graphObjects, ...graph.regions.map((c)=> { return c.id }) ]
+      graphObjects = [ ...graphObjects,...graph.wires.map((c)=> { return c.id }) ]
+      //filter out disconnected
+      connected    = [...new Set(connected)];
+      graphObjects = [...new Set(graphObjects)];  
+
+      graph = Object.assign(graph, { regions: graph.regions.filter((r) => {
+          return connected.indexOf(r.id) > -1 ;
+        })
+        , wires: graph.wires.filter((r) => {
+          return connected.indexOf(r.id) > -1 ;
+        })
+      });
+    }
+
     applyScaffold(modelA, modelB){
         const applyScaffold = (model, scaffold) => {
             model.scaffolds = model.scaffolds || [];
@@ -395,7 +420,9 @@ export class TestApp {
         }
         if (isScaffold(this._model) !== isScaffold(newModel)){
             this.applyScaffold(this._model, newModel);
+            this._model = this.removeDisconnectedObjects(this._model, newModel);
         } else {
+          this._model = this.removeDisconnectedObjects(this._model, newModel);
             let jointModel = joinModels(this._model, newModel, this._flattenGroups);
             jointModel.config::merge({[$Field.created]: this.currentDate, [$Field.lastUpdated]: this.currentDate});
             this.model = jointModel;

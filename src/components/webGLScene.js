@@ -531,7 +531,8 @@ export class WebGLSceneComponent {
 
     getMouseOverEntity() {
         if (!this.graph) { return; }
-        this.ray.setFromCamera( this.mouse, this.camera );
+        const _3dmouse = { ...this.mouse, z : 0.5 }
+        this.ray.setFromCamera( _3dmouse, this.camera );
 
         const selectLayer = (entity) => {
             //Refine selection to layers
