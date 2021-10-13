@@ -371,27 +371,19 @@ export class TestApp {
         }
     }
 
-    removeDisconnectedObjects(graph, joinModel) {
-      let connected = [];
-      let graphObjects = [];
-      //join model connections
-      connected = [ ...connected, ...joinModel.chains.map((c)=> { return c.root }) ]
-      connected = [ ...connected, ...joinModel.chains.map((c)=> { return c.leaf }) ]
-      connected = [ ...connected, ...joinModel.chains.map((c)=> { return c.wiredTo }) ]
-      connected = [ ...connected, ...joinModel.links.map((c)=> { return c.source }) ]
-      connected = [ ...connected, ...joinModel.links.map((c)=> { return c.target }) ]
-      //graph model object ids
-      graphObjects = [ ...graphObjects, ...graph.regions.map((c)=> { return c.id }) ]
-      graphObjects = [ ...graphObjects,...graph.wires.map((c)=> { return c.id }) ]
-      //filter out disconnected
-      connected    = [...new Set(connected)];
-      graphObjects = [...new Set(graphObjects)];  
+    removeDisconnectedObjects(model, joinModel) {
+      let connected = joinModel.chains.map((c)=> { return c.wiredTo }).filter((c) => { return c !== undefined });      
+      connected = [ ...connected, ... model.anchors.map((c)=> { return c.hostedBy }).filter((c) => { return c !== undefined }) ];
 
-      graph = Object.assign(graph, { regions: graph.regions.filter((r) => {
-          return connected.indexOf(r.id) > -1 ;
+      const hostedBy = joinModel.chains.filter((l) => { return l.hostedBy != undefined } ).map((f) => { return f.hostedBy });
+
+      return Object.assign(model, 
+        { 
+          regions: model.regions.filter((r) => {
+          return ( connected.indexOf(r.id) > -1 || hostedBy.indexOf(r.id) > -1 ) ;
         })
-        , wires: graph.wires.filter((r) => {
-          return connected.indexOf(r.id) > -1 ;
+        , wires: model.wires.filter((r) => {
+          return ( connected.indexOf(r.id) > -1 || hostedBy.indexOf(r.id) > -1 );
         })
       });
     }
@@ -419,14 +411,14 @@ export class TestApp {
             throw new Error("Cannot join models with the same identifiers: " + this._model.id);
         }
         if (isScaffold(this._model) !== isScaffold(newModel)){
-            this.applyScaffold(this._model, newModel);
-            this._model = this.removeDisconnectedObjects(this._model, newModel);
+          this.model = this.removeDisconnectedObjects(this._model, newModel);
+          this.applyScaffold(this._model, newModel);         
         } else {
-          this._model = this.removeDisconnectedObjects(this._model, newModel);
-            let jointModel = joinModels(this._model, newModel, this._flattenGroups);
-            jointModel.config::merge({[$Field.created]: this.currentDate, [$Field.lastUpdated]: this.currentDate});
-            this.model = jointModel;
-            this._flattenGroups = true;
+          this.model = this.removeDisconnectedObjects(this._model, newModel);
+          let jointModel = joinModels(this._model, newModel, this._flattenGroups);
+          jointModel.config::merge({[$Field.created]: this.currentDate, [$Field.lastUpdated]: this.currentDate});
+          this.model = jointModel;
+          this._flattenGroups = true;
         }
     }
 
