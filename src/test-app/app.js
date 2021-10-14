@@ -372,39 +372,42 @@ export class TestApp {
     }
 
     removeDisconnectedObjects(model, joinModel) {
-      let connected = joinModel.chains.map((c)=> { return c.wiredTo }).filter((c) => { return c !== undefined });      
-      connected = [ ...connected, ... model.anchors.map((c)=> { return c.hostedBy }).filter((c) => { return c !== undefined }) ];
 
-      const hostedBy = joinModel.chains.filter((l) => { return l.hostedBy != undefined } ).map((f) => { return f.hostedBy });
+      let connected = joinModel.chains
+                      .map((c) => c.wiredTo)
+                      .concat(model.anchors
+                      .map((c) => c.hostedBy))
+                      .concat(joinModel.chains
+                      .map((c) => c.hostedBy))
+                      .filter((c) => c !== undefined); 
+                      
 
       return Object.assign(model, 
         { 
-          regions: model.regions.filter((r) => {
-          return ( connected.indexOf(r.id) > -1 || hostedBy.indexOf(r.id) > -1 ) ;
-        })
-        , wires: model.wires.filter((r) => {
-          return ( connected.indexOf(r.id) > -1 || hostedBy.indexOf(r.id) > -1 );
-        })
-      });
+          regions: model.regions.filter((r) => connected.indexOf(r.id) > -1 )
+        , wires: model.wires.filter((r) => connected.indexOf(r.id) > -1 )
+        }
+      );
+
     }
 
     applyScaffold(modelA, modelB){
-        const applyScaffold = (model, scaffold) => {
-            model.scaffolds = model.scaffolds || [];
-            if (!model.scaffolds.find(s => s.id === scaffold.id)){
-                model.scaffolds.push(scaffold);
-            } else {
-                throw new Error("Scaffold with such identifier is already attached to the model!");
-            }
-            this.model = model;
-        };
+      const applyScaffold = (model, scaffold) => {
+          model.scaffolds = model.scaffolds || [];
+          if (!model.scaffolds.find(s => s.id === scaffold.id)){
+              model.scaffolds.push(scaffold);
+          } else {
+              throw new Error("Scaffold with such identifier is already attached to the model!");
+          }
+          this.model = model;
+      };
 
-        if (isScaffold(modelA)){
-            applyScaffold(modelB, modelA);
-        } else {
-            applyScaffold(modelA, modelB);
-        }
-    }
+      if (isScaffold(modelA)){
+          applyScaffold(modelB, modelA);
+      } else {
+          applyScaffold(modelA, modelB);
+      }
+  } 
 
     join(newModel) {
         if (this._model.id === newModel.id){
