@@ -539,12 +539,10 @@ export class WebGLSceneComponent {
     getMouseOverEntity() {
         if (!this.graph) { return; }
         this.ray.setFromCamera( this.mouse, this.camera );
+        this.unhighlight(this.getMeshes());
         let intersects = this.ray.intersectObjects(this.graph.children).filter((o) => { return o.object.type == 'Mesh' });
         if (intersects.length > 0) {
             this.highlight(intersects[0], this.highlightColor)
-        }
-        else {
-          this.unhighlight(this.getMeshes());
         }
     }
 
