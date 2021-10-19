@@ -458,6 +458,10 @@ export class WebGLSceneComponent {
         this._helperKeys = this.helpers::keys();
     }
 
+    getMeshes() {
+      return this.scene.children[this.scene.children.length-1].children.filter((o) => { return o.type == 'Mesh' });
+    }
+
     createGraph() {
         this.graph = new ThreeForceGraph()
             .canvas(this.canvas.nativeElement)
@@ -476,6 +480,9 @@ export class WebGLSceneComponent {
                 obj.userData.relocate(delta);
                 this.graph.graphData(this.graphData);
                 this.scaffoldUpdated.emit(obj);
+            })
+            .onFinishLoading(() => {
+              this.parseDefaultColors(this.getMeshes());
             })
             .graphData(this.graphData);
 
@@ -532,24 +539,12 @@ export class WebGLSceneComponent {
     getMouseOverEntity() {
         if (!this.graph) { return; }
         this.ray.setFromCamera( this.mouse, this.camera );
-
-        const selectLayer = (entity) => {
-            //Refine selection to layers
-            if (entity && entity.layers && this.config.layout["showLayers"]) {
-                let layerMeshes = entity.layers.map(layer => layer.viewObjects["main"]);
-                let layerIntersects = this.ray.intersectObjects(layerMeshes);
-                if (layerIntersects.length > 0) {
-                    return selectLayer(layerIntersects[0].object.userData);
-                }
-            }
-            return entity;
-        };
-
-        let intersects = this.ray.intersectObjects(this.graph.children);
+        let intersects = this.ray.intersectObjects(this.graph.children).filter((o) => { return o.object.type == 'Mesh' });
         if (intersects.length > 0) {
-            let entity = intersects[0].object.userData;
-            if (!entity || entity.inactive) { return; }
-            return selectLayer(entity);
+            this.highlight(intersects[0], this.highlightColor)
+        }
+        else {
+          this.unhighlight(this.getMeshes());
         }
     }
 
@@ -558,46 +553,40 @@ export class WebGLSceneComponent {
     }
 
     get selected(){
-        return this._selected;
+        return this._selected;  
     }
 
-    highlight(entity, color, rememberColor = true){
-        if (!entity || !entity.viewObjects) { return; }
-        let obj = entity.viewObjects["main"];
-        if (obj && obj.material) {
-            // store color of closest object (for later restoration)
-            if (rememberColor){
-                obj.currentHex = obj.material.color.getHex();
-                (obj.children || []).forEach(child => {
-                    if (child.material) {
-                        child.currentHex = child.material.color.getHex();
-                    }
-                });
-            }
-
-            // set a new color for closest object
-            obj.material.color.setHex(color);
-            (obj.children || []).forEach(child => {
-                if (child.material) {
-                    child.material.color.setHex(color);
-                }
-            });
-        }
+    highlight(entity, highlightColor){
+      if (entity?.object)
+      {
+        const obj = entity.object ;
+        obj.material.color.setHex(highlightColor);
+        obj.children?.forEach((child) =>{
+          this.highlight(child, highlightColor)
+        });
+      }
     }
 
-    unhighlight(entity){
-        if (!entity || !entity.viewObjects) { return; }
-        let obj = entity.viewObjects["main"];
-        if (obj){
-            if (obj.material){
-                obj.material.color.setHex( obj.currentHex || this.defaultColor);
-            }
-            (obj.children || []).forEach(child => {
-                if (child.material) {
-                    child.material.color.setHex(child.currentHex || this.defaultColor);
-                }
-            })
-        }
+    unhighlight(entities){
+      entities.forEach((obj) => {
+        obj.material.color.setHex( obj.defaultHex || this.defaultColor );
+        if (obj.children)
+          this.unhighlight(obj.children);
+      })
+    }
+
+    parseDefaultColors(entities) {
+      entities.forEach((e)=> {
+        this.parseDefaultColorsLeaf(e, null);
+      }) 
+    }
+
+    parseDefaultColorsLeaf(e, forceColor) {
+      const currentColor = e.material?.color.getHex() ;
+      e.defaultHex = currentColor || forceColor ;
+      e.children.forEach((c) => {
+        this.parseDefaultColorsLeaf(c, currentColor);
+      });
     }
 
     selectByName(name) {
