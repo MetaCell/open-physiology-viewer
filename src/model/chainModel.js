@@ -498,7 +498,7 @@ export class Chain extends GroupTemplate {
         let minWidth = MAX_WIDTH;
         (this.levels||[]).forEach(lnk => {
             let lyph = lnk.conveyingLyph;
-            if (!lyph){
+            if ( !lyph || !(lyph?.class == 'Lyph')){
                 logger.warn($LogMsg.CHAIN_NO_CONVEYING_LYPH, this.id, lnk.id)
                 return;
             }
