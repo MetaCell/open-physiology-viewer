@@ -21,7 +21,7 @@ export class geometry_THREE {
       , end);
   }
   static createCurvePath(paths ) { 
-    let path = THREE.CurvePath()
+    let path = new THREE.CurvePath()
     params.paths.forEach((p)=>{
       path.add(p);
     });

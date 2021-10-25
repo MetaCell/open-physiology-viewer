@@ -253,7 +253,7 @@ export function rectangleCurve(startV, endV){
     let curvePath = []; //new THREE.CurvePath();
     curvePath.push(GeometryFactory.instance().createLineCurve3(p[0], p[1]));
     curvePath.push(GeometryFactory.instance().createQuadraticBezierCurve3(p[1], p[2], p[3]));
-    curvePath.push(GeometryFactory.instance().createcreateLineCurve3(p[3], p[4]));
+    curvePath.push(GeometryFactory.instance().createLineCurve3(p[3], p[4]));
     curvePath.push(GeometryFactory.instance().createQuadraticBezierCurve3(p[4], p[5], p[6]));
     curvePath.push(GeometryFactory.instance().createLineCurve3(p[6], p[7]));
     let curve = GeometryFactory.instance().curvePath(curvePath);
