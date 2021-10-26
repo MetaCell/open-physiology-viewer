@@ -1,0 +1,276 @@
+{
+    "publications": [
+        {
+            "id": "PMID:29561168",
+            "uri": "https://pubmed.ncbi.nlm.nih.gov/29561168/"
+        },
+        {
+            "id": "PMID:7174880",
+            "uri": "https://pubmed.ncbi.nlm.nih.gov/7174880/"
+        },
+        {
+            "id": "PMID:3722467",
+            "uri": "https://pubmed.ncbi.nlm.nih.gov/3722467/"
+        },
+        {
+            "id": "PMID:12811806",
+            "uri": "https://pubmed.ncbi.nlm.nih.gov/12811806/"
+        }
+    ],
+    "lyphs": [
+        {
+            "id": "K54",
+            "name": "T12 Dorsal Root gangion",
+            "external": [
+                "UBERON:0002855"
+            ],
+            "hostedBy": "n2G"
+        },
+        {
+            "id": "K55",
+            "name": "T13 Dorsal Root gangion",
+            "external": [
+                "EMAPA:25186"
+            ],
+            "hostedBy": "n2G"
+        },
+        {
+            "id": "K56",
+            "name": "L1 Dorsal Root gangion",
+            "external": [
+                "UBERON:0002857"
+            ],
+            "hostedBy": "n2G"
+        },
+        {
+            "id": "K57",
+            "name": "L2 Dorsal Root gangion",
+            "external": [
+                "UBERON:0002856"
+            ],
+            "hostedBy": "n2G"
+        },
+        {
+            "id": "K58",
+            "name": "L3 Dorsal Root gangion",
+            "external": [
+                "UBERON:0002858"
+            ],
+            "hostedBy": "n2G"
+        },
+        {
+            "id": "K59",
+            "name": "L4 Dorsal Root gangion",
+            "external": [
+                "UBERON:0003943"
+            ],
+            "hostedBy": "n2G"
+        },
+        {
+            "id": "K60",
+            "name": "L5 Dorsal Root gangion",
+            "external": [
+                "UBERON:0002859"
+            ],
+            "hostedBy": "n2G"
+        },
+        {
+            "id": "K61",
+            "name": "L6 Dorsal Root gangion",
+            "external": [
+                "EMAPA:25169"
+            ],
+            "hostedBy": "n2G"
+        },
+        {
+            "id": "K62",
+            "name": "S1 Dorsal root ganglion",
+            "external": [
+                "UBERON:0002860"
+            ],
+            "hostedBy": "n2G"
+        },
+        {
+            "id": "K63",
+            "name": "L1 ventral root",
+            "external": [
+                "EMAPA:25269"
+            ],
+            "hostedBy": "n2G"
+        },
+        {
+            "id": "K64",
+            "name": "L2 ventral root",
+            "external": [
+                "EMAPA:25271"
+            ],
+            "hostedBy": "n2G"
+        },
+        {
+            "id": "K65",
+            "name": "L3 ventral root",
+            "external": [
+                "EMAPA:25273"
+            ],
+            "hostedBy": "n2G"
+        },
+        {
+            "id": "K66",
+            "name": "L4 ventral root",
+            "external": [
+                "EMAPA:25275"
+            ],
+            "hostedBy": "n2G"
+        },
+        {
+            "id": "K67",
+            "name": "L5 ventral root",
+            "external": [
+                "EMAPA:25277"
+            ],
+            "hostedBy": "n2G"
+        },
+        {
+            "id": "K68",
+            "name": "L6 ventral root",
+            "external": [
+                "EMAPA:25279"
+            ],
+            "hostedBy": "n2G"
+        },
+        {
+            "id": "K69",
+            "name": "S1 ventral root",
+            "external": [
+                "EMAPA:25281"
+            ],
+            "hostedBy": "n2G"
+        }
+    ],
+    "groups": [],
+    "localConventions": [
+        {
+            "prefix": "UBERON",
+            "namespace": "http://purl.obolibrary.org/obo/UBERON_"
+        },
+        {
+            "prefix": "CHEBI",
+            "namespace": "http://purl.obolibrary.org/obo/CHEBI_"
+        },
+        {
+            "prefix": "FMA",
+            "namespace": "http://purl.org/sig/ont/fma/fma"
+        },
+        {
+            "prefix": "GO",
+            "namespace": "http://purl.obolibrary.org/obo/GO_"
+        },
+        {
+            "prefix": "ILX",
+            "namespace": "http://uri.interlex.org/base/ilx_"
+        },
+        {
+            "prefix": "NLX",
+            "namespace": "http://uri.neuinfo.org/nif/nifstd/nlx_"
+        },
+        {
+            "prefix": "SAO",
+            "namespace": "http://uri.neuinfo.org/nif/nifstd/sao"
+        },
+        {
+            "prefix": "PMID",
+            "namespace": "http://www.ncbi.nlm.nih.gov/pubmed/"
+        },
+        {
+            "prefix": "EMAPA",
+            "namespace": "http://purl.obolibrary.org/obo/EMAPA_"
+        },
+        {
+            "prefix": "CL",
+            "namespace": "http://purl.obolibrary.org/obo/CL_"
+        },
+        {
+            "prefix": "NCBITaxon",
+            "namespace": "http://purl.obolibrary.org/obo/NCBITaxon_"
+        }
+    ],
+    "id": "scaffold-test",
+    "name": "Keast Bladder Model",
+    "namespace": "org.apinatomy.keast-bladder",
+    "scaffolds": [
+        {
+            "created": "2020-12-01",
+            "lastUpdated": "2020-12-01",
+            "id": "too_map",
+            "name": "too_map",
+            "author": "Bernard de Bono, Natallia Kokash",
+            "anchors": [
+                {
+                    "id": "n2GA",
+                    "hostedBy": "wire_n2G_2",
+                    "skipLabel": true
+                },
+                {
+                    "id": "n2GB",
+                    "hostedBy": "wire_n2G_4",
+                    "skipLabel": true
+                }
+            ],
+            "regions": [
+                {
+                    "id": "n2G",
+                    "name": "Infracervical Ganglia",
+                    "points": [
+                        {
+                            "x": -5,
+                            "y": 5
+                        },
+                        {
+                            "x": -80,
+                            "y": 5
+                        },
+                        {
+                            "x": -80,
+                            "y": 30
+                        },
+                        {
+                            "x": -5,
+                            "y": 30
+                        }
+                    ],
+                    "color": "#eeffff",
+                    "internalIn": "n2"
+                }
+            ],
+            "components": [
+                {
+                    "id": "iRegions",
+                    "name": "Inner regions",
+                    "regions": [
+                        "d2S",
+                        "n1A",
+                        "n1P",
+                        "n1T",
+                        "n1H",
+                        "n1G",
+                        "n2G",
+                        "n3A",
+                        "n3M",
+                        "n3L",
+                        "n3U",
+                        "n4O",
+                        "n4R",
+                        "n4V"
+                    ]
+                },
+                {
+                    "id": "g_n2G",
+                    "name": "Infracervical Ganglia (n2G)",
+                    "regions": [
+                        "n2G"
+                    ]
+                }
+            ]
+        }
+    ]
+}

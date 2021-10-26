@@ -26,6 +26,7 @@ module.exports = {
 	plugins: plugins.concat([
         new CopyWebpackPlugin([
             { from: 'test-app/index.html',  to: 'test-app/index.html' },
+            { from: 'test-app/styles/search.svg',  to: 'test-app/styles/search.svg' },
             { from: 'test-app/favicon.ico', to: 'test-app/favicon.ico' },
             { from: 'test-app/styles',      to: 'test-app/styles'}
         ])

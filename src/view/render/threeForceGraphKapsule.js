@@ -294,13 +294,16 @@ export default Kapsule({
 
         function _clipHosts(scene, hosts) {
           Object.keys(hosts).forEach((key) => {
-            let hostMesh = scene.children.find( c => c.type === 'Mesh' && c.userData.id === key );
-            if (hostMesh)
+            let hostMeshIndex = scene.children.findIndex( c => c.type === 'Mesh' && c.userData.id === key );
+            if (hostMeshIndex > -1)
             {
+              scene.children[hostMeshIndex].updateMatrix();
               const hosted = hosts[key]
-              let innerMeshes = scene.children.filter( c => c.type === 'Mesh' && hosted.indexOf(c.userData.id) > -1 );
-              innerMeshes.forEach((innerMesh)=>{
-                hostMesh = CSG.subtract(hostMesh, innerMesh);
+              let innerMeshesIndexes = scene.children.map( (c, index) => { if (c.type === 'Mesh' && hosted.indexOf(c.userData.id) > -1) { return index } });
+              innerMeshesIndexes = innerMeshesIndexes.filter(i => i)
+              innerMeshesIndexes.forEach((innerMeshIndex)=>{
+                scene.children[innerMeshIndex].updateMatrix();
+                scene.children[hostMeshIndex] = CSG.subtract( scene.children[innerMeshIndex], scene.children[hostMeshIndex] );
               });
             }
           });

@@ -23,7 +23,9 @@ import {StopPropagation} from "./gui/stopPropagation";
             <section class="w3-padding-small"> 
  
                 <!--Highlighted entity-->
-
+                <object type="image/svg+xml" data="./styles/search.svg" class="logo">
+                  Test <!-- fallback image in CSS -->
+                </object>
                 <fieldset *ngIf="config.highlighted" class="w3-card w3-round w3-margin-small">
                     <legend>Highlighted</legend>
                     <resourceInfoPanel *ngIf="!!highlighted" [resource]="highlighted"> </resourceInfoPanel>
