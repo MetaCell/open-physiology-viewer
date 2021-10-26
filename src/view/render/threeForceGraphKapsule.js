@@ -10,6 +10,7 @@ import {drag as d3Drag } from 'd3-drag';
 import Kapsule from 'kapsule';
 import {modelClasses} from '../../model/index';
 import {extractCoords} from '../util/utils';
+import { CSG } from 'three-csg-ts';
 import './modelView'
 
 const {Graph} = modelClasses;
@@ -265,9 +266,45 @@ export default Kapsule({
         state.graphScene = threeObj;
     },
 
+
+
     update(state) {
         state.onFrame = null; // Pause simulation
         state.onLoading();
+
+        function _trasverseHosts(graphData, dict, hostedBy) {
+          Object.keys(graphData).forEach((k) => {
+            const val = graphData[k];
+            if (Array.isArray(val)) {
+              val.forEach((child)=>{
+                const hostKey = child.hostedBy?.id || hostedBy ;
+                if (hostKey)
+                {
+                  if (dict[hostKey])
+                    dict[hostKey].push(child.id)
+                  else
+                    dict[hostKey] = [child.id]; //init
+                }
+                // if (val?.children)
+                //   _trasverseHosts(val.children, hostKey);
+              })
+            }
+          })
+        }
+
+        function _clipHosts(scene, hosts) {
+          Object.keys(hosts).forEach((key) => {
+            let hostMesh = scene.children.find( c => c.type === 'Mesh' && c.userData.id === key );
+            if (hostMesh)
+            {
+              const hosted = hosts[key]
+              let innerMeshes = scene.children.filter( c => c.type === 'Mesh' && hosted.indexOf(c.userData.id) > -1 );
+              innerMeshes.forEach((innerMesh)=>{
+                hostMesh = CSG.subtract(hostMesh, innerMesh);
+              });
+            }
+          });
+        }
 
         if (state.graphData.visibleNodes || state.graphData.visibleLinks) {
             console.info('force-graph loading',
@@ -277,8 +314,13 @@ export default Kapsule({
 
         while (state.graphScene.children.length) { state.graphScene.remove(state.graphScene.children[0]) } // Clear the place
 
+        let hosts = {};
+        _trasverseHosts(state.graphData, hosts);
+
         // Add WebGL objects
         state.graphData.createViewObjects(state);
+
+        _clipHosts(state.graphScene, hosts);
 
         // Feed data to force-directed layout
         let layout;
