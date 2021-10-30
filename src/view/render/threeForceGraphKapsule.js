@@ -303,7 +303,10 @@ export default Kapsule({
               innerMeshesIndexes = innerMeshesIndexes.filter(i => i)
               innerMeshesIndexes.forEach((innerMeshIndex)=>{
                 scene.children[innerMeshIndex].updateMatrix();
-                scene.children[hostMeshIndex] = CSG.subtract( scene.children[innerMeshIndex], scene.children[hostMeshIndex] );
+                const originalMaterial = scene.children[innerMeshIndex].material ;
+                let clippedHost = CSG.subtract( scene.children[innerMeshIndex], scene.children[hostMeshIndex] ) ;
+                clippedHost.material = originalMaterial ;
+                scene.children[hostMeshIndex] = clippedHost ;
               });
             }
           });
