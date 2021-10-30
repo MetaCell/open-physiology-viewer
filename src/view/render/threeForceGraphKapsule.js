@@ -329,9 +329,18 @@ export default Kapsule({
 
         function _preventZFighting(scene)
         {
+          const allRadius = scene.children.map( r => r.preComputedBoundingSphereRadius ).filter(r => r).map(r => Math.round(r));
+
+          function onlyUnique(value, index, self) {
+            return self.indexOf(value) === index;
+          }
+          const uniqueRadius = allRadius.filter(onlyUnique).sort(function(a, b) {
+            return a - b;
+          });
+
           scene.children.forEach((c)=>{
-            if(c.preComputedBoundingSphereRadius)
-              c.position.z = Math.abs(c.preComputedBoundingSphereRadius / 100) * -1;
+            if (c.preComputedBoundingSphereRadius)
+              c.position.z = uniqueRadius.indexOf(Math.round(c.preComputedBoundingSphereRadius)) * -1;
           })
         }
 
