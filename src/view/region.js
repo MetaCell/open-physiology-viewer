@@ -68,7 +68,9 @@ Region.prototype.createViewObjects = function(state) {
             },
             !this.facets // draw border if region is not defined by facets (e.g., to distinguish regions in connectivity models)
         );
+        obj.geometry.computeBoundingSphere();
         obj.userData = this;
+        obj.preComputedBoundingSphereRadius = obj.geometry.boundingSphere.radius ;
         this.viewObjects['main'] = obj;
         this.border.createViewObjects(state);
     }

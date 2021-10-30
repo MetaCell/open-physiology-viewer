@@ -12,6 +12,7 @@ import {modelClasses} from '../../model/index';
 import {extractCoords} from '../util/utils';
 import { CSG } from 'three-csg-ts';
 import './modelView'
+import { GeometryFactory } from '../util/geometryFactory';
 
 const {Graph} = modelClasses;
 /**
@@ -285,31 +286,53 @@ export default Kapsule({
                   else
                     dict[hostKey] = [child.id]; //init
                 }
-                // if (val?.children)
-                //   _trasverseHosts(val.children, hostKey);
+                if (val.children)
+                  _trasverseHosts(val.children, hostKey);
               })
             }
           })
         }
 
-        function _clipHosts(scene, hosts) {
+        // function _clipHosts(scene, hosts) {
+        //   Object.keys(hosts).forEach((key) => {
+        //     let hostMeshIndex = scene.children.findIndex( c => c.type === 'Mesh' && c.userData.id === key );
+        //     scene.children[hostMeshIndex].position.z = 1000 ;
+        //     if (hostMeshIndex > -1)
+        //     {
+        //       //scene.children[hostMeshIndex].updateMatrix();
+        //       const hosted = hosts[key]
+        //       let innerMeshesIndexes = scene.children.map( (c, index) => { if (c.type === 'Mesh' && hosted.indexOf(c.userData.id) > -1) { return index } }).filter(i => i);
+        //       innerMeshesIndexes.forEach((innerMeshIndex)=>{
+        //         //scene.children[innerMeshIndex].updateMatrix();
+        //         // const originalMaterial = scene.children[innerMeshIndex].material ;
+        //         // let clippedHost = CSG.subtract( scene.children[hostMeshIndex], scene.children[innerMeshIndex] ) ;
+        //         scene.children[innerMeshIndex].position.z = 1500 ;
+        //         // scene.children[innerMeshIndex] = GeometryFactory.instance().createMesh();
+        //         // clippedHost.material = originalMaterial ;
+        //         // scene.children[hostMeshIndex] = clippedHost ;
+        //       });
+        //     }
+        //   });
+        // }
+
+        function _zorderHosts(scene, hosts) {
           Object.keys(hosts).forEach((key) => {
-            let hostMeshIndex = scene.children.findIndex( c => c.type === 'Mesh' && c.userData.id === key );
-            if (hostMeshIndex > -1)
-            {
-              scene.children[hostMeshIndex].updateMatrix();
-              const hosted = hosts[key]
-              let innerMeshesIndexes = scene.children.map( (c, index) => { if (c.type === 'Mesh' && hosted.indexOf(c.userData.id) > -1) { return index } });
-              innerMeshesIndexes = innerMeshesIndexes.filter(i => i)
-              innerMeshesIndexes.forEach((innerMeshIndex)=>{
-                scene.children[innerMeshIndex].updateMatrix();
-                const originalMaterial = scene.children[innerMeshIndex].material ;
-                let clippedHost = CSG.subtract( scene.children[innerMeshIndex], scene.children[hostMeshIndex] ) ;
-                clippedHost.material = originalMaterial ;
-                scene.children[hostMeshIndex] = clippedHost ;
-              });
-            }
+            let host = scene.children.find( c => c.userData.id === key );
+            //host.position.z = 1 ;
+            const hosted = hosts[key];
+            let children = scene.children.filter((c) => hosted.indexOf(c.userData.id) > -1);
+            children.forEach((child) => {
+              child.position.z = 2 ;
+            })
           });
+        }
+
+        function _preventZFighting(scene)
+        {
+          scene.children.forEach((c)=>{
+            if(c.preComputedBoundingSphereRadius)
+              c.position.z = Math.abs(c.preComputedBoundingSphereRadius / 100) * -1;
+          })
         }
 
         if (state.graphData.visibleNodes || state.graphData.visibleLinks) {
@@ -321,12 +344,12 @@ export default Kapsule({
         while (state.graphScene.children.length) { state.graphScene.remove(state.graphScene.children[0]) } // Clear the place
 
         let hosts = {};
-        _trasverseHosts(state.graphData, hosts);
+        //_trasverseHosts(state.graphData, hosts);
 
         // Add WebGL objects
         state.graphData.createViewObjects(state);
 
-        _clipHosts(state.graphScene, hosts);
+        _preventZFighting(state.graphScene);
 
         // Feed data to force-directed layout
         let layout;
