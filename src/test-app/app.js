@@ -360,7 +360,10 @@ export class TestApp {
 
 
         // All cardinal nodes
-        let anchorsUsed = model.components.find( anchor => anchor.id === "cardinal-nodes").nodes;
+        let anchorsUsed = [];
+        model.anchors.map( anchor => { 
+            anchor.cardinalNode ? anchorsUsed.push(anchor.id) : null
+        });
         
         // Wires of F and D, the outer layers of the TOO map
         let wiresF = model.components.find( wire => wire.id === "wires-f");
