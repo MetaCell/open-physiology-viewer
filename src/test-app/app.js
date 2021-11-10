@@ -373,8 +373,9 @@ export class TestApp {
             return anchorsUsed.indexOf(foundWire?.source) > -1 && anchorsUsed.indexOf(foundWire?.target) > -1
         });
 
+        const connectedWires = wiredTo.concat(hostedBy);
         // Other anchors used by the connectivity model lyphs and chains
-        wiredTo.forEach( wireId => {
+        connectedWires.forEach( wireId => {
            if ( wireId !== undefined ){
             const wire = model.wires.find( wire => wireId === wire.id );
             if ( wire ) {
@@ -388,31 +389,10 @@ export class TestApp {
           }
         });
 
-        // Other anchors used by the connectivity model lyphs and chains
-        hostedBy.forEach( wireId => {
-          if ( wireId !== undefined ){
-            const wire = model.wires.find( wire => wireId === wire.id );
-            if ( wire ) {
-              if ( anchorsUsed.indexOf(wire.source) == -1 ){
-                  anchorsUsed.push(wire.source);
-              }
-
-              if ( anchorsUsed.indexOf(wire.target) == -1 ){
-                  anchorsUsed.push(wire.target);
-              }
-            }
-          }
-        });
-
-        // Combine wires used by the connectivity model and the scaffold map
-        const tooMapWires = model.wires.filter((r) => { 
-            return connected.indexOf(r.id) > -1 || outerWires.wires.indexOf(r.id) > -1
-        });
-
         const updatedModel = Object.assign(model, 
             { 
-                regions: model.regions.filter((r) => connected.indexOf(r.id) > -1 )
-                , wires: tooMapWires,
+                regions: model.regions.filter((r) => connected.indexOf(r.id) > -1 ),
+                wires:  model.wires.filter((r) => connected.indexOf(r.id) > -1 || outerWires.wires.indexOf(r.id) > -1),
                 anchors : model.anchors.filter((r) => (anchorsUsed.indexOf(r.id) > -1 ))
             }
         );
