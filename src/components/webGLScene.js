@@ -537,14 +537,28 @@ export class WebGLSceneComponent {
     }
 
     getMouseOverEntity() {
-        if (!this.graph) { return; }
-        this.ray.setFromCamera( this.mouse, this.camera );
-        this.unhighlight(this.getSceneObjects());
-        let intersects = this.ray.intersectObjects(this.graph.children).filter((o) => { return o.object.type != 'Sprite' });
-        if (intersects.length > 0) {
-            this.highlight(intersects[0], this.highlightColor)
-        }
-    }
+      if (!this.graph) { return; }
+      this.ray.setFromCamera( this.mouse, this.camera );
+
+      const selectLayer = (entity) => {
+          //Refine selection to layers
+          if (entity && entity.layers && this.config.layout["showLayers"]) {
+              let layerMeshes = entity.layers.map(layer => layer.viewObjects["main"]);
+              let layerIntersects = this.ray.intersectObjects(layerMeshes);
+              if (layerIntersects.length > 0) {
+                  return selectLayer(layerIntersects[0].object.userData);
+              }
+          }
+          return entity;
+      };
+
+      let intersects = this.ray.intersectObjects(this.graph.children);
+      if (intersects.length > 0) {
+          let entity = intersects[0].object.userData;
+          if (!entity || entity.inactive) { return; }
+          return selectLayer(entity);
+      }
+  }
 
     get highlighted(){
         return this._highlighted;
@@ -554,24 +568,44 @@ export class WebGLSceneComponent {
         return this._selected;  
     }
 
-    highlight(entity, highlightColor){
-      if (entity?.object)
-      {
-        const obj = entity.object ;
-        obj.material.color.setHex(highlightColor);
-        obj.children?.forEach((child) =>{
-          this.highlight(child, highlightColor)
-        });
-      }
-    }
+    highlight(entity, color, rememberColor = true){
+      if (!entity || !entity.viewObjects) { return; }
+      let obj = entity.viewObjects["main"];
+      if (obj && obj.material) {
+          // store color of closest object (for later restoration)
+          if (rememberColor){
+              obj.currentHex = obj.material.color.getHex();
+              (obj.children || []).forEach(child => {
+                  if (child.material) {
+                      child.currentHex = child.material.color.getHex();
+                  }
+              });
+          }
 
-    unhighlight(entities){
-      entities.forEach((obj) => {
-        obj.material.color.setHex( obj.defaultHex || this.defaultColor );
-        if (obj.children)
-          this.unhighlight(obj.children);
-      })
-    }
+          // set a new color for closest object
+          obj.material.color.setHex(color);
+          (obj.children || []).forEach(child => {
+              if (child.material) {
+                  child.material.color.setHex(color);
+              }
+          });
+      }
+  }
+
+  unhighlight(entity){
+      if (!entity || !entity.viewObjects) { return; }
+      let obj = entity.viewObjects["main"];
+      if (obj){
+          if (obj.material){
+              obj.material.color.setHex( obj.currentHex || this.defaultColor);
+          }
+          (obj.children || []).forEach(child => {
+              if (child.material) {
+                  child.material.color.setHex(child.currentHex || this.defaultColor);
+              }
+          })
+      }
+  }
 
     parseDefaultColors(entities) {
       entities.forEach((e)=> {
