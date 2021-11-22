@@ -140,7 +140,7 @@ Lyph.prototype.createViewObjects = function(state) {
         ];
 
         //Border uses corner points
-        this.border.createViewObjects(state);
+        //this.border.createViewObjects(state);
 
         //Layers
         //Define proportion each layer takes

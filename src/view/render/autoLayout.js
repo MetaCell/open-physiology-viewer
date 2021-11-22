@@ -34,6 +34,9 @@ function preventZFighting(scene)
 
   scene.children.forEach((c)=>{
     if (c.preComputedBoundingSphereRadius)
+      // if(c.type == 'Mesh')
+      //   c.position.z = 10;
+      // else
       c.position.z = uniqueRadius.indexOf(Math.round(c.preComputedBoundingSphereRadius)) * -0.05;
   })
 }
@@ -124,6 +127,7 @@ function fitToTargetRegion(target, source) {
   const sy = targetSize.y / sourceSize.y ;
   source.scale.setX(sx);
   source.scale.setY(sy);
+  source.position.z = 10;
 } 
 
 function getTargetWorldPosition(scene, obj)
@@ -162,7 +166,7 @@ function translateToTarget(scene, target, obj) {
   const targetPos = getCenterPoint(target);
   const objSize = getBoundingBoxSize(target);
   obj.position.x = targetPos.x - ( objSize.x * 0.5 );
-  obj.position.y = targetPos.y ;
+  obj.position.y = targetPos.y ; //- ( objSize.y * 0.5 );;
 }
 
 function arrangeLyphsGrid(lyphs, h, v) {
@@ -224,6 +228,8 @@ function layoutLyphs(scene, hostLyphDic)
             hostedLyphs.forEach((l)=> {
               fitToTargetRegion(host, l);
               translateToOrigin(l);
+              const centerPoint = getCenterPoint(l);
+              console.log(centerPoint);
             });
             const g = arrangeLyphsGrid(hostedLyphs, hn, vn);
             hostedLyphs.forEach((l)=> {
