@@ -320,17 +320,7 @@ export default Kapsule({
         _preventZFighting(state.graphScene)
 
         // Feed data to force-directed layout
-        let layout;
-        // D3-force
-        (layout = state.simulation)
-            .stop()
-            .alpha(1)// re-heat the simulation
-            .alphaDecay(state.d3AlphaDecay)
-            .velocityDecay(state.d3VelocityDecay)
-            .numDimensions(state.numDimensions)
-            .nodes(state.graphData.visibleNodes||[]);
-
-        layout.force('link').id(d => d.id).links(state.graphData.visibleLinks||[]);
+        let layout = state.simulation
 
         // Initial ticks before starting to render
         for (let i = 0; i < state.warmupTicks; i++) { layout['tick'](); }

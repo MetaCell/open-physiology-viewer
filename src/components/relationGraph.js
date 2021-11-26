@@ -4,7 +4,6 @@ window.d3 = d3;
 import {Component, ElementRef, Input, NgModule, ViewChild, ChangeDetectionStrategy} from "@angular/core";
 import {CommonModule} from "@angular/common";
 import {values, pick, flatten, keys, entries, isObject} from 'lodash-bound';
-import forceInABox from '../algorithms/forceInABox';
 import FileSaver from "file-saver";
 import {ResourceInfoModule} from "./gui/resourceInfo";
 import {MatSliderModule} from "@angular/material/slider";
@@ -276,25 +275,6 @@ export class RelGraph {
             linkStrengthInterCluster : 0.2,
             linkStrengthIntraCluster : 0.1
         };
-
-        //Simulation
-        let groupingForce = forceInABox()
-            .size([this.width, this.height])       // Size of the chart
-            .template("treemap")                   // Either treemap or force
-            .groupBy("class")                      // Nodes' attribute to group
-            .strength(fParams.forceInABoxStrength) // Strength to foci
-            .links(data.links)
-            .enableGrouping(useGroupInABox)
-            .linkStrengthInterCluster(fParams.linkStrengthInterCluster)  // linkStrength between nodes of different clusters
-            .linkStrengthIntraCluster(fParams.linkStrengthIntraCluster); // linkStrength between nodes of the same cluster
-
-        let simulation = d3.forceSimulation(data.nodes)
-            .force("link", d3.forceLink(data.links).id(d => d.id))
-            .force("charge", d3.forceManyBody().strength(-15))
-            .force("collide", d3.forceCollide(15))
-            .force("group", groupingForce)
-            .force("x", useGroupInABox ? null : d3.forceX(this.width / 2))
-            .force("y", useGroupInABox ? null : d3.forceY(this.height / 2));
 
         this.simulation = simulation;
 

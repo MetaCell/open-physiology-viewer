@@ -282,21 +282,6 @@ function forceInABox() {
 
     net = getGroupsGraph();
     templateForce = d3.forceSimulation(net.nodes)
-      .force("x", d3.forceX(size[0] / 2).strength(0.1))
-      .force("y", d3.forceY(size[1] / 2).strength(0.1))
-      .force(
-        "collide",
-        d3.forceCollide(function(d) {
-          return d.r;
-        }).iterations(4)
-      )
-      .force("charge", d3.forceManyBody().strength(forceCharge))
-      .force(
-        "links",
-        d3.forceLink(net.nodes.length ? net.links : [])
-          .distance(forceLinkDistance)
-          .strength(forceLinkStrength)
-      );
 
     // console.log("Initialize with force ", templateForce.nodes().length, " ", templateForce.force("links").links().length);
     // var i = 0;
