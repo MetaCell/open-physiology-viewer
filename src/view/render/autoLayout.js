@@ -300,13 +300,24 @@ function translateGroupToTarget(target, group) {
   group.translateY(targetPos.y - groupPos.y) ; //- ( objSize.y * 0.5 * 0);
 }
 
-function autoSizeLyphs() {
+function isContainedByParent(lyphId, hostLyphLyphDic) {
+  let contained = false ;
+  Object.keys(hostLyphLyphDic).forEach((parentId) => {
+    const children = hostLyphLyphDic[parentId];
+    if (children.indexOf(lyphId) > -1 )
+      contained = true ;
+  });
+  return contained ;
+}
+
+function autoSizeLyphs(hostLyphLyphDic) {
   let all = [];
   let kapsuleChildren = scene.children ;
   trasverseSceneChildren(kapsuleChildren, all);
   let lyphs = getSceneObjectByModelClass(all, 'Lyph');
   lyphs.forEach((l)=>{
-    autoSizeLyph(l);
+    if (!isContainedByParent(l.userData.id,hostLyphLyphDic )) //avoid auto size to link
+      autoSizeLyph(l);
   })
 }
 
@@ -684,7 +695,7 @@ export function autoLayout(scene, graphData) {
     }
     });
   }
-  autoSizeLyphs();
+  autoSizeLyphs(hostLyphLyphDic);
 }
 
 export function clearByObjectType(scene, type) {
