@@ -88,10 +88,10 @@ Lyph.prototype.createViewObjects = function(state) {
     }
     Shape.prototype.createViewObjects.call(this, state);
 
-    for (let i = 1; i < (this.layers || []).length; i++) {
-        this.layers[i].prev = this.layers[i - 1];
-        this.layers[i].prev.next = this.layers[i];
-    }
+    // for (let i = 1; i < (this.layers || []).length; i++) {
+    //     this.layers[i].prev = this.layers[i - 1];
+    //     this.layers[i].prev.next = this.layers[i];
+    // }
 
     //Create a lyph object
     if (!this.viewObjects["2d"]) {
@@ -140,37 +140,9 @@ Lyph.prototype.createViewObjects = function(state) {
 
         //Border uses corner points
         this.border.createViewObjects(state);
-
-        //Layers
-        //Define proportion each layer takes
-        let numLayers = (this.layers || [this]).length;
-        let resizedLayers = (this.layers || []).filter(layer => layer.layerWidth);
-        let layerTotalWidth = 0;
-        (resizedLayers || []).forEach(layer => layerTotalWidth += layer.layerWidth);
-        let defaultWidth = (resizedLayers.length < numLayers) ?
-            (100. - layerTotalWidth) / (numLayers - resizedLayers.length) : 0;
-
-        let relOffset = 0;
-        (this.layers || []).forEach(layer => {
-            layer.create3d = this.create3d;
-            //TODO place sizing code for layers to Lyph.updateSize
-            layer.layerWidth = layer.layerWidth || defaultWidth;
-            layer.width = layer.layerWidth / 100 * this.width;
-            layer.height = this.height;
-            layer.createViewObjects(state);
-            let layerObj = layer.viewObjects["2d"];
-            this.viewObjects["2d"].add(layerObj);
-            layerObj.translateX(relOffset);
-            relOffset += layer.width;
-
-            let layerObj3d = layer.viewObjects["3d"];
-            if (layerObj3d) {
-                this.viewObjects["3d"].add(layerObj3d);
-            }
-        });
     }
     //Do not create labels for layers and nested lyphs
-    if (this.layerIn || this.internalIn) { return; }
+    // if (this.layerIn || this.internalIn) { return; }
     this.createLabels();
 };
 
@@ -212,12 +184,12 @@ Lyph.prototype.updateViewObjects = function(state) {
     }
 
     //update layers
-    (this.layers || []).forEach(layer => layer.updateViewObjects(state));
+    //(this.layers || []).forEach(layer => layer.updateViewObjects(state));
 
     this.border.updateViewObjects(state);
 
     //Layers and inner lyphs have no labels
-    if (this.layerIn || this.internalIn) { return; }
+    //if (this.layerIn || this.internalIn) { return; }
 
     this.updateLabels(this.center.clone().addScalar(this.state.labelOffset.Lyph));
 };

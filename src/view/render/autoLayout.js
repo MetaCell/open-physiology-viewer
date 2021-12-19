@@ -3,6 +3,11 @@ const LYPH_V_PERCENT_MARGIN = 0.10;
 const MAX_LYPH_WIDTH = 100;
 const LYPH_LINK_SIZE_PROPORTION = 0.75;
 
+import {
+  createMeshWithBorder,
+  lyphShape,
+} from "../util/utils"
+
 function trasverseSceneChildren(children, all) {
   children.forEach((c)=>{
     all.push(c);
@@ -286,7 +291,7 @@ function setMeshPos(obj, x, y)
   obj.position.y = y ;
 }
 
-function translateMeshToTarget(target, mesh)
+export function translateMeshToTarget(target, mesh)
 {
   const targetPos = getCenterPoint(target);
   setMeshPos(mesh, targetPos.x, targetPos.y)
@@ -491,12 +496,46 @@ function computeGroupCenter(group)
   return box.center();
 }
 
-function layoutLyphs(scene, hostLyphDic, lyphInLyph)
+function createLayer(layerModel)
+{
+  const params = {
+    color: layerModel.color,
+    polygonOffsetFactor: layerModel.polygonOffsetFactor
+  };
+
+  let radius = layerModel.height / 8;
+
+  const layer = createMeshWithBorder(lyphShape([layerModel.width, layerModel.height, radius, ...layerModel.radialTypes]), params);
+  return layer ;
+}
+
+function layoutLyphsLayers(scene, host, layer)
+{
+  const total = 1 ;//layers.length ;
+  const hostSize = getBoundingBoxSize(host);
+  const width = hostSize.x ;
+  const height = hostSize.y;
+
+  //layers.forEach((layer)=> {
+  // layer.width = width ;
+  // layer.height = height ;
+  // const layerMesh = createLayer(layer);
+  const layerMesh = host.clone();
+
+  // fitToTargetRegion(host, layerMesh, false);
+  // translateMeshToTarget(host, layerMesh);
+
+  scene.add(layerMesh);
+  //})
+}
+
+function layoutLyphs(scene, hostLyphDic, lyphInLyph, showLayers)
 {
   let all = [];
   let kapsuleChildren = scene.children ;
   trasverseSceneChildren(kapsuleChildren, all);
   let lyphs = getSceneObjectByModelClass(all, 'Lyph');
+  let layers = getSceneObjectByModelClass(all, 'Layer');
   clearByObjectType(scene, 'Lyph');
   Object.keys(hostLyphDic).forEach((hostKey) => {
     //get target aspect ratio
@@ -525,6 +564,8 @@ function layoutLyphs(scene, hostLyphDic, lyphInLyph)
               hostedLyphs.forEach((l)=> {
                 fitToTargetRegion(host, l, lyphInLyph);
                 translateMeshToTarget(host, l);
+                // if(showLayers && l.userData.layers)
+                //   layoutLyphsLayers(scene, l);
               });
             }
             else {
@@ -532,15 +573,17 @@ function layoutLyphs(scene, hostLyphDic, lyphInLyph)
                 fitToTargetRegion(host, l, lyphInLyph);
               });
               const g = arrangeLyphsGrid(hostedLyphs, hn, vn);
-              //putDebugObjectInPosition(scene, g.position);
-              // hostedLyphs.forEach((l)=> {
-              //   removeEntity(scene, l);
-              // });
-              //console.log(calculateGroupCenter(g));
               fitToTargetRegion(host, g, lyphInLyph);
-              //translateGroupToTarget(host, g);
-              //translateGroupToOrigin(g);
               translateGroupToTarget(host, g);
+
+              // g.children.forEach((child, i)=> {
+              //   // if(showLayers && hostedLyphs[i].userData.layers)
+              //   // {
+              //     const hostedLyphLayers = hostedLyphs[i].userData.layers;
+              //     layoutLyphsLayers(scene, child, hostedLyphLayers[0]);
+              //   // }
+              // });
+
               scene.add(g);
             }
           }
@@ -649,19 +692,19 @@ export function removeDisconnectedObjects(model, joinModel) {
   return updatedModel;
 }
 
-export function autoLayout(scene, graphData) {
+export function autoLayout(scene, graphData, showLayers) {
 
   preventZFighting(scene);
 
   const hostLyphRegionDic = {};
   trasverseHostedBy(graphData, hostLyphRegionDic);
-  layoutLyphs(scene, hostLyphRegionDic, false);
+  layoutLyphs(scene, hostLyphRegionDic, false, showLayers);
 
   const hostLyphLyphDic = {};
   if(graphData.lyphs)
   {
     trasverseInternalLyphs(graphData.lyphs, hostLyphLyphDic);
-    layoutLyphs(scene, hostLyphLyphDic, true);
+    layoutLyphs(scene, hostLyphLyphDic, true, showLayers);
   }
 
   let chainedLyphs = {};
