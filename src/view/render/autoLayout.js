@@ -528,18 +528,8 @@ function layoutLyphs(scene, hostLyphDic, lyphInLyph)
               });
             }
             else {
-              hostedLyphs.forEach((l)=> {
-                //fitToTargetRegion(host, l, lyphInLyph);
-              });
               const g = arrangeLyphsGrid(hostedLyphs, hn, vn);
-              //putDebugObjectInPosition(scene, g.position);
-              // hostedLyphs.forEach((l)=> {
-              //   removeEntity(scene, l);
-              // });
-              //console.log(calculateGroupCenter(g));
               fitToTargetRegion(host, g, lyphInLyph);
-              //translateGroupToTarget(host, g);
-              //translateGroupToOrigin(g);
               translateGroupToTarget(host, g);
               scene.add(g);
             }
