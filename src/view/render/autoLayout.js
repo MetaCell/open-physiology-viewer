@@ -529,7 +529,7 @@ function layoutLyphs(scene, hostLyphDic, lyphInLyph)
             }
             else {
               hostedLyphs.forEach((l)=> {
-                fitToTargetRegion(host, l, lyphInLyph);
+                //fitToTargetRegion(host, l, lyphInLyph);
               });
               const g = arrangeLyphsGrid(hostedLyphs, hn, vn);
               //putDebugObjectInPosition(scene, g.position);
