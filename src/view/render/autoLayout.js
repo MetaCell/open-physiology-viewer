@@ -1,3 +1,5 @@
+import { Vector3 } from "three";
+
 const LYPH_H_PERCENT_MARGIN = 0.10;
 const LYPH_V_PERCENT_MARGIN = 0.10;
 const MAX_LYPH_WIDTH = 100;
@@ -218,8 +220,8 @@ function fitToTargetRegion(target, source, lyphInLyph) {
     sy = ( minD / sourceSize.y ) * ( 1 - LYPH_V_PERCENT_MARGIN) * target.parent.scale.y;
     sz = ( targetSize.z / sourceSize.z ) ;
   } else {
-    sx = ( targetSize.x / sourceSize.x ) * ( 1 - LYPH_H_PERCENT_MARGIN) ;
-    sy = ( targetSize.y / sourceSize.y ) * ( 1 - LYPH_V_PERCENT_MARGIN) ;
+    sx = ( targetSize.x / sourceSize.x ) * ( 1 - LYPH_H_PERCENT_MARGIN) * target.parent.scale.x;
+    sy = ( targetSize.y / sourceSize.y ) * ( 1 - LYPH_V_PERCENT_MARGIN) * target.parent.scale.y;
     sz = ( targetSize.z / sourceSize.z ) ;
   }
 
@@ -239,7 +241,9 @@ function fitToTargetRegion(target, source, lyphInLyph) {
                   , parent.rotation.y
                   , parent.rotation.z);
   
-  //source.scale.setY(sz);
+
+  // source.translateX(-source.position.x);
+  // source.translateY(-source.position.y);
 } 
 
 function getWorldPosition(scene, obj)
@@ -271,6 +275,8 @@ function getCenterPoint(mesh) {
 
 function translateGroupToOrigin(group) {
   const groupPos  = computeGroupCenter(group);
+  //const objSize = getGroupBoundingBoxSize(group)
+  //const groupPos = calculateGroupCenter(group);
   group.translateX(- groupPos.x) ; //- ( objSize.x * 0.5 * 0 );
   group.translateY(- groupPos.y) ; //- ( objSize.y * 0.5 * 0);
 }
@@ -353,9 +359,8 @@ function autoSizeLyph(lyph) {
 }
 
 function arrangeLyphsGrid(lyphs, h, v) {
-  let group = new THREE.Group();
+  let grid = [];
   const refLyph = lyphs[0];
-  let refPosition = refLyph.position ;
   let refSize = getBoundingBoxSize(refLyph);
 
   let ix = 0 ;
@@ -379,24 +384,25 @@ function arrangeLyphsGrid(lyphs, h, v) {
     {
       if ( ix < lyphs.length )
       {
-        targetX = refPaddingX + refWidth * actualH + ( 2 * refPaddingX * actualH);
-        targetY = refPaddingY + refHeight * actualV + ( 2 * refPaddingY * actualV);
-        lyphs[ix].position.x = targetX ;
-        lyphs[ix].position.y = targetY ;
-        group.add(lyphs[ix]);
-        if (targetX > maxX)
-          maxX = targetX ;
-        if (targetY > maxY)
-          maxY = targetY ;
+        // targetX = refPaddingX + refWidth * actualH + ( 2 * refPaddingX * actualH);
+        // targetY = refPaddingY + refHeight * actualV + ( 2 * refPaddingY * actualV);
+        // lyphs[ix].position.x = targetX ;
+        // lyphs[ix].position.y = targetY ;
+        lyphs[ix].translateX(targetX-lyphs[ix].position.x);
+        lyphs[ix].translateY(targetY-lyphs[ix].position.y);
+        //lyphs[ix].translateY(-targetY);
+        grid.push(lyphs[ix]);
+        targetX += refWidth * actualH ;
+        targetY += refHeight * actualV ;
         ix++;
       }
     }
   }
 
-  group.translateX( maxX / -2);
-  group.translateY( maxY / -2);
+  // group.translateX( maxX / -2);
+  // group.translateY( maxY / -2);
 
-  return group ;
+  return grid ;
 }
 
 function reCenter(obj)
@@ -445,6 +451,26 @@ function calculateGroupCenter(obj)
   });
 
   return new THREE.Vector3(avg(minX, maxX), avg(minY, maxY), avg(minZ, maxZ));
+}
+
+function calculateGridBoundings(grid)
+{
+  let minX = 0 ;
+  let minY = 0 ;
+  let maxX = 0 ;
+  let maxY = 0 ;
+  grid.forEach((mesh)=> {
+    mesh.geometry.computeBoundingBox ();
+    var bBox = mesh.geometry.boundingBox;
+  
+    // compute overall bbox
+    minX = Math.min (minX, bBox.min.x); // + mesh.position.x
+    minY = Math.min (minY, bBox.min.y);
+    maxX = Math.max (maxX, bBox.max.x);
+    maxY = Math.max (maxY, bBox.max.y);
+  });
+
+  return new THREE.Box3(new Vector3(minX, maxX), new Vector3(minY, maxY));
 }
 
 function getBorder(target)
@@ -531,17 +557,24 @@ function layoutLyphs(scene, hostLyphDic, lyphInLyph)
               hostedLyphs.forEach((l)=> {
                 fitToTargetRegion(host, l, lyphInLyph);
               });
-              const g = arrangeLyphsGrid(hostedLyphs, hn, vn);
+              // const grid = arrangeLyphsGrid(hostedLyphs, hn, vn);
+              // const box = calculateGridBoundings(grid);
+              // const boxMesh = new THREE.Box3Helper( box, 0xffff00 );
+              // scene.add(boxMesh);
               //putDebugObjectInPosition(scene, g.position);
               // hostedLyphs.forEach((l)=> {
               //   removeEntity(scene, l);
               // });
               //console.log(calculateGroupCenter(g));
-              fitToTargetRegion(host, g, lyphInLyph);
+              //fitToTargetRegion(host, g, lyphInLyph);
               //translateGroupToTarget(host, g);
               //translateGroupToOrigin(g);
-              translateGroupToTarget(host, g);
-              scene.add(g);
+              // const bbox = getBoundingBox(g);
+              //const object = new THREE.Mesh( sphere, new THREE.MeshBasicMaterial( 0xff0000 ) );
+
+              //translateGroupToTarget(host, g);
+              //g.children.forEach((child)=>scene.add(child))
+              //scene.add(g);
             }
           }
         }
