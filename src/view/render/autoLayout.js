@@ -1,3 +1,4 @@
+import { Vector2, Vector3 } from "three";
 import {$Field, modelClasses} from "../../model";
 import {
  getDefaultControlPoint
@@ -13,7 +14,9 @@ const AXON = "axon";
 const MAX_POINTS = 100;
 const AXON_SIZE = 1;
 const DENDRYTE_SIZE = .5;
-
+const LABEL_FIGHTING_INDEX = 10 ;
+const LABEL_SPACE_PARTITION_NUM = 10 ;
+const DEBUG = true ;
 function trasverseSceneChildren(children, all) {
   children.forEach((c)=>{
     all.push(c);
@@ -482,6 +485,35 @@ function calculateGroupCenter(obj)
   return new THREE.Vector3(avg(minX, maxX), avg(minY, maxY), avg(minZ, maxZ));
 }
 
+function calculateSpace(meshes)
+{
+  let minX = 0 ;
+  let maxX = 0 ;
+  let minY = 0 ;
+  let maxY = 0 ;
+  meshes.forEach((c) => {
+    if (c.geometry)
+    {
+      const p = c.position ;
+      const objMinX = c.position.x - 0.5 * c.width ;
+      const objMaxX = c.position.x + 0.5 * c.width ;
+      const objMinY = c.position.y - 0.5 * c.height ;
+      const objMaxY = c.position.y + 0.5 * c.height ;
+
+      if ( objMinX < minX ) minX = objMinX ;
+      if ( objMaxX > maxX ) maxX = objMaxX ;
+      if ( objMinY < minY ) minY = objMinY ;
+      if ( objMaxY > maxY ) maxY = objMaxY ;
+
+      const objbbox = new THREE.Box3(new Vector3(objMinX, objMinY, 1), new Vector2(objMaxX, objMaxY, 1));
+      c.userData.worldBBox = bbox ;
+    }
+  });
+
+  const bbox = new THREE.Box3(new Vector3(minX, minY, 1), new Vector3(maxX, maxY, 1));
+  return bbox ;
+}
+
 function getBorder(target)
 {
   //add border bounding for debugging
@@ -497,6 +529,33 @@ function getBorder(target)
     } ));
 
   return bx ;
+}
+
+function geometryFromBox(box)
+{
+  // make a BoxBufferGeometry of the same size as Box3
+  const dimensions = new THREE.Vector3().subVectors( box.max, box.min );
+  const boxGeo = new THREE.BoxBufferGeometry(dimensions.x, dimensions.y, dimensions.z);
+
+  // move new mesh center so it's aligned with the original object
+  const matrix = new THREE.Matrix4().setPosition(dimensions.addVectors(box.min, box.max).multiplyScalar( 0.5 ));
+  boxGeo.applyMatrix(matrix);
+
+  return boxGeo ;
+}
+
+function debugMeshFromBox(box)
+{
+  const material = new THREE.LineBasicMaterial({
+    color: 0x0000ff
+  });
+  
+  const boxGeometry = geometryFromBox(box);
+
+  const line = new THREE.Line( boxGeometry, material );  
+  scene.add(line);
+
+  return line ;
 }
 
 function getHostParentForLyph(all, hostId)
@@ -787,6 +846,8 @@ export function autoLayout(scene, graphData) {
   
   autoLayoutChains(scene, graphData, links);
   links.forEach( link => !link.modifiedChain ? removeEntity(scene, link): link.visible = false);
+
+  layoutLabelCollide(scene);
 }
 
 export function clearByObjectType(scene, type) {
@@ -795,3 +856,76 @@ export function clearByObjectType(scene, type) {
     removeEntity(scene, l);
   });
 }
+
+function checkCollide(a, d) {
+  let b1 = a.position.y - a.geometry.parameters.height / 2;
+  let t1 = a.position.y + a.geometry.parameters.height / 2;
+  let r1 = a.position.x + a.geometry.parameters.width / 2;
+  let l1 = a.position.x - a.geometry.parameters.width / 2;
+  let b2 = d.position.y - d.geometry.parameters.height / 2;
+  let t2 = d.position.y + d.geometry.parameters.height / 2;
+  let r2 = d.position.x + d.geometry.parameters.width / 2;
+  let l2 = d.position.x - d.geometry.parameters.width / 2;
+  if (t1 < b2 || r1 < l2 || b1 > t2 || l1 > r2 ) {
+    return false;
+  }
+  return true;
+}
+
+function getSpaceBox(meshes)  {
+  return calculateSpace(meshes);
+}
+function getSpacePartitions(spaceBox, n)
+{
+  const spaceBoxSize = spaceBox.getSize();
+  const widthSize = Math.floor(spaceBoxSize.width / n) ;
+  const heightSize = Math.floor(spaceBoxSize.height / n);
+  const minX = spaceBox.min.x ;
+  const minY = spaceBox.min.y ;
+  let partitions = [];
+
+  for (var i = 0; i < n; i++)
+  {
+    for (var j = 0; j < n; j++)
+    {
+      partitions.push(new THREE.Box2(new THREE.Vector2(minX + widthSize* i , minX + widthSize*(i+1))
+                                   , new THREE.Vector2(minY + heightSize* j, minY + heightSize*(j+1))))
+    }
+  }
+
+  return partitions ;
+}
+function arrangeLabelsWithinPartition(partition, meshes)
+{
+  const inPartitionMeshes = getMeshesWithinPartition(partition, meshes);
+  //arrange within partition
+
+}
+function getMeshesWithinPartition(partition, meshes)
+{
+
+}
+//space partitioning ordering algorithm
+function layoutLabelCollide(scene) {
+  const labels = getSceneObjectByModelClass(scene.children, "Label");
+  if (labels.length > 0)
+  {
+    const spaceBox = getSpaceBox(labels);
+    if (DEBUG)
+    {
+      const debugBox = debugMeshFromBox(spaceBox);
+      scene.add(debugBox);
+    }
+    const spacePartitionBoxes = getSpacePartitions(spaceBox, LABEL_SPACE_PARTITION_NUM);
+    for (var i = 0; i < spacePartitionBoxes.length ; i ++)
+    {
+      //arrangeLabelsWithinPartition(spacePartitionBoxes[i], labels);
+      if (DEBUG)
+      {
+        let innerDebugBox = debugMeshFromBox(spacePartitionBoxes[i]);
+        scene.add(innerDebugBox);
+      }
+    }
+  }
+}
+

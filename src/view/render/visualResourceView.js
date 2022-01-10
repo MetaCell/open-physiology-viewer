@@ -19,11 +19,13 @@ VisualResource.prototype.createLabels = function(){
 
     if (!this.labels[labelKey] && this[labelKey]) {
         this.labels[labelKey] = new SpriteText2D(this[labelKey], this.state.fontParams);
+        this.labels[labelKey].userData = { class: 'Label'}
         this.labels[labelKey].material.alphaTest = 0.1
     }
 
     if (this.labels[labelKey]){
         this.viewObjects["label"] = this.labels[labelKey];
+        this.labels[labelKey].userData = { class: 'Label'}
         this.viewObjects["label"].visible = !this.hidden;
     } else {
         delete this.viewObjects["label"];
