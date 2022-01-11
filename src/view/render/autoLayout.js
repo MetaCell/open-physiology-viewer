@@ -14,9 +14,9 @@ const AXON = "axon";
 const MAX_POINTS = 100;
 const AXON_SIZE = 1;
 const DENDRYTE_SIZE = .5;
-const LABEL_FIGHTING_INDEX = 10 ;
+const LABEL_SPACE_ARM_LENGTH = 10 ;
 const LABEL_SPACE_PARTITION_NUM = 10 ;
-const DEBUG = true ;
+const DEBUG = false ;
 function trasverseSceneChildren(children, all) {
   children.forEach((c)=>{
     all.push(c);
@@ -553,7 +553,6 @@ function debugMeshFromBox(box)
   const boxGeometry = geometryFromBox(box);
 
   const line = new THREE.Line( boxGeometry, material );  
-  scene.add(line);
 
   return line ;
 }
@@ -878,18 +877,23 @@ function getSpaceBox(meshes)  {
 function getSpacePartitions(spaceBox, n)
 {
   const spaceBoxSize = spaceBox.getSize();
-  const widthSize = Math.floor(spaceBoxSize.width / n) ;
-  const heightSize = Math.floor(spaceBoxSize.height / n);
-  const minX = spaceBox.min.x ;
-  const minY = spaceBox.min.y ;
+  const widthSize = Math.floor(spaceBoxSize.x / n) ;
+  const heightSize = Math.floor(spaceBoxSize.y / n);
+  const startX = spaceBox.min.x ;
+  const startY = spaceBox.min.y ;
   let partitions = [];
 
   for (var i = 0; i < n; i++)
   {
     for (var j = 0; j < n; j++)
-    {
-      partitions.push(new THREE.Box2(new THREE.Vector2(minX + widthSize* i , minX + widthSize*(i+1))
-                                   , new THREE.Vector2(minY + heightSize* j, minY + heightSize*(j+1))))
+    { 
+      const minX = startX + widthSize* i ;
+      const maxX = startX + widthSize*(i+1);
+      const minY = startY + heightSize* j;
+      const maxY = startY + heightSize*(j+1);
+
+      partitions.push(new THREE.Box3(new THREE.Vector3(minX,minY,1)
+                                   , new THREE.Vector3(maxX,maxY,1)))
     }
   }
 
@@ -899,11 +903,38 @@ function arrangeLabelsWithinPartition(partition, meshes)
 {
   const inPartitionMeshes = getMeshesWithinPartition(partition, meshes);
   //arrange within partition
+  if (inPartitionMeshes)
+  {
+    //const radius = inPartitionMeshes.length * LABEL_SPACE_ARM_LENGTH ;//arm length is a fixed value taken as delta radius from the center of the partition
+                                                                        //the larger ammount of meshes within the partition, the larger the arm
+                                                                        //so it results in a "explode from center" kind of effect
 
+                                                                        //for circule, need to implement this, no time
+                                                                        //https://planetcalc.com/8943/
+                                                                        //giving the upper/down positions for each index
+
+    const total = inPartitionMeshes.length ;
+    const deltaX = Math.abs(partition.max.x - partition.min.x) / total;
+
+    if (total > 1)
+    {
+      for (var i = 0; i < total; i ++) 
+      {
+        const mesh = inPartitionMeshes[i];      
+        const isOddIndex = i % 2 == 0 ;
+  
+        const posX = partition.min.x + (deltaX * i) ;
+        const posY = isOddIndex ? partition.min.y : partition.max.y ;
+  
+        mesh.position.x = posX ;
+        mesh.position.y = posY ;
+      }
+    }
+  }
 }
 function getMeshesWithinPartition(partition, meshes)
 {
-
+  return meshes.filter((m)=> m.position.x > partition.min.x &&  m.position.x < partition.max.x && m.position.y > partition.min.y &&  m.position.y < partition.max.y)
 }
 //space partitioning ordering algorithm
 function layoutLabelCollide(scene) {
@@ -914,12 +945,12 @@ function layoutLabelCollide(scene) {
     if (DEBUG)
     {
       const debugBox = debugMeshFromBox(spaceBox);
-      scene.add(debugBox);
+      //scene.add(debugBox);
     }
     const spacePartitionBoxes = getSpacePartitions(spaceBox, LABEL_SPACE_PARTITION_NUM);
     for (var i = 0; i < spacePartitionBoxes.length ; i ++)
     {
-      //arrangeLabelsWithinPartition(spacePartitionBoxes[i], labels);
+      arrangeLabelsWithinPartition(spacePartitionBoxes[i], labels);
       if (DEBUG)
       {
         let innerDebugBox = debugMeshFromBox(spacePartitionBoxes[i]);
