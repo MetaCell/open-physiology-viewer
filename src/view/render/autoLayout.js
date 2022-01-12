@@ -17,6 +17,7 @@ const AXON_SIZE = 1;
 const DENDRYTE_SIZE = .5;
 const LABEL_SPACE_PARTITION_NUM = 5 ;
 const LABEL_CLOSE_ENOUGH_DISTANCE = 15.00; 
+const LABEL_ELEVATION = 50.00; 
 const DEBUG = false ;
 
 function trasverseSceneChildren(children, all) {
@@ -998,8 +999,8 @@ export function layoutLabelCollide(scene) {
     const spacePartitionBoxes = getSpacePartitions(spaceBox, LABEL_SPACE_PARTITION_NUM);
     for (var i = 0; i < spacePartitionBoxes.length ; i ++)
     {      
-      arrangeLabelsWithinPartition(spacePartitionBoxes[i], labels, 50);
-      arrangeLabelsWithinPartition(spacePartitionBoxes[i], labels, 50);
+      arrangeLabelsWithinPartition(spacePartitionBoxes[i], labels, LABEL_ELEVATION);
+      arrangeLabelsWithinPartition(spacePartitionBoxes[i], labels, LABEL_ELEVATION);
       // arrangeLabelsWithinPartition(spacePartitionBoxes[i], labels, 250);
       if (DEBUG)
       {
