@@ -15,11 +15,10 @@ const AXON = "axon";
 const MAX_POINTS = 100;
 const AXON_SIZE = 1;
 const DENDRYTE_SIZE = .5;
-const LABEL_SPACE_ARM_LENGTH = 25 ;
-const LABEL_SPACE_PARTITION_NUM = 10 ;
+const LABEL_SPACE_PARTITION_NUM = 5 ;
 const LABEL_CLOSE_ENOUGH_DISTANCE = 15.00; 
-
 const DEBUG = false ;
+
 function trasverseSceneChildren(children, all) {
   children.forEach((c)=>{
     all.push(c);
@@ -859,19 +858,10 @@ export function clearByObjectType(scene, type) {
   });
 }
 
-function checkCollide(a, d) {
-  let b1 = a.position.y - a.geometry.parameters.height / 2;
-  let t1 = a.position.y + a.geometry.parameters.height / 2;
-  let r1 = a.position.x + a.geometry.parameters.width / 2;
-  let l1 = a.position.x - a.geometry.parameters.width / 2;
-  let b2 = d.position.y - d.geometry.parameters.height / 2;
-  let t2 = d.position.y + d.geometry.parameters.height / 2;
-  let r2 = d.position.x + d.geometry.parameters.width / 2;
-  let l2 = d.position.x - d.geometry.parameters.width / 2;
-  if (t1 < b2 || r1 < l2 || b1 > t2 || l1 > r2 ) {
-    return false;
-  }
-  return true;
+function checkCollide(a, b) {
+  const collideX = ( ( b.position.x > a.position.x - a.width / 2 ) && (b.position.x < a.position.x + a.width / 2) ) ;
+  const collideY = ( ( b.position.y > a.position.y - a.height / 2 ) && (b.position.y < a.position.y + a.height / 2) ) ;
+  return collideX && collideY ;
 }
 
 function getSpaceBox(meshes)  {
@@ -905,7 +895,7 @@ function getSpacePartitions(spaceBox, n)
 
 function checkClose(first, second)
 {
-  return Math.abs(first.position.distanceTo(second.position)) > LABEL_CLOSE_ENOUGH_DISTANCE ;
+  return first.position.distanceTo(second.position) < LABEL_CLOSE_ENOUGH_DISTANCE ;
 }
 
 function createLineBetweenVectors(start, end)
@@ -919,16 +909,23 @@ function createLineBetweenVectors(start, end)
     geometry,
     new THREE.LineBasicMaterial({color:0x0000ff})//basic blue color as material
   );
+  lineMesh['userData']['linePosData'] = true ;
   scene.add(lineMesh);
 }
 
-function arrangeLabelsWithinPartition(partition, meshes)
+function removeLinePosData()
+{
+  const linePosData = scene.children.filter((m)=>m['userData']['linePosData'] );
+  linePosData.forEach((m)=> scene.remove(m));
+}
+
+function arrangeLabelsWithinPartition(partition, meshes, incZ)
 {
   const inPartitionMeshes = getMeshesWithinPartition(partition, meshes);
   const alreadyProcessed = [];
 
   //arrange within partition
-  if (inPartitionMeshes)
+  if (inPartitionMeshes.length > 0)
   {
     //const radius = inPartitionMeshes.length * LABEL_SPACE_ARM_LENGTH ;//arm length is a fixed value taken as delta radius from the center of the partition
                                                                         //the larger ammount of meshes within the partition, the larger the arm
@@ -944,50 +941,51 @@ function arrangeLabelsWithinPartition(partition, meshes)
     {
       for ( var j = i ; j < total ; j++ )
       {
-        const first = inPartitionMeshes[i];
-        const second = inPartitionMeshes[j];
-        if ( checkClose(first, second) )
-        //if (checkCollide(first, second))
+        if (i!=j) // overlap with itself
         {
-          //move away in Y axis
-          if (( alreadyProcessed.indexOf(first.id) == -1 ) && ( alreadyProcessed.indexOf(second.id) == -1 ))
+          const first = inPartitionMeshes[i];
+          const second = inPartitionMeshes[j];
+          if ( checkClose(first, second) )
+          //if (checkCollide(first, second))
           {
-            const firstPos    = first.position.clone() ;
-            const secondPos   = second.position.clone() ;
-            first.position.y  = first.position.y  + LABEL_SPACE_ARM_LENGTH ;
-            second.position.y = second.position.y - LABEL_SPACE_ARM_LENGTH ;
-            alreadyProcessed.push(first.id);
-            alreadyProcessed.push(second.id);
-            //place line guides to previous position
-            // createLineBetweenVectors(firstPos, first.position);
-            // createLineBetweenVectors(secondPos, second.position);
+            //move away in Y axis
+            if ( ( alreadyProcessed.indexOf(first.id) == -1 ) && ( alreadyProcessed.indexOf(second.id) == -1 ) )
+            {
+              const firstPos    = first.position.clone() ;
+              const secondPos   = second.position.clone() ;
+
+              //shaking
+              first.position.y  -= first.height ; 
+              second.position.y += second.height ;
+              first.position.x  -= first.width ;
+              second.position.x += second.width ;
+              second.position.z = incZ ;
+
+              first.userData.initialPos = firstPos ;
+              second.userData.initialPos = secondPos ;
+
+              alreadyProcessed.push(first.id);
+              alreadyProcessed.push(second.id);
+            }
           }
         }
       } 
     }
-
-
-    //const deltaX = Math.abs(partition.max.x - partition.min.x) / total;
-
-    // for (var i = 0; i < total; i ++) 
-    // {
-    //   const mesh = inPartitionMeshes[i];      
-    //   const isOddIndex = i % 2 == 0 ;
-
-    //   const posX = partition.min.x + (deltaX * i) ;
-    //   const posY = isOddIndex ? partition.min.y : partition.max.y ;
-
-    //   mesh.position.x = posX ;
-    //   mesh.position.y = posY ;
-    // }
   }
 }
 function getMeshesWithinPartition(partition, meshes)
 {
   return meshes.filter((m)=> m.position.x > partition.min.x &&  m.position.x < partition.max.x && m.position.y > partition.min.y &&  m.position.y < partition.max.y)
 }
+function createLinksToOrigin(labels)
+{
+  labels.forEach((l)=>{
+    if( l.userData.initialPos && l.userData.viewPosition && l.visible && l.text.length > 0 )
+      createLineBetweenVectors(l.userData.viewPosition, l.position);
+  })
+}
 //space partitioning ordering algorithm
-function layoutLabelCollide(scene) {
+export function layoutLabelCollide(scene) {
   const labels = getSceneObjectByModelClass(scene.children, "Label");
   if (labels.length > 0)
   {
@@ -999,14 +997,18 @@ function layoutLabelCollide(scene) {
     }
     const spacePartitionBoxes = getSpacePartitions(spaceBox, LABEL_SPACE_PARTITION_NUM);
     for (var i = 0; i < spacePartitionBoxes.length ; i ++)
-    {
-      arrangeLabelsWithinPartition(spacePartitionBoxes[i], labels);
+    {      
+      arrangeLabelsWithinPartition(spacePartitionBoxes[i], labels, 50);
+      arrangeLabelsWithinPartition(spacePartitionBoxes[i], labels, 50);
+      // arrangeLabelsWithinPartition(spacePartitionBoxes[i], labels, 250);
       if (DEBUG)
       {
         let innerDebugBox = debugMeshFromBox(spacePartitionBoxes[i]);
         scene.add(innerDebugBox);
       }
     }
+    removeLinePosData();
+    createLinksToOrigin(labels);
   }
 }
 

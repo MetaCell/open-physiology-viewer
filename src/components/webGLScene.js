@@ -24,7 +24,7 @@ require("three/examples/js/postprocessing/RenderPass");
 require("three/examples/js/postprocessing/ShaderPass");
 
 const WindowResize = require('three-window-resize');
-import { autoLayout } from '../view/render/autoLayout'
+import { autoLayout, layoutLabelCollide } from '../view/render/autoLayout'
 
 /**
  * @ignore
@@ -547,6 +547,7 @@ export class WebGLSceneComponent {
             })
             .onFinishLoading(() => {
               this.parseDefaultColors(this.getSceneObjects());
+              //layoutLabelCollide(this.scene);
             })
             .graphData(this.graphData);
 

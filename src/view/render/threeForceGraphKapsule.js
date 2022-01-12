@@ -96,6 +96,7 @@ export default Kapsule({
                             }
                             state.canvas.classList.remove('grabbable');
                             state.isPointerDragging = false;
+                            
                         })
                 );
 

@@ -44,6 +44,7 @@ VisualResource.prototype.updateLabels = function(position){
         if (this.labels[labelKey].visible) {
             this.labels[labelKey].scale.set(this.state.labelRelSize, this.state.labelRelSize, this.state.labelRelSize);
             copyCoords(this.labels[labelKey].position, position);
+            this.labels[labelKey].userData.viewPosition = position ;
             this.viewObjects['label'] = this.labels[labelKey];
         }
     } else {

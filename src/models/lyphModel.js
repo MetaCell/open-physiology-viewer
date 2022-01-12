@@ -287,6 +287,7 @@ export class LyphModel extends Model {
             this.viewObjects['label'].visible = state.showLyphLabel;
             copyCoords(this.viewObjects['label'].position, this.center);
             this.viewObjects['label'].position.addScalar(-5);
+            this.viewObjects['label'].userData.viewPosition = this.center ;
         } else {
             delete this.viewObjects['label'];
         }
