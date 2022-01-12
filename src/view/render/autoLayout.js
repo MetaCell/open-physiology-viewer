@@ -1,3 +1,4 @@
+import { over } from "lodash";
 import { Vector2, Vector3 } from "three";
 import {$Field, modelClasses} from "../../model";
 import {
@@ -7,15 +8,17 @@ const {Edge} = modelClasses;
 
 const LYPH_H_PERCENT_MARGIN = 0.10;
 const LYPH_V_PERCENT_MARGIN = 0.10;
-const MAX_LYPH_WIDTH = 100;
+const MAX_LYPH_WIDTH = 10;
 const LYPH_LINK_SIZE_PROPORTION = 0.75;
 const DENDRYTE = "dend";
 const AXON = "axon";
 const MAX_POINTS = 100;
 const AXON_SIZE = 1;
 const DENDRYTE_SIZE = .5;
-const LABEL_SPACE_ARM_LENGTH = 10 ;
+const LABEL_SPACE_ARM_LENGTH = 25 ;
 const LABEL_SPACE_PARTITION_NUM = 10 ;
+const LABEL_CLOSE_ENOUGH_DISTANCE = 15.00; 
+
 const DEBUG = false ;
 function trasverseSceneChildren(children, all) {
   children.forEach((c)=>{
@@ -899,9 +902,31 @@ function getSpacePartitions(spaceBox, n)
 
   return partitions ;
 }
+
+function checkClose(first, second)
+{
+  return Math.abs(first.position.distanceTo(second.position)) > LABEL_CLOSE_ENOUGH_DISTANCE ;
+}
+
+function createLineBetweenVectors(start, end)
+{
+  const points = [];
+  points.push( start );
+  points.push( end );
+
+  const geometry = new THREE.BufferGeometry().setFromPoints( points );
+  var lineMesh=new THREE.Line(
+    geometry,
+    new THREE.LineBasicMaterial({color:0x0000ff})//basic blue color as material
+  );
+  scene.add(lineMesh);
+}
+
 function arrangeLabelsWithinPartition(partition, meshes)
 {
   const inPartitionMeshes = getMeshesWithinPartition(partition, meshes);
+  const alreadyProcessed = [];
+
   //arrange within partition
   if (inPartitionMeshes)
   {
@@ -909,27 +934,52 @@ function arrangeLabelsWithinPartition(partition, meshes)
                                                                         //the larger ammount of meshes within the partition, the larger the arm
                                                                         //so it results in a "explode from center" kind of effect
 
-                                                                        //for circule, need to implement this, no time
+                                                                        //for circle, need to implement this, no time
                                                                         //https://planetcalc.com/8943/
                                                                         //giving the upper/down positions for each index
 
     const total = inPartitionMeshes.length ;
-    const deltaX = Math.abs(partition.max.x - partition.min.x) / total;
 
-    if (total > 1)
+    for ( var i = 0 ; i < total ; i++ )
     {
-      for (var i = 0; i < total; i ++) 
+      for ( var j = i ; j < total ; j++ )
       {
-        const mesh = inPartitionMeshes[i];      
-        const isOddIndex = i % 2 == 0 ;
-  
-        const posX = partition.min.x + (deltaX * i) ;
-        const posY = isOddIndex ? partition.min.y : partition.max.y ;
-  
-        mesh.position.x = posX ;
-        mesh.position.y = posY ;
-      }
+        const first = inPartitionMeshes[i];
+        const second = inPartitionMeshes[j];
+        if ( checkClose(first, second) )
+        //if (checkCollide(first, second))
+        {
+          //move away in Y axis
+          if (( alreadyProcessed.indexOf(first.id) == -1 ) && ( alreadyProcessed.indexOf(second.id) == -1 ))
+          {
+            const firstPos    = first.position.clone() ;
+            const secondPos   = second.position.clone() ;
+            first.position.y  = first.position.y  + LABEL_SPACE_ARM_LENGTH ;
+            second.position.y = second.position.y - LABEL_SPACE_ARM_LENGTH ;
+            alreadyProcessed.push(first.id);
+            alreadyProcessed.push(second.id);
+            //place line guides to previous position
+            // createLineBetweenVectors(firstPos, first.position);
+            // createLineBetweenVectors(secondPos, second.position);
+          }
+        }
+      } 
     }
+
+
+    //const deltaX = Math.abs(partition.max.x - partition.min.x) / total;
+
+    // for (var i = 0; i < total; i ++) 
+    // {
+    //   const mesh = inPartitionMeshes[i];      
+    //   const isOddIndex = i % 2 == 0 ;
+
+    //   const posX = partition.min.x + (deltaX * i) ;
+    //   const posY = isOddIndex ? partition.min.y : partition.max.y ;
+
+    //   mesh.position.x = posX ;
+    //   mesh.position.y = posY ;
+    // }
   }
 }
 function getMeshesWithinPartition(partition, meshes)
