@@ -123,6 +123,7 @@ import { autoLayout, layoutLabelCollide } from '../view/render/autoLayout'
                         (onEditResource)="editResource.emit($event)"
                         (onUpdateLabels)="graph?.showLabels($event)"
                         (onToggleMode)="graph?.numDimensions($event)"
+                        (onToggleWireView)="graph?.showLabelWires($event)"
                         (onToggleLayout)="toggleLayout($event)"
                         (onToggleGroup)="toggleGroup($event)"
                         (onUpdateLabelContent)="graph?.labels($event)"
@@ -274,7 +275,8 @@ export class WebGLSceneComponent {
                 "showLayers"      : true,
                 "showLyphs3d"     : false,
                 "showCoalescences": false,
-                "numDimensions"   : 3
+                "numDimensions"   : 3,
+                "wireView"        : true
             },
             "groups": true,
             "labels": {
@@ -557,6 +559,7 @@ export class WebGLSceneComponent {
 
         this.graph.labelRelSize(this.labelRelSize);
         this.graph.showLabels(this.config["labels"]);
+        this.graph.showLabelWires(this.config["labelsWires"]);
         this.scene.add(this.graph);
 
         window.scene = this.scene ;

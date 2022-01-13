@@ -785,7 +785,7 @@ function autoLayoutChains(scene, graphData, links){
   }
 }
 
-export function autoLayout(scene, graphData) {
+export function autoLayout(scene, graphData, showLabelWires) {
 
   let lyphs = {};
   scene.children.forEach( child => {
@@ -849,7 +849,7 @@ export function autoLayout(scene, graphData) {
   autoLayoutChains(scene, graphData, links);
   links.forEach( link => !link.modifiedChain ? removeEntity(scene, link): link.visible = false);
 
-  layoutLabelCollide(scene);
+  layoutLabelCollide(scene, showLabelWires);
 }
 
 export function clearByObjectType(scene, type) {
@@ -901,6 +901,7 @@ function checkClose(first, second)
 
 function createLineBetweenVectors(start, end)
 {
+  start.z = 0 ; //force matching plane
   const points = [];
   points.push( start );
   points.push( end );
@@ -986,7 +987,7 @@ function createLinksToOrigin(labels)
   })
 }
 //space partitioning ordering algorithm
-export function layoutLabelCollide(scene) {
+export function layoutLabelCollide(scene, showLabelWires) {
   const labels = getSceneObjectByModelClass(scene.children, "Label");
   if (labels.length > 0)
   {
@@ -999,8 +1000,8 @@ export function layoutLabelCollide(scene) {
     const spacePartitionBoxes = getSpacePartitions(spaceBox, LABEL_SPACE_PARTITION_NUM);
     for (var i = 0; i < spacePartitionBoxes.length ; i ++)
     {      
-      arrangeLabelsWithinPartition(spacePartitionBoxes[i], labels, LABEL_ELEVATION);
-      arrangeLabelsWithinPartition(spacePartitionBoxes[i], labels, LABEL_ELEVATION);
+      arrangeLabelsWithinPartition(spacePartitionBoxes[i], labels, LABEL_ELEVATION, showLabelWires);
+      //arrangeLabelsWithinPartition(spacePartitionBoxes[i], labels, LABEL_ELEVATION, showLabelWires);
       // arrangeLabelsWithinPartition(spacePartitionBoxes[i], labels, 250);
       if (DEBUG)
       {
@@ -1009,7 +1010,8 @@ export function layoutLabelCollide(scene) {
       }
     }
     removeLinePosData();
-    createLinksToOrigin(labels);
+    if (showLabelWires)
+      createLinksToOrigin(labels);
   }
 }
 
