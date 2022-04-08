@@ -9,6 +9,8 @@ import {MatInputModule} from '@angular/material/input';
 import {CommonModule} from "@angular/common";
 import {FormsModule} from "@angular/forms";
 import {HttpClient} from "@angular/common/http";
+import {MatListModule} from "@angular/material/list";
+import {MatSelectModule} from "@angular/material/select";
 
 const fileExtensionRe = /(?:\.([^.]+))?$/;
 
@@ -18,11 +20,11 @@ const fileExtensionRe = /(?:\.([^.]+))?$/;
     template: `
        <section class="w3-sidebar w3-bar-block vertical-toolbar">
            <input #fileInput type="file" accept=".json,.xlsx" [style.display]="'none'"
-                   (change)="load(fileInput.files)"/>
+                   (change)="load(fileInput.files, onLoadModel)"/>
            <input #fileInput1 type="file" accept=".json,.xlsx" [style.display]="'none'"
-                   (change)="join(fileInput1.files)"/>
+                   (change)="load(fileInput1.files, onJoinModel)"/>
            <input #fileInput2 type="file" accept=".json,.xlsx" [style.display]="'none'"
-                   (change)="merge(fileInput2.files)"/>
+                   (change)="load(fileInput2.files, onMergeModel)"/>
            <button id="createBtn" class="w3-bar-item w3-hover-light-grey" (click)="create()" title="Create model">
                 <i class="fa fa-plus"> </i>
            </button>
@@ -46,7 +48,10 @@ const fileExtensionRe = /(?:\.([^.]+))?$/;
            <button id="importExcelBtn" class="w3-bar-item w3-hover-light-grey" (click)="importExcel()" title="Import Excel model from URI">
                <i class="fa fa-file-excel-o"> </i>
            </button>
-           <button id="saveBtn" class="w3-bar-item w3-hover-light-grey" (click)="save()" title="Export model">
+           <button id="exportExcelBtn" class="w3-bar-item w3-hover-light-grey" (click)="exportExcel()" title="Export Excel model">
+                <i class="fa fa-table"> </i> 
+           </button>
+           <button id="saveBtn" class="w3-bar-item w3-hover-light-grey" (click)="save()" title="Save model">
                 <i class="fa fa-save"> </i> 
            </button>
         </section>
@@ -82,7 +87,7 @@ export class MainToolbar {
         dialogRef.afterClosed().subscribe(spreadsheetID => {
             if (spreadsheetID !== undefined){
                 let url = `https://docs.google.com/spreadsheets/d/e/${spreadsheetID}/pub?output=xlsx`;
-                this._http.get(url).subscribe(
+                this._http.get(url,{responseType: 'arraybuffer'}).subscribe(
                     res => {
                         let model = loadModel(res, spreadsheetID, "xlsx");
                         this.onImportExcelModel.emit(model);
@@ -99,7 +104,7 @@ export class MainToolbar {
         this.onCreateModel.emit();
     }
 
-    load(files) {
+    load(files, event) {
         if (files && files[0]){
             let [name, extension] = fileExtensionRe.exec(files[0].name);
             extension = extension.toLowerCase();
@@ -107,8 +112,8 @@ export class MainToolbar {
             const reader = new FileReader();
             reader.onload = () => {
                 let model = loadModel(reader.result, name, extension);
-                this.onLoadModel.emit(model);
-            };
+                event.emit(model);
+            }
             try {
                 if (extension === "json"){
                     reader.readAsText(files[0]);
@@ -123,42 +128,16 @@ export class MainToolbar {
         }
     }
 
-    join(files) {
-        if (files && files[0]){
-            const reader = new FileReader();
-            reader.onload = () => {
-                let newModel = JSON.parse(reader.result);
-                this.onJoinModel.emit(newModel);
-            };
-            try {
-                reader.readAsText(files[0]);
-            } catch (err){
-                throw new Error("Failed to open the input file: " + err);
-            }
-        }
-    }
-
-    merge(files) {
-        if (files && files[0]){
-            const reader = new FileReader();
-            reader.onload = () => {
-                let newModel = JSON.parse(reader.result);
-                this.onMergeModel.emit(newModel);
-            };
-            try {
-                reader.readAsText(files[0]);
-            } catch (err){
-                throw new Error("Failed to open the input file: " + err);
-            }
-        }
-    }
-
     save(){
-        this.onExportModel.emit();
+        this.onExportModel.emit("json");
+    }
+
+    exportExcel(){
+        this.onExportModel.emit("excel");
     }
 }
 @NgModule({
-    imports: [CommonModule, FormsModule, MatDialogModule, MatFormFieldModule, MatInputModule],
+    imports: [CommonModule, FormsModule, MatDialogModule, MatFormFieldModule, MatInputModule, MatListModule, MatSelectModule],
     declarations: [MainToolbar, ImportExcelModelDialog],
     entryComponents: [ImportExcelModelDialog],
     exports: [MainToolbar]

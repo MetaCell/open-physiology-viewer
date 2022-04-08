@@ -1,18 +1,21 @@
 import {
-	describe,
-	it,
-	before,
-	after,
-	expect,
+    describe,
+    it,
+    before,
+    expect, after
 } from './test.helper';
+import chainFromLevels from './data/basicChainWithNestedLevels.json';
 import basalGanglia from './data/basalGanglia.json';
 import respiratory from './data/respiratory.json';
+import tooMap from './scaffolds/tooMap.json';
 import villus from './data/basicVillus';
 import lyphOnBorder from './data/basicLyphOnBorder';
 import keast from './data/keastSpinalFull.json';
-
-import {keys, entries} from 'lodash-bound';
-import {modelClasses} from '../src/model/index';
+import {keys, entries, pick} from 'lodash-bound';
+import {$Field, $SchemaClass, modelClasses, schemaClassModels} from '../src/model/index';
+import schema from '../src/model/graphScheme.json';
+import {Validator} from "jsonschema";
+import {getGenID, getGenName} from "../src/model/utils";
 
 
 describe("JSON Schema loads correctly", () => {
@@ -51,6 +54,83 @@ describe("JSON Schema loads correctly", () => {
     });
 });
 
+
+describe("JSON Schema matches patterns", () => {
+    let v;
+    before(() => {
+        v = new Validator();
+    });
+
+    it("IdentifierSchema does not accept weird expressions as identifiers", () => {
+        const ids = ["a+b=c",
+            "2*2=4",
+            "Just some text with spaces"];
+        ids.forEach(id => {
+            let resVal = v.validate(id, schema.definitions.IdentifierScheme);
+            expect(resVal.errors).to.have.length.above(0);
+        });
+    })
+
+    it("IdentifierSchema accepts URIs", () => {
+        const ids = ["http://www.amazon.com/?isbn=0321154991",
+            "doi:10.1016/B978-0-444-53491-0.09985-5",
+            "doi:10.1016/j.mpaic.2008.08.005",
+            "UBERON:0001288"];
+        ids.forEach(id => {
+            let resVal = v.validate(id, schema.definitions.IdentifierScheme);
+            expect(resVal.errors).to.have.length(0);
+        });
+    })
+
+    it("Link schema accepts link resource", () => {
+         const lnk = {
+            "id": "RL",
+            "source": "R",
+            "target": "L",
+            "name": "Pulmonary",
+            "geometry": "rectangle",
+            "length": 25,
+            "stroke": "thick",
+            "color": "#ee1d23",
+            "conveyingLyph": "br"
+        }
+        schema.$ref = "#/definitions/Link";
+        let resVal = v.validate(lnk, schema);
+        expect(resVal.errors).to.have.length(0);
+    })
+})
+
+describe("Nested resource definitions are processed", () => {
+    it("Nested chain levels are converted to links", () => {})
+        let graphData = modelClasses.Graph.fromJSON(chainFromLevels, modelClasses);
+        expect(graphData.chains).to.be.an("array").that.has.length(1);
+        expect(graphData.nodes).to.be.an("array").that.has.length(6);
+        expect(graphData.links).to.be.an("array").that.has.length(5);
+
+        expect(graphData.chains[0]).to.have.property("id").that.equals("t1");
+        expect(graphData.chains[0].levels).to.have.length(5);
+        expect(graphData.chains[0].numLevels).to.be.equal(5);
+        expect(graphData.chains[0]).to.have.property("root").that.is.an("object");
+        expect(graphData.chains[0]).to.have.property("leaf").that.is.an("object");
+        expect(graphData.chains[0].root).to.have.property("id").that.equals("n1");
+        expect(graphData.chains[0].leaf).to.have.property("id").that.equals("n2");
+
+        let n1 = graphData.nodes.find(e => e.id === "n1");
+        let n2 = graphData.nodes.find(e => e.id === "n2");
+        expect(n1).to.have.property("layout").that.has.property("x");
+        expect(n2).to.have.property("layout").that.has.property("x");
+        expect(n1).to.have.property("sourceOf").that.is.an("array");
+        expect(n1.sourceOf[0]).has.property("id").that.equals("t1_lnk_1");
+        expect(n2).to.have.property("targetOf").that.is.an("array");
+        expect(n2.targetOf[0]).has.property("id").that.equals("t1_lnk_5");
+
+        expect(graphData.groups).to.be.an("array").that.has.length(2);
+        let group = graphData.groups.find(g => g.id === "group_t1");
+        expect(group).to.have.property("nodes").that.has.length(6);
+        expect(group).to.have.property("links").that.has.length(5);
+        expect(group).to.have.property("lyphs").that.has.length(6);
+})
+
 describe("Generate model (Basal Ganglia)", () => {
     let graphData;
     before(() => {
@@ -80,11 +160,13 @@ describe("Generate model (Basal Ganglia)", () => {
 
         expect(graphData).to.have.property("materials");
         expect(graphData).to.have.property("references");
+        expect(graphData.references[0]).to.be.instanceOf(modelClasses.Reference);
+
         expect(graphData).to.have.property("coalescences");
         expect(graphData).to.have.property("channels");
 
         //"generatedFrom" should not be populated from subgroups
-        expect(graphData.generatedFrom).to.be.a('null');
+        expect(graphData.generatedFrom).to.be.a('undefined');
     });
 
     it("Related properties synchronized", () => {
@@ -145,12 +227,32 @@ describe("Serialize data", () => {
     it("All necessary fields serialized (respiratory system)", () => {
         graphData = modelClasses.Graph.fromJSON(respiratory, modelClasses);
         let serializedGraphData = graphData.toJSON();
-        let excluded = ["infoFields", "entitiesByID", "scaffoldResources", "logger", "modelClasses"];
-        let exported = graphData::entries().filter(([key, value]) => !!value && !excluded.includes(key));
+        const excluded = ["infoFields", "entitiesByID", "scaffoldResources", "logger", "modelClasses", "scaffoldComponents"];
+        let expectedToBeSerialized = graphData::entries().filter(([key, value]) => !!value && !excluded.includes(key)).map(e => e[0]);
+        expect(serializedGraphData::keys().length).to.be.equal(expectedToBeSerialized.length);
+        let diff = expectedToBeSerialized.filter(x => !serializedGraphData::keys().find(e => e === x));
+        expect(diff).to.have.length(0);
         let serializedLogs = graphData.logger.print();
-        //TODO fix - scaffoldComponents are not serialized?
-        expect(serializedGraphData::keys().length).to.be.equal(exported.length);
         expect(serializedLogs.length).to.be.equal(graphData.logger.entries.length);
+        //JSON-LD
+        let serializedGraphDataLD = graphData.entitiesToJSONLD();
+        expect(serializedGraphDataLD).to.have.property("@context").that.is.an("object");
+        expect(serializedGraphDataLD["@context"]).to.have.property("@base");
+        expect(serializedGraphDataLD["@context"]).to.have.property("@version");
+        $Field::keys().forEach(key => {
+            expect(serializedGraphDataLD["@context"]).to.have.property(key);
+        })
+        schemaClassModels[$SchemaClass.Graph].relationshipNames.forEach(key => {
+            //TODO: scaffolds are not exported to JSON-LD, fix this as part of more general issue #65
+            if (key === "scaffolds"){
+                return;
+            }
+            expect(serializedGraphDataLD["@context"][key]).to.be.an("object").that.has.property("@type");
+        })
+        expect(serializedGraphDataLD).to.have.property("@graph").that.is.an("array");
+        //All resources are exported, +1 for the generated graph annotation in JSON-LD
+        expect(serializedGraphDataLD["@graph"].length).to.be.equal(graphData.entitiesByID::keys().length + 1);
+        graphData.logger.clear();
     });
 
     it("Nested villus resource serialized", () => {
@@ -162,6 +264,7 @@ describe("Serialize data", () => {
         expect(lyph.villus).to.have.property("id");
         expect(lyph.villus).to.have.property("class");
         expect(lyph.villus.class).to.be.equal("Villus");
+        graphData.logger.clear();
     });
 
     it("Borders serialized", () => {
@@ -176,6 +279,115 @@ describe("Serialize data", () => {
         expect(lyph.border.borders[0]).to.have.property("class");
         expect(lyph.border.borders[0].class).to.be.equal("Link");
         expect(lyph.border.borders[3]).to.have.property("conveyingLyph");
+        graphData.logger.clear();
+    });
+
+    it("Housing chain layers serialized", () => {
+        graphData = modelClasses.Graph.fromJSON(keast, modelClasses);
+        let serializedGraphData = graphData.toJSON(3);
+        let chain = serializedGraphData.chains.find(e => e.id === "acn1");
+        expect(chain).to.be.an('object');
+        expect(chain).to.have.property("housingLyphs");
+        expect(chain).to.have.property("housingLayers");
+        expect(chain.housingLyphs).to.be.an('array').that.has.length(4);
+        expect(chain.housingLayers).to.be.an('array').that.has.length(4);
+        expect(chain.housingLayers[0]).to.be.equal(0);
+        expect(chain.housingLayers[1]).to.be.equal(2);
+        graphData.logger.clear();
+    });
+});
+
+describe("Serialize scaffold", () => {
+    let scaffold;
+
+    it("All necessary fields serialized (Too-map)", () => {
+        scaffold = modelClasses.Scaffold.fromJSON(tooMap, modelClasses);
+        let serializedScaffold = scaffold.toJSON();
+        const excluded = ["infoFields", "entitiesByID", "logger", "modelClasses"];
+        let expectedToBeSerialized = scaffold::entries().filter(([key, value]) =>
+            !!value && !excluded.includes(key)).map(e => e[0]);
+        expect(serializedScaffold::keys().length).to.be.equal(expectedToBeSerialized.length);
+        let diff = expectedToBeSerialized.filter(x => !serializedScaffold::keys().find(e => e === x));
+        expect(diff).to.have.length(0);
+        let serializedLogs = scaffold.logger.print();
+        expect(serializedLogs.length).to.be.equal(scaffold.logger.entries.length);
+    });
+});
+
+describe("Create, save and load snapshots", () => {
+    let graphData;
+    before(() => {
+        graphData = modelClasses.Graph.fromJSON(respiratory, modelClasses);
+    });
+
+    it("Serialized snapshot contains necessary fields", () => {
+        const snapshot = modelClasses.Snapshot.fromJSON({
+            [$Field.id]: getGenID("snapshot", graphData.id),
+            [$Field.name]: getGenName("Snapshot for", graphData.name),
+            [$Field.model]: graphData.id
+        }, modelClasses, graphData.entitiesByID);
+        const annotationProperties = schema.definitions.AnnotationSchema.properties::keys();
+        snapshot.annotation = graphData::pick(annotationProperties);
+
+        for (let i = 0; i < 5; i++) {
+            const state = modelClasses.State.fromJSON({
+                [$Field.id]: getGenID(snapshot.id, "state", (snapshot.states || []).length),
+                [$Field.visibleGroups]: graphData.visibleGroups.map(g => g.id),
+                [$Field.scaffolds]: (graphData.scaffolds || []).map(s => ({
+                    [$Field.id]: s.id,
+                    [$Field.hidden]: s.hidden,
+                    [$Field.anchors]: (s.anchors || []).map(a => ({
+                        [$Field.id]: a.id,
+                        [$Field.layout]: {"x": 10*i, "y": 10*i}
+                    })),
+                    [$Field.visibleComponents]: s.visibleComponents.map(c => c.id)
+                })),
+                [$Field.camera]: {
+                    position: {"x": 100*i, "y": 200*i, "z": 300*i},
+                    up: {"x": 50*i, "y": 60*i, "z": 70*i}
+                },
+            }, modelClasses, graphData.entitiesByID);
+            snapshot.addState(state);
+        }
+        expect(snapshot.length).to.be.equal(5);
+        expect(snapshot.activeIndex).to.be.equal(4);
+        const state4 = snapshot.switchToPrev();
+        expect(snapshot.activeIndex).to.be.equal(3);
+        snapshot.switchToNext();
+        expect(snapshot.activeIndex).to.be.equal(4);
+        snapshot.switchToPrev();
+        expect(snapshot.activeIndex).to.be.equal(3);
+        expect(state4).to.have.property("id").that.equals("snapshot_respiratory_state_3");
+        expect(state4).to.have.property("scaffolds");
+        expect(state4.scaffolds).to.be.an("array").that.has.length(1);
+        expect(state4.scaffolds[0]).to.have.property("anchors");
+        expect(state4.scaffolds[0].anchors).to.be.an("array").that.has.length.greaterThan(1);
+        expect(state4.scaffolds[0].anchors[0]).to.have.property("layout");
+        expect(state4.scaffolds[0].anchors[0].layout).to.have.property("x").that.equals(30)
+        snapshot.removeState(state4);
+        expect(snapshot.length).to.be.equal(4);
+
+        let result = snapshot.toJSON(2, {
+                [$Field.states]: 4
+        });
+        let restoredSnapshot = modelClasses.Snapshot.fromJSON(result, modelClasses);
+        expect(restoredSnapshot).to.be.an("object").that.has.property("states");
+        expect(restoredSnapshot.validate(graphData)).to.equal(1);
+        expect(restoredSnapshot).to.be.have.property("annotation");
+        graphData.version = "2";
+        expect(restoredSnapshot.validate(graphData)).to.equal(0);
+        expect(restoredSnapshot.length).to.be.equal(4);
+        expect(restoredSnapshot.activeIndex).to.be.equal(-1);
+        restoredSnapshot.switchToNext();
+        expect(restoredSnapshot.activeIndex).to.be.equal(0);
+        restoredSnapshot.switchToNext();
+        expect(restoredSnapshot.active).to.be.have.property("camera");
+        expect(restoredSnapshot.active.camera).to.have.property("position");
+        expect(restoredSnapshot.active.camera.position).to.have.property("y").that.equals(200);
+    });
+
+    after(() => {
+        graphData.logger.clear();
     });
 });
 
@@ -210,4 +422,7 @@ describe("Serialize data to JSON-LD", () => {
         graphData.entitiesToJSONLDFlat(callback);
     });
 
+    after(() => {
+        graphData.logger.clear();
+    });
 });

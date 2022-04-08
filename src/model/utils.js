@@ -7,10 +7,11 @@ import {
     merge,
     keys,
     isPlainObject,
-    flatten, isArray, unionBy, mergeWith
+    flatten, isArray, unionBy, mergeWith, isNumber
 } from "lodash-bound";
 import * as colorSchemes from 'd3-scale-chromatic';
 import {definitions} from "./graphScheme";
+import * as XLSX from "xlsx";
 
 const colors = [...colorSchemes.schemePaired, ...colorSchemes.schemeDark2];
 
@@ -24,7 +25,7 @@ export const $SchemaType = {
 /**
  * @property IdentifierScheme
  * @property RGBColorScheme
- * @property ColorScheme
+ * @property InterpolateColorScheme
  * @property GroupColorScheme
  * @property CurieMapping
  * @property Point2Scheme
@@ -32,7 +33,8 @@ export const $SchemaType = {
  * @property ProcessTypeScheme
  * @property Resource
  * @property External
- * @property Publication
+ * @property Reference
+ * @property OntologyTerm
  * @property VisualResource
  * @property Vertice
  * @property Node
@@ -62,8 +64,9 @@ export const $SchemaType = {
 export const $SchemaClass = definitions::keys().map(schemaClsName => [schemaClsName, schemaClsName])::fromPairs();
 export const $Field = $SchemaClass::keys().map(className => definitions[className].properties::keys().map(property => [property, property]))::flatten()::fromPairs();
 
-export const WIRE_GEOMETRY        = definitions[$SchemaClass.Wire].properties[$Field.geometry].enum.map(r => [r.toUpperCase(), r])::fromPairs();
-export const LINK_GEOMETRY        = definitions[$SchemaClass.Link].properties[$Field.geometry].enum.map(r => [r.toUpperCase(), r])::fromPairs();
+export const EDGE_GEOMETRY        = definitions.EdgeGeometryScheme.enum.map(r => [r.toUpperCase(), r])::fromPairs();
+export const WIRE_GEOMETRY        = definitions[$SchemaClass.Wire].properties[$Field.geometry].anyOf[1].enum.map(r => [r.toUpperCase(), r])::fromPairs()::merge(EDGE_GEOMETRY);
+export const LINK_GEOMETRY        = definitions[$SchemaClass.Link].properties[$Field.geometry].anyOf[1].enum.map(r => [r.toUpperCase(), r])::fromPairs()::merge(EDGE_GEOMETRY);
 export const EDGE_STROKE          = definitions[$SchemaClass.Edge].properties[$Field.stroke].enum.map(r => [r.toUpperCase(), r])::fromPairs();
 export const PROCESS_TYPE         = definitions[$SchemaClass.ProcessTypeScheme].enum.map(r => [r.toUpperCase(), r])::fromPairs();
 export const LYPH_TOPOLOGY        = definitions[$SchemaClass.Lyph].properties[$Field.topology].enum.map(r => [r.toUpperCase(), r])::fromPairs();
@@ -101,13 +104,14 @@ export const $Prefix = {
     wire        : "wire",   //wire
     //TODO create a separate object with generated resource ids and names
     query       : "query",  //dynamic query
-    default     : "default" //default group ID
+    default     : "default", //default group ID
+    force       : "force"
 };
 
 export const getNewID = entitiesByID => "new-" +
     (entitiesByID? entitiesByID::keys().length : Math.random().toString(36).replace(/[^a-z]+/g, '').substr(0, 5));
 
-export const getGenID = (...args) => args.join("_");
+export const getGenID = (...args) => args.filter(arg => arg !== null).join("_");
 
 export const getFullID = (namespace, id) => {
     if (!id) return "";
@@ -311,6 +315,79 @@ export const showGroups = (groups, ids) => {
 };
 
 /**
+ * Prepares JSON input model for export to Excel
+ * @param inputModel - graph or scaffold model
+ * @param prop - container property for nested resources, i., groups or components
+ * @param propNames - valid resource schema properties mapped to the main sheet
+ * @param sheetNames - valid resource schema properties converted to Excel sheets
+ */
+export const prepareForExport = (inputModel, prop, propNames, sheetNames) => {
+    let modelProps = {}
+    inputModel::keys().forEach(key => {
+        //Group properties for "main" page
+        if (propNames.find(y => y === key)) {
+            modelProps[key] = inputModel[key];
+            delete inputModel[key];
+        } else {
+            //Remove properties that are not relationships
+            if (!sheetNames.find(y => y === key)) {
+                delete inputModel[key];
+            }
+        }
+    })
+    inputModel.main = [modelProps];
+    for (let i = 0; i < (inputModel[prop]||[]).length; i++){
+        let group = inputModel[prop][i];
+        group::keys().forEach(key => {
+            //Cannot convert nested resources, flatten the model
+            if (group[key]::isObject() && group[key].id){
+                if (sheetNames.includes(key)){
+                    inputModel[key] = inputModel[key] || [];
+                    inputModel[key].push(group[key]::cloneDeep());
+                    group[key] = group[key].id;
+                }
+            }
+        })
+    }
+    inputModel::keys().forEach(key => {
+        const objToStr = obj => obj::isObject()? (obj.id ? obj.id : JSON.stringify(obj)): obj;
+        (inputModel[key]||[]).forEach(resource => {
+            if (resource.levels){
+                resource.levelTargets = [];
+                (resource.levels||[]).forEach((level, i) => {
+                    if (level && level.target){
+                        resource.levelTargets.push(i+":"+getID(level.target))
+                    }
+                })
+                resource.levelTargets = resource.levelTargets.join(",");
+                delete resource.levels;
+            }
+            if (resource.border){
+                const borderNames = ["inner", "radial1", "outer", "radial2"];
+                if (resource.border.borders){
+                    for (let i = 0; i < 4; i++){
+                        if (resource.border.borders[i] && resource.border.borders[i].hostedNodes) {
+                            resource[borderNames[i]] = resource.border.borders[i].hostedNodes.join(",");
+                        }
+                    }
+                }
+                delete resource.border;
+            }
+            resource::keys().forEach(prop => {
+                if (resource[prop]::isArray()) {
+                    resource[prop] = resource[prop].map(value => objToStr(value)).join(",");
+                } else {
+                    if (resource[prop]::isObject()) {
+                        //Replace resource objects with IDs, stringify simple objects (i.e., "layout")
+                        resource[prop] = objToStr(resource[prop]);
+                    }
+                }
+            })
+        })
+    })
+}
+
+/**
  * Determines if at least one of the given schema references extend a certain class
  * @param {Array<string>} refs  - schema references
  * @param {string} value        - class name
@@ -339,14 +416,16 @@ const extendsClass = (refs, value) => {
  */
 const getFieldDefaultValues = (className) => {
     const getDefault = (specObj) => specObj.type ?
-        specObj.type === $SchemaType.STRING ? "" : specObj.type === $SchemaType.BOOLEAN ? false : specObj.type === $SchemaType.NUMBER ? 0 : null
-        : null;
+        specObj.type === $SchemaType.STRING ? "" :
+            specObj.type === $SchemaType.BOOLEAN ? false :
+                specObj.type === $SchemaType.NUMBER ? 0 : undefined
+            : undefined;
     const initValue = (specObj) => {
         return specObj.default?
             (specObj.default::isObject()
                 ? specObj.default::cloneDeep()
                 : specObj.default )
-            : getDefault(specObj);
+            : undefined; //getDefault(specObj);
     };
 
     return definitions[className].properties::entries().map(([key, value]) => ({[key]: initValue(value)}));
@@ -455,4 +534,3 @@ export class SchemaClass {
  * Definition of all schema-based resource classes
  */
 export const schemaClassModels = definitions::keys().map(schemaClsName => [schemaClsName, new SchemaClass(schemaClsName)])::fromPairs();
-

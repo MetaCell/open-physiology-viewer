@@ -14,7 +14,6 @@ export class State extends Resource {
         delete schema.oneOf;
         schema.$ref = "#/definitions/Snapshot";
         let resVal = V.validate(json, schema);
-        logger.clear();
 
         json.class = json.class || $SchemaClass.State;
         let res = super.fromJSON(json, modelClasses, entitiesByID, namespace);
@@ -57,7 +56,7 @@ export class Snapshot extends Resource {
 
     removeByIdx(idx){
          if (idx > -1 && idx < this.length){
-            this.states = this.states.splice(idx, 1);
+            this.states.splice(idx, 1);
             if (idx === this._activeIdx){
                 this._activeIdx = idx - 1;
             }
@@ -127,6 +126,5 @@ export class Snapshot extends Resource {
         }
         return 1;
     }
-
 }
 

@@ -12,13 +12,11 @@ import {
 } from './test.helper';
 
 import {BrowserModule} from "@angular/platform-browser";
-import {
-    MatDialogModule,
-    MatDialogRef,
-    MatFormFieldModule,
-    MatInputModule,
-    MatSliderModule
-} from "@angular/material";
+import {MatDialogModule, MatDialogRef } from "@angular/material/dialog";
+import {MatFormFieldModule} from "@angular/material/form-field";
+import {MatInputModule} from "@angular/material/input";
+import {MatSliderModule} from "@angular/material/slider";
+
 import {BrowserAnimationsModule} from "@angular/platform-browser/animations";
 import {CommonModule} from "@angular/common";
 import {FormsModule} from "@angular/forms";
@@ -30,6 +28,7 @@ import {WebGLSceneComponent} from "../src/components/webGLScene";
 import {MainToolbar} from "../src/components/mainToolbar";
 import {ImportExcelModelDialog} from "../src/components/gui/importExcelModelDialog";
 import {HttpClientModule} from "@angular/common/http";
+import {HotkeyOptions, HotkeysCheatsheetComponent} from 'angular2-hotkeys';
 
 describe("MainToolbar component", () => {
     let toolbar;
@@ -128,7 +127,8 @@ describe("WebGLScene component", () => {
             imports     : [CommonModule, FormsModule, BrowserModule, MatSliderModule, MatDialogModule, LogInfoModule, SettingsPanelModule,
                 BrowserAnimationsModule],
             declarations: [
-                WebGLSceneComponent
+                WebGLSceneComponent,
+                HotkeysCheatsheetComponent
             ]
         });
 

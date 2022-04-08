@@ -1,5 +1,5 @@
 import {values} from 'lodash-bound';
-import {modelClasses} from "../model";
+import {$Field, modelClasses} from "../model";
 import {ForceEdgeBundling} from "../algorithms/forceEdgeBundling";
 import {copyCoords, extractCoords, getPoint} from "./utils";
 import './visualResourceView';
@@ -7,31 +7,52 @@ import './verticeView';
 import './edgeView';
 import './shapeView';
 
-const {Group, Link, Coalescence, Component, Chain, Node, Region} = modelClasses;
+const {Group, Link, Coalescence, Component, Chain, Node} = modelClasses;
 
-//TODO move to model
-function updateChain(chain, curve, start, end){
-    if (!chain || !start || !end){ return; }
-    let length = (curve && curve.getLength)? curve.getLength(): end.distanceTo(start);
-    if (length < 10){ return; }
-    chain.length = length;
-    copyCoords(chain.root.layout, start);
-    chain.root.fixed = true;
-    for (let i = 0; i < chain.levels.length; i++) {
-        //Interpolate chain node positions for quicker layout
-        chain.levels[i].length = chain.length / chain.levels.length;
-        const lyph = chain.levels[i].conveyingLyph;
-        if (lyph){
-            lyph.updateSize();
+
+//Update chain with dynamic ends
+Chain.prototype.update = function(){
+    if (!this.root || !this.leaf){ return; }
+    let {start, end} = this.getScaffoldChainEnds();
+    start = extractCoords(start);
+    end   = extractCoords(end);
+    if (start && end) {
+        let curve = null;
+        if (this.wiredTo){
+            curve = this.startFromLeaf? this.wiredTo.getCurve(end, start) : this.wiredTo.getCurve(start, end);
         }
-        let node = chain.levels[i].target;
-        if (node && !node.anchoredTo) {
-            let p = getPoint(curve, start, end, (i + 1) / chain.levels.length);
-            copyCoords(node.layout, p);
-            node.fixed = true;
+        let length = curve && curve.getLength ? curve.getLength() : end.distanceTo(start);
+        if (length < 5) {
+            return;
         }
+        this.length = length;
+        copyCoords(this.root.layout, start);
+        this.root.fixed = true;
+        //Resize chain lyphs to match the estimated level length
+        for (let i = 0; i < this.levels.length; i++) {
+            this.levels[i].length = this.length / this.levels.length;
+            const lyph = this.levels[i].conveyingLyph;
+            if (lyph) {
+                const size = lyph.sizeFromAxis;
+                [$Field.width, $Field.height].forEach(prop => lyph[prop] = size[prop]);
+            }
+        }
+        //Interpolate node positions for quicker layout of a chain with anchored nodes
+        for (let i = 0; i < this.levels.length - 1; i++) {
+            let node = this.levels[i].target;
+            if (node && !node.anchoredTo) {
+                let p = this.startFromLeaf ?
+                    getPoint(curve, end, start, (this.levels.length - i - 1) / this.levels.length)
+                    : getPoint(curve, start, end, (i + 1) / this.levels.length);
+                copyCoords(node.layout, p);
+                if (this.wiredTo) {
+                    node.fixed = true;
+                }
+            }
+        }
+        copyCoords(this.leaf.layout, end);
+        this.leaf.fixed = true;
     }
-    copyCoords(chain.leaf.layout, end);
 }
 
 /**
@@ -51,14 +72,7 @@ Group.prototype.createViewObjects = function(state){
         node.viewObjects::values().forEach(obj => obj && state.graphScene.add(obj));
     });
 
-    (this.chains||[]).forEach(chain => {
-        if (!(chain instanceof Chain) || !chain.root || !chain.leaf){ return; }
-        let {start, end} = chain.getWiredChainEnds();
-        start = extractCoords(start);
-        end   = extractCoords(end);
-        let curve = chain.wiredTo? chain.wiredTo.getCurve(start, end): null;
-        updateChain(chain, curve, start, end);
-    });
+    (this.chains||[]).forEach(chain => chain.update());
 
     this.visibleLinks.forEach(link => {
         if (!(link instanceof Link)){ return; }
@@ -67,12 +81,6 @@ Group.prototype.createViewObjects = function(state){
         if (link.geometry === Link.LINK_GEOMETRY.INVISIBLE){
             link.viewObjects["main"].material.visible = false;
         }
-    });
-
-    this.visibleRegions.forEach(region => {
-        if (!(region instanceof Region)){ return; }
-        region.createViewObjects(state);
-        region.viewObjects::values().forEach(obj => obj && state.graphScene.add(obj));
     });
 };
 
@@ -86,17 +94,7 @@ Group.prototype.updateViewObjects = function(state){
     //Update nodes positions
     this.visibleNodes.forEach(node => node.updateViewObjects(state));
 
-    (this.chains||[]).forEach(chain => {
-        if (!chain.root || !chain.leaf){ return; }
-        let {start, end} = chain.getWiredChainEnds();
-        start = extractCoords(start);
-        end   = extractCoords(end);
-        let curve = chain.wiredTo? chain.wiredTo.getCurve(start, end): null;
-        //update if chain ends are dynamic
-        if (start && start.hostedBy || end && end.hostedBy) {
-            updateChain(chain, curve, start, end);
-        }
-    });
+    (this.chains||[]).forEach(chain => chain.update());
 
     //Edge bundling
     const fBundling = ForceEdgeBundling()
@@ -154,8 +152,6 @@ Group.prototype.updateViewObjects = function(state){
             }
         }
     });
-
-    this.visibleRegions.forEach(region => region.updateViewObjects(state));
 };
 
 /**

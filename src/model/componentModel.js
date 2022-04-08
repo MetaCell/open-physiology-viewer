@@ -31,7 +31,7 @@ export class Component extends Resource {
         res.mergeSubgroupResources();
 
         //Assign color to visual resources with no color in the spec
-        //addColor(res.regions, $Color.Region);
+        addColor(res.regions, $Color.Region);
         addColor(res.wires, $Color.Wire);
         addColor(res.anchors, $Color.Anchor);
         return res;
@@ -143,7 +143,7 @@ export class Component extends Resource {
 
     includeRelated(){
         [$Field.anchors, $Field.wires, $Field.regions].forEach(prop =>
-            (this[prop]||[]).forEach(res => res instanceof Resource && res.includeRelated(this))
+            (this[prop]||[]).forEach(res => res.includeRelated && res.includeRelated(this))
         );
     }
 }

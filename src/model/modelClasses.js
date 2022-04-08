@@ -7,7 +7,7 @@ import {Group}   from './groupModel';
 import {Component} from './componentModel';
 import {Graph}   from './graphModel';
 import {Scaffold} from './scaffoldModel';
-import {Resource, External, Publication} from './resourceModel';
+import {Resource, External, Reference, OntologyTerm} from './resourceModel';
 import {VisualResource, Material} from './visualResourceModel';
 import {Vertice, Anchor, Node} from './verticeModel';
 import {Edge, Wire, Link} from './edgeModel';
@@ -16,6 +16,7 @@ import {Coalescence}  from './coalescenceModel';
 import {State, Snapshot} from "./snapshotModel";
 import {isString, isObject, isArray, isNumber, isEmpty, keys, merge, assign} from "lodash-bound";
 import * as schema from "./graphScheme";
+import {logger} from "./logger";
 
 import * as XLSX from 'xlsx';
 
@@ -26,11 +27,11 @@ import { entries } from 'lodash-bound';
 import {
     $Field,
     $SchemaClass,
-    $SchemaType,
     getNewID,
     getFullID,
     getClassName,
-    isClassAbstract
+    isClassAbstract,
+    schemaClassModels
 } from "./utils";
 
 export const modelClasses = {
@@ -44,7 +45,8 @@ export const modelClasses = {
 
     /*Resources */
     [$SchemaClass.External]       : External,
-    [$SchemaClass.Publication]    : Publication,
+    [$SchemaClass.Reference]      : Reference,
+    [$SchemaClass.OntologyTerm]   : OntologyTerm,
     [$SchemaClass.Coalescence]    : Coalescence,
     [$SchemaClass.Channel]        : Channel,
     [$SchemaClass.Chain]          : Chain,
@@ -80,10 +82,11 @@ export const modelClasses = {
  * @param isBinary  - Boolean flag that indicates whether the input model is in binary format
  */
 export function loadModel(content, name, extension, isBinary = true){
+    logger.clear();
     let newModel = {};
     if (extension === "xlsx"){
         let excelModel = {};
-        let wb = isBinary? XLSX.read(content, {type: "binary"}): content;
+        const wb = isBinary? XLSX.read(content, {type: "binary"}): content;
         wb.SheetNames.forEach(sheetName => {
             let roa = XLSX.utils.sheet_to_json(wb.Sheets[sheetName], {header:1});
             if(roa.length) { excelModel[sheetName] = roa; }
@@ -113,6 +116,24 @@ export function isScaffold(inputModel){
 }
 
 /**
+ * Determines whether the given JSON specification defines a snapshot model
+ * @param inputModel
+ * @returns {boolean}
+ */
+export function isSnapshot(inputModel){
+    return !!(inputModel.model && inputModel.states);
+}
+
+/**
+ * Determines whether the given JSON specification defines a connectivity model
+ * @param inputModel
+ * @returns {boolean}
+ */
+export function isGraph(inputModel){
+    return !!(inputModel.lyphs || inputModel.links || inputModel.nodes);
+}
+
+/**
  * Convert model from Excel template to JSON input specification
  * @param inputModel - Excel input specification of connectivity model or scaffold
  * @returns {*}
@@ -122,6 +143,21 @@ export function excelToJSON(inputModel) {
         return Scaffold.excelToJSON(inputModel, modelClasses);
     } else {
         return Graph.excelToJSON(inputModel, modelClasses);
+    }
+}
+
+/**
+ * Converts input JSON model to Excel workbook
+ * @param inputModel
+ * @returns {void|*}
+ */
+export function jsonToExcel(inputModel) {
+    if (isScaffold(inputModel)){
+        return Scaffold.jsonToExcel(inputModel);
+    } else {
+        (inputModel.scaffolds||[]).forEach(scaffold => Scaffold.jsonToExcel(scaffold));
+        delete inputModel.scaffolds;
+        return Graph.jsonToExcel(inputModel);
     }
 }
 
@@ -143,8 +179,8 @@ export function fromJSON(inputModel) {
  * @returns
  */
 export function fromJSONGenerated(inputModel) {
-    var namespace = inputModel.namespace || undefined;
-    var entitiesByID = {
+    let namespace = inputModel.namespace || undefined;
+    let entitiesByID = {
         waitingList: {}
     };
 
@@ -153,17 +189,13 @@ export function fromJSONGenerated(inputModel) {
     function replaceIDs(modelClasses, entitiesByID, namespace, context){
         const createObj = (res, key, value, spec) => {
             if (skip(value)) { return value; }
-
-            const fullResID = getFullID(namespace, res.id);
             if (value::isNumber()) {
                 value = value.toString();
             }
-
-            const clsName = getClassName(spec);
+            let clsName = getClassName(spec);
             if (!clsName){
                 return value;
             }
-
             if (value && value::isString()) {
                 const fullValueID = getFullID(namespace, value);
                 if (!entitiesByID[fullValueID]) {
@@ -175,19 +207,17 @@ export function fromJSONGenerated(inputModel) {
                     return entitiesByID[fullValueID];
                 }
             }
-
             if (value.id) {
                 const fullValueID = getFullID(namespace, value.id);
                 if (entitiesByID[fullValueID]) {
                     return entitiesByID[fullValueID];
                 }
             }
-
             //value is an object and it is not in the map
             if (isClassAbstract(clsName)){
                 if (value.class) {
                     clsName = value.class;
-                    if (!modelClasses[clsName]){
+                    if (!schemaClassModels[clsName]){
                     }
                 } else {
                     return null;
@@ -200,7 +230,7 @@ export function fromJSONGenerated(inputModel) {
             return;
         }
 
-        const refFields = context.constructor.Model.relationships;
+        const refFields = schemaClassModels[context.constructor.name].relationships;
         let res = context;
         refFields.map(([key, spec]) => {
             if (skip(res[key])) { return; }
@@ -210,7 +240,7 @@ export function fromJSONGenerated(inputModel) {
                 res[key] = createObj(res, key, res[key], spec);
             }
         });
-    };
+    }
 
     function reviseWaitingList(waitingList, namespace, context){
         let res = context;
@@ -233,7 +263,7 @@ export function fromJSONGenerated(inputModel) {
     function typeCast(obj) {
         if (obj instanceof Object && !(obj instanceof Array) && !(typeof obj === 'function') && obj['class'] !== undefined && modelClasses[obj['class']] !== undefined) {
             const cls = modelClasses[obj['class']];
-            const res = new cls(obj.id);
+            const res = new cls(obj.id, cls.name);
             res.class = obj['class'];
             res::assign(obj);
 
@@ -245,8 +275,8 @@ export function fromJSONGenerated(inputModel) {
                 let fullResID = getFullID(namespace, res.id);
                 if (entitiesByID[fullResID]) {
                     if (entitiesByID[fullResID] !== res){
-                        console.log("duplicate resource " + fullResID);
-                        //logger.warn($LogMsg.RESOURCE_NOT_UNIQUE, entitiesByID[fullResID], res);
+                        // console.warn("duplicate resource " + fullResID);
+                        logger.warn($LogMsg.RESOURCE_NOT_UNIQUE, entitiesByID[fullResID], res);
                     }
                 } else {
                     entitiesByID[fullResID] = res;
@@ -256,7 +286,7 @@ export function fromJSONGenerated(inputModel) {
             }
             return res;
         } else {
-            return obj
+            return obj;
         }
     }
 
@@ -273,7 +303,7 @@ export function fromJSONGenerated(inputModel) {
         }
 
         //Include newly created entity to the main graph
-        const prop = modelClasses[group.class].Model.selectedRelNames(clsName)[0];
+        const prop = schemaClassModels[group.class].selectedRelNames(clsName)[0];
         if (prop) {
             group[prop] = group[prop] ||[];
             group[prop].push(e);
@@ -288,8 +318,8 @@ export function fromJSONGenerated(inputModel) {
         (entitiesList.waitingList)::entries().map(([id, refs]) => {
             const [obj, key] = refs[0];
             if (obj && obj.class){
-                const clsName = modelClasses[obj.class].Model.relClassNames[key];
-                if (clsName && !modelClasses[clsName].Model.schema.abstract){
+                const clsName = schemaClassModels[obj.class].relClassNames[key];
+                if (clsName && !schemaClassModels[clsName].schema.abstract) {
                     const e = _createResource(id, clsName, model, modelClasses, entitiesList, namespace);
                     added.push(e.id);
                     //A created link needs end nodes
@@ -322,8 +352,8 @@ export function fromJSONGenerated(inputModel) {
         (entitiesList.waitingList)::entries().map(([id, refs]) => {
             const [obj, key] = refs[0];
             if (obj && obj.class) {
-                const clsName = modelClasses[obj.class].Model.relClassNames[key];
-                if (clsName && !modelClasses[clsName].Model.schema.abstract) {
+                const clsName = schemaClassModels[obj.class].relClassNames[key];
+                if (clsName && !schemaClassModels[clsName].schema.abstract) {
                     const e = typeCast({
                         [$Field.id]: id,
                         [$Field.class]: clsName,
@@ -331,7 +361,7 @@ export function fromJSONGenerated(inputModel) {
                     })
 
                     //Include newly created entity to the main graph
-                    const prop = modelClasses[this.name].Model.selectedRelNames(clsName)[0];
+                    const prop = schemaClassModels[this.name].selectedRelNames(clsName)[0];
                     if (prop) {
                         model[prop] = model[prop] || [];
                         model[prop].push(e);
@@ -349,25 +379,23 @@ export function fromJSONGenerated(inputModel) {
         model.syncRelationships(modelClasses, entitiesList, namespace);
         model.entitiesByID = entitiesList;
         delete model.waitingList;
-    };
+    }
 
-    var _casted_model = typeCast(inputModel);
-    if (_casted_model.class == "Graph") {
+    const _casted_model = typeCast(inputModel);
+    if (_casted_model.class === "Graph") {
         processGraphWaitingList(_casted_model, entitiesByID);
-    } else if (_casted_model.class == "Scaffold") {
+    } else if (_casted_model.class === "Scaffold") {
         processScaffoldWaitingList(_casted_model, entitiesByID);
     }
 
     return _casted_model;
 }
 
-
 /**
- * @param {*} inputModel
- * @returns
+ *
+ * @param inputModel
+ * @param callback
  */
-
-
 export function fromJsonLD(inputModel, callback) {
     let res = inputModel;
     let context = {};

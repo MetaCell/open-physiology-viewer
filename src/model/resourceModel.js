@@ -21,6 +21,7 @@ import {
     isClassAbstract,
     getClassName,
     getNewID,
+    getID,
     getFullID, $SchemaClass
 } from "./utils";
 import {logger, $LogMsg} from './logger';
@@ -37,6 +38,9 @@ import {logger, $LogMsg} from './logger';
  * @property {Array<Object>} assign
  * @property {Array<Object>} interpolate
  * @property {Object} generatedFrom
+ * @property {Array<Reference>} references
+ * @property {Array<OntologyTerm>} ontologyTerms
+ * @property {Array<External>} external
  */
 export class Resource{
     constructor(id, clsName) {
@@ -437,7 +441,7 @@ export class Resource{
          * @param depth - depth of nested resources to output
          * @returns {*} JSON object or an array of JSON objects without circular references
          */
-        function fieldToJSON(value, depth) { return value::isArray()? value.filter(e => !!e).map(e => valueToJSON(e, depth)): valueToJSON(value, depth); }
+        function fieldToJSON(value, depth) { return value::isArray()? value.map(e => valueToJSON(e, depth)): valueToJSON(value, depth); }
 
         if (depth <= 0) {
             return this.id? this.id: null;
@@ -445,7 +449,7 @@ export class Resource{
 
         let res = {};
         const omitKeys = (this::keys())::difference(schemaClassModels[this.class].fieldNames).concat([$Field.viewObjects, $Field.infoFields, $Field.labels]);
-        this::keys().filter(key => !!this[key] && !omitKeys.includes(key)).forEach(key => {
+        this::keys().filter(key => this[key] !== undefined && !omitKeys.includes(key)).forEach(key => {
             res[key] = fieldToJSON(this[key], (inlineResources[key] || depth) - 1);
         });
         return res;
@@ -481,7 +485,16 @@ export class Resource{
         logger.error($LogMsg.CLASS_ERROR_RESOURCE, "includeRelated", this.id, this.class);
     }
 
-
+    includeToGroup(prop){
+        (this.inGroups||[]).forEach(group => {
+            if (group::isObject()){
+                group[prop] = group[prop] || [];
+                if (!group[prop].find(e => getID(e) === this.id)){
+                    group[prop].push(this);
+                }
+            }
+        })
+    }
 }
 
 export class External extends Resource {
@@ -491,9 +504,16 @@ export class External extends Resource {
     }
 }
 
-export class Publication extends External {
+export class Reference extends External {
     static fromJSON(json, modelClasses = {}, entitiesByID, namespace) {
-          json.class = json.class || $SchemaClass.Publication;
+          json.class = json.class || $SchemaClass.Reference;
+          return super.fromJSON(json, modelClasses, entitiesByID, namespace);
+    }
+}
+
+export class OntologyTerm extends External {
+    static fromJSON(json, modelClasses = {}, entitiesByID, namespace) {
+          json.class = json.class || $SchemaClass.OntologyTerm;
           return super.fromJSON(json, modelClasses, entitiesByID, namespace);
     }
 }

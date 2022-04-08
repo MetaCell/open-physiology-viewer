@@ -5,7 +5,7 @@ import {
     $Prefix,
     getID, findResourceByID, getOrCreateNode, $SchemaClass
 } from "./utils";
-import {keys, merge, pick, isString} from "lodash-bound";
+import {keys, merge, pick, isString, isArray} from "lodash-bound";
 import {$LogMsg, logger} from "./logger";
 
 export class Vertice extends VisualResource{
@@ -53,6 +53,8 @@ export class Anchor extends Vertice {
  * @property {number} y
  * @property {number} z
  * @property {Anchor} anchoredTo
+ * @property {Chain} rootOf
+ * @property {Chain} leafOf
  */
 export class Node extends Vertice {
 
@@ -95,7 +97,6 @@ export class Node extends Vertice {
             }
         });
 
-        //const isBundledLink = (link, lyph) => (lyph.bundles||[]).find(e => getID(e) === link.id);
         const nodeOnBorder = (node, lyphID) => (borderNodesByID[getID(node)]||[]).find(e => e.id === lyphID);
 
         borderNodesByID::keys().forEach(nodeID => {
@@ -135,7 +136,7 @@ export class Node extends Vertice {
         let internalNodesByID = {};
         (json.lyphs||[]).forEach(lyph => this.addLyphToHostMap(lyph, lyph.internalNodes, internalNodesByID));
 
-        const isBundledLink = (link, lyph) => (lyph.bundles||[]).find(e => getID(e) === link.id);
+        const isEndBundledLink = (link, lyph) => (lyph.endBundles||[]).find(e => getID(e) === link.id);
 
         internalNodesByID::keys().forEach(nodeID => {
             let hostLyphs = internalNodesByID[nodeID];
@@ -161,8 +162,8 @@ export class Node extends Vertice {
                     if (k > -1){ hostLyph.internalNodes[k] = nodeClone.id; }
 
                     //rewire affected links
-                    let targetOfLinks = (json.links||[]).filter(e => getID(e.target) === nodeID && isBundledLink(e, hostLyph));
-                    let sourceOfLinks = (json.links||[]).filter(e => getID(e.source) === nodeID && isBundledLink(e, hostLyph));
+                    let targetOfLinks = (json.links||[]).filter(e => getID(e.target) === nodeID && isEndBundledLink(e, hostLyph));
+                    let sourceOfLinks = (json.links||[]).filter(e => getID(e.source) === nodeID && isEndBundledLink(e, hostLyph));
                     targetOfLinks.forEach(lnk => {
                         lnk.target = nodeClone.id;
                         allTargetLinks.push(lnk);
@@ -220,8 +221,20 @@ export class Node extends Vertice {
         });
     }
 
-    static addLyphToHostMap(hostLyph, array, resMap){
-        (array||[]).forEach(e => {
+    /**
+     * Adds internal lyph nodes to the global resource map
+     * @param hostLyph
+     * @param nodes
+     * @param resMap
+     * @returns {Object} Updated resource map
+     */
+    static addLyphToHostMap(hostLyph, nodes, resMap){
+        if (nodes && !nodes::isArray()){
+            logger.warn($LogMsg.RESOURCE_ARRAY_EXPECTED, hostLyph.id,
+                $Field.hostedNodes + " or " + $Field.internalNodes, nodes);
+            return;
+        }
+        (nodes||[]).forEach(e => {
             let nodeID = getID(e);
             if (!nodeID || !nodeID::isString()) {
                 logger.warn($LogMsg.RESOURCE_NO_ID, nodeID);

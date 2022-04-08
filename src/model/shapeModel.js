@@ -1,6 +1,6 @@
 import {VisualResource} from './visualResourceModel';
 import {Node} from './verticeModel';
-import {Link} from './edgeModel';
+import {Edge, Link} from './edgeModel';
 import {clone, merge, pick, isObject, mergeWith} from 'lodash-bound';
 import {$LogMsg, logger} from './logger';
 import {
@@ -8,9 +8,9 @@ import {
     $Prefix,
     $Color,
     getGenID,
+    getNewID,
     getGenName,
     findResourceByID,
-    getNewID,
     getID,
     LYPH_TOPOLOGY,
     mergeResources, $SchemaClass
@@ -41,21 +41,23 @@ export class Shape extends VisualResource {
      */
     static fromJSON(json, modelClasses = {}, entitiesByID, namespace) {
         json.id     = json.id || getNewID(entitiesByID);
-        json.border = json.border || {};
+        json.border = json.border || {
+            [$Field.generated] : true,
+            [$Field.borders]   : []
+        };
         json.border.id = json.border.id || getGenID($Prefix.border, json.id);
-        json.border.borders = json.border.borders || [];
-        for (let i = 0; i < json.numBorders; i++){
-            let id = getGenID(json.border.id, i);
+        for (let i = 0; i < json.border.borders.length; i++) {
+            const id = getGenID(json.border.id, i);
             json.border.borders[i]::merge({
                 [$Field.id]       : id,
-                [$Field.source]   : { id: getGenID($Prefix.source, id) },
-                [$Field.target]   : { id: getGenID($Prefix.target, id) },
-                [$Field.geometry] : Link.LINK_GEOMETRY.INVISIBLE,
+                [$Field.class]    : (json.class === $SchemaClass.Region)? $SchemaClass.Wire: $SchemaClass.Link,
+                [$Field.source]   : {id: getGenID($Prefix.source, id)},
+                [$Field.target]   : {id: getGenID($Prefix.target, id)},
+                [$Field.geometry] : Edge.EDGE_GEOMETRY.INVISIBLE,
                 [$Field.skipLabel]: true,
                 [$Field.generated]: true
             });
         }
-        delete json.numBorders;
         let res = super.fromJSON(json, modelClasses, entitiesByID, namespace);
         res.border.host = res;
         return res;
@@ -78,6 +80,7 @@ export class Shape extends VisualResource {
  * @property inMaterials
  * @property inCoalescences
  * @property bundles
+ * @property endBbundles
  * @property bundlesChains
  * @property prev
  * @property next
@@ -86,7 +89,6 @@ export class Shape extends VisualResource {
  * @property height
  * @property length
  * @property thickness
- * @property fasciculatesIn
  * @property internalNodesInLayers
  */
 export class Lyph extends Shape {
@@ -99,7 +101,6 @@ export class Lyph extends Shape {
     static LYPH_TOPOLOGY = LYPH_TOPOLOGY;
 
     static fromJSON(json, modelClasses = {}, entitiesByID, namespace) {
-        json.numBorders = 4;
         json.class = $SchemaClass.Lyph;
         return super.fromJSON(json, modelClasses, entitiesByID, namespace);
     }
@@ -152,7 +153,8 @@ export class Lyph extends Shape {
         }
 
         targetLyph::mergeWith(sourceLyph::pick([$Field.color, $Field.scale, $Field.height, $Field.width, $Field.length,
-            $Field.thickness, $Field.description, $Field.create3d, $Field.materials, $Field.channels, $Field.bundlesChains]),
+            $Field.thickness, $Field.scale, $Field.description, $Field.create3d, $Field.materials, $Field.channels,
+                $Field.bundlesChains]),
             mergeResources);
 
         if (sourceLyph.isTemplate){
@@ -307,7 +309,7 @@ export class Lyph extends Shape {
     }
 
     get host() {
-        return (this.conveys && this.conveys.fasciculatesIn) || this.internalIn; // || this.hostedBy;
+        return (this.conveys && (this.conveys.fasciculatesIn || this.conveys.endsIn)) || this.internalIn; // || this.hostedBy;
     }
 
     get container(){
@@ -364,7 +366,7 @@ export class Lyph extends Shape {
         }
         return offset;
     }
-sh
+
     updateSize(){
         const size = this.sizeFromAxis;
         [$Field.width, $Field.height].forEach(prop => this[prop] = this[prop] || size[prop]);
@@ -375,10 +377,6 @@ sh
             if (this.width > maxWidth){
                 this.width = maxWidth;
             }
-            //If host is a layer, make sure lyph width does not exceed the layer's width
-            // if (this.host.layerIn){
-            //     this.width /= this.host.layerIn.layers.length;
-            // }
             //Lyph cannot be bigger than 95% of its host lyph
             [$Field.width, $Field.height].forEach(prop => {
                 let val = 0.95 * (this.host[prop] || hostSize[prop]);
@@ -388,23 +386,21 @@ sh
     }
 
     includeRelated(group){
-        (this.layers||[]).forEach(layer => {
-            layer.includeRelated(group);
-        });
+        (this.layers||[]).forEach(layer => layer.includeRelated && layer.includeRelated(group));
         (this.internalLyphs||[]).forEach(internal => {
-            if (!group.contains(internal)){
+            if (internal::isObject() && !group.contains(internal)){
                 group.lyphs.push(internal);
                 internal.hidden = group.hidden;
                 if (internal.conveys &&! group.contains(internal.conveys)){
                     group.links.push(internal.conveys);
                     internal.conveys.hidden = group.hidden;
-                    internal.conveys.includeRelated(group);
+                    internal.conveys.includeRelated && internal.conveys.includeRelated(group);
                 }
-                internal.includeRelated(group);
+                internal.includeRelated && internal.includeRelated(group);
             }
         });
         (this.internalNodes||[]).forEach(internal => {
-            if (!group.contains(internal)){
+            if (internal::isObject() && !group.contains(internal)){
                 group.nodes.push(internal);
                 internal.hidden = group.hidden;
                 (internal.clones||[]).forEach(clone => {
@@ -566,11 +562,8 @@ export class Region extends Shape {
             {"x":  10, "y":  10 },
             {"x":  10, "y": -10 }
         ];
-        json.numBorders = json.points.length;
         json.class = $SchemaClass.Region;
-        let res = super.fromJSON(json, modelClasses, entitiesByID, namespace);
-        res.points.push(res.points[0]::clone()); //make closed shape
-        return res;
+        return super.fromJSON(json, modelClasses, entitiesByID, namespace);
     }
 
     static validateTemplate(json, template){
@@ -588,20 +581,11 @@ export class Region extends Shape {
                     logger.warn($LogMsg.REGION_FACET_NO_ANCHORS, wire.source, wire.target);
                     return;
                 }
-                if (!sourceAnchor.layout || !targetAnchor.layout){
+                if (!sourceAnchor.layout && !sourceAnchor.hostedBy || !targetAnchor.layout && !targetAnchor.hostedBy){
                     logger.warn($LogMsg.REGION_FACET_NO_LAYOUT, wire.source, wire.target);
                 }
             });
         }
-    }
-
-    static reduceGroupTemplate(json, template){
-        [$Field.facets, $Field.borderAnchors, $Field.internalAnchors].forEach(prop => {
-            if ((template[prop] || []).length > 0) {
-                logger.warn($LogMsg.REGION_IN_GROUP_TEMPLATE, prop, json && json.id, template.id, template[prop]);
-            }
-            delete template[prop];
-        });
     }
 
     static expandTemplate(json, template){
@@ -671,7 +655,7 @@ export class Region extends Shape {
             if (!facet || facet.class !== $SchemaClass.Wire){ return; }
             if (!(component.wires||[]).find(e => e.id === facet.id)){
                 component.wires.push(facet);
-                facet.includeRelated(component);
+                facet.includeRelated && facet.includeRelated(component);
             }
         });
         (this.internalAnchors||[]).forEach(internal => {

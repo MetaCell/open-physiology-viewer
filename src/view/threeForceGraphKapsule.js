@@ -12,8 +12,10 @@ import Kapsule from 'kapsule';
 import {modelClasses} from '../model/index';
 import './modelView';
 import {extractCoords} from './utils';
+import { autoLayout } from './render/autoLayout'
 
 const {Graph} = modelClasses;
+
 /**
  * A closure-based component for the force-directed 3d graph layout
  */
@@ -170,13 +172,13 @@ export default Kapsule({
             }
         },
 
-        verticeRelSize   : { default: 3 },     // volume per val unit
+        verticeRelSize   : { default: 4 },     // volume per val unit
         verticeResolution: { default: 8 },     // how many slice segments in the sphere's circumference
 
-        nodeVal          : { default: 1 },
+        nodeVal          : { default: 2 },
         anchorVal        : { default: 3 },
 
-        edgeResolution   : { default: 16 },     // number of points on curved link
+        edgeResolution   : { default: 32 },     // number of points on curved link
         arrowLength      : { default: 40 },     // arrow length for directed links
 
         showLyphs        : { default: true},
@@ -303,12 +305,13 @@ export default Kapsule({
         state.onFinishLoading();
 
         function layoutTick() {
-            if (++state.cntTicks > state.cooldownTicks || (new Date()) - startTickTime > state.cooldownTime) {
-                // Stop ticking graph
-                state.onFrame = null;
-            } else { layout['tick'](); }
+          if (++state.cntTicks > state.cooldownTicks || (new Date()) - startTickTime > state.cooldownTime) {
+              // Stop ticking graph
+              state.onFrame = null;
+          } else { layout['tick'](); }
 
-            state.graphData.updateViewObjects(state);
+          state.graphData.updateViewObjects(state);
+          autoLayout(state.graphScene, state.graphData);
         }
     }
 });
