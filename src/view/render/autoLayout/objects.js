@@ -214,3 +214,67 @@ function getBorder(target)
 
   return bx ;
 }
+
+
+function avg(a,b)
+{
+  return (a+b)/2;
+}
+
+export function calculateSpace(meshes)
+{
+  let minX = 0 ;
+  let maxX = 0 ;
+  let minY = 0 ;
+  let maxY = 0 ;
+  meshes.forEach((c) => {
+    if (c.geometry)
+    {
+      const targetSize = getBoundingBox(c);
+      const width = targetSize.max.x - targetSize.min.x ;
+      const height = targetSize.max.y - targetSize.min.y ;
+
+      const objMinX = c.position.x - 0.5 * width ;
+      const objMaxX = c.position.x + 0.5 * width ;
+      const objMinY = c.position.y - 0.5 * height ;
+      const objMaxY = c.position.y + 0.5 * height ;
+
+      if ( objMinX < minX ) minX = objMinX ;
+      if ( objMaxX > maxX ) maxX = objMaxX ;
+      if ( objMinY < minY ) minY = objMinY ;
+      if ( objMaxY > maxY ) maxY = objMaxY ;
+
+      const objbbox = new THREE.Box3(new THREE.Vector3(objMinX, objMinY, 1), new THREE.Vector2(objMaxX, objMaxY, 1));
+      c.userData.worldBBox = bbox ;
+    }
+  });
+
+  const bbox = new THREE.Box3(new THREE.Vector3(minX, minY, 1), new THREE.Vector3(maxX, maxY, 1));
+  return bbox ;
+}
+
+export function debugMeshFromBox(box)
+{
+  const material = new THREE.LineBasicMaterial({
+    color: 0x0000ff
+  });
+  
+  const boxGeometry = geometryFromBox(box);
+
+  const line = new THREE.Line( boxGeometry, material );  
+
+  return line ;
+}
+
+export function geometryFromBox(box)
+{
+  // make a BoxBufferGeometry of the same size as Box3
+  const dimensions = new THREE.Vector3().subVectors( box.max, box.min );
+  const boxGeo = new THREE.BoxBufferGeometry(dimensions.x, dimensions.y, dimensions.z);
+
+  // move new mesh center so it's aligned with the original object
+  const matrix = new THREE.Matrix4().setPosition(dimensions.addVectors(box.min, box.max).multiplyScalar( 0.5 ));
+  boxGeo.applyMatrix(matrix);
+
+  return boxGeo ;
+}

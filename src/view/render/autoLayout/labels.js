@@ -5,6 +5,8 @@ import { getMeshesWithinPartition
   , removeLinePosData
   , createLinksToOrigin
   , createLineBetweenVectors  } from './collission';
+
+const LABEL_ELEVATION = 50.00; 
   
 function arrangeLabelsWithinPartition(partition, meshes, incZ)
 {
@@ -89,6 +91,7 @@ export function layoutLabelCollide(scene, showLabelWires) {
       createLinksToOrigin(labels);
   }
 }
+
 function createLinksToOrigin(labels)
 {
   labels.forEach((l)=>{

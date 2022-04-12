@@ -1,3 +1,11 @@
+import { getSceneObjectByModelClass
+  , calculateSpace
+  , debugMeshFromBox } 
+  from './objects'
+
+  const LABEL_SPACE_PARTITION_NUM = 5 ;
+  const LABEL_CLOSE_ENOUGH_DISTANCE = 15.00; 
+  const DEBUG = true ;
 
 function checkCollide(a, b) {
   const collideX = ( ( b.position.x > a.position.x - a.width / 2 ) && (b.position.x < a.position.x + a.width / 2) ) ;
@@ -8,6 +16,7 @@ function checkCollide(a, b) {
 function getSpaceBox(meshes)  {
   return calculateSpace(meshes);
 }
+
 function getSpacePartitions(spaceBox, n)
 {
   const spaceBoxSize = spaceBox.getSize();
@@ -64,4 +73,27 @@ function removeLinePosData()
 function getMeshesWithinPartition(partition, meshes)
 {
   return meshes.filter((m)=> m.position.x > partition.min.x &&  m.position.x < partition.max.x && m.position.y > partition.min.y &&  m.position.y < partition.max.y)
+}
+
+//space partitioning ordering algorithm
+export function tagCollidingObjects(scene, type) {
+  const meshes = getSceneObjectByModelClass(scene.children, type);
+  if (meshes.length > 0)
+  {
+    const spaceBox = getSpaceBox(meshes);
+    if (DEBUG)
+    {
+      const debugBox = debugMeshFromBox(spaceBox);
+      scene.add(debugBox);
+    }
+    const spacePartitionBoxes = getSpacePartitions(spaceBox, LABEL_SPACE_PARTITION_NUM);
+    for (var i = 0; i < spacePartitionBoxes.length ; i ++)
+    {      
+      if (DEBUG)
+      {
+        const debugBox = debugMeshFromBox(spacePartitionBoxes[i]);
+        scene.add(debugBox);
+      }
+    }
+  }
 }

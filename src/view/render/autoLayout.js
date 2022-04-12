@@ -26,6 +26,8 @@ import { rotateAroundCenter
   , translateMeshToTarget
   , translateGroupToTarget   } from "./autoLayout/transform";
 
+import { tagCollidingObjects } from './autoLayout/collission.js'
+
 const {Edge} = modelClasses;
 
 const LYPH_H_PERCENT_MARGIN = 0.10;
@@ -35,10 +37,6 @@ const LYPH_LINK_SIZE_PROPORTION = 0.75;
 const DENDRYTE = "dend";
 const AXON = "axon";
 const MAX_POINTS = 100;
-const LABEL_SPACE_PARTITION_NUM = 5 ;
-const LABEL_CLOSE_ENOUGH_DISTANCE = 15.00; 
-const LABEL_ELEVATION = 50.00; 
-const DEBUG = false ;
 const AXON_SIZE = .45;
 const DENDRYTE_SIZE = .3;
 
@@ -204,83 +202,6 @@ function arrangeLyphsGrid(lyphs, h, v) {
   group.translateY( maxY / -2);
 
   return group ;
-}
-
-function avg(a,b)
-{
-  return (a+b)/2;
-}
-
-function calculateSpace(meshes)
-{
-  let minX = 0 ;
-  let maxX = 0 ;
-  let minY = 0 ;
-  let maxY = 0 ;
-  meshes.forEach((c) => {
-    if (c.geometry)
-    {
-      const p = c.position ;
-      const objMinX = c.position.x - 0.5 * c.width ;
-      const objMaxX = c.position.x + 0.5 * c.width ;
-      const objMinY = c.position.y - 0.5 * c.height ;
-      const objMaxY = c.position.y + 0.5 * c.height ;
-
-      if ( objMinX < minX ) minX = objMinX ;
-      if ( objMaxX > maxX ) maxX = objMaxX ;
-      if ( objMinY < minY ) minY = objMinY ;
-      if ( objMaxY > maxY ) maxY = objMaxY ;
-
-      const objbbox = new THREE.Box3(new Vector3(objMinX, objMinY, 1), new Vector2(objMaxX, objMaxY, 1));
-      c.userData.worldBBox = bbox ;
-    }
-  });
-
-  const bbox = new THREE.Box3(new Vector3(minX, minY, 1), new Vector3(maxX, maxY, 1));
-  return bbox ;
-}
-
-function getBorder(target)
-{
-  //add border bounding for debugging
-  let bxbb = getBoundingBoxSize(target);
-
-  var bx = new THREE.Mesh(
-    new THREE.BoxGeometry(bxbb.x, bxbb.y, bxbb.z),
-    new THREE.LineBasicMaterial( {
-      color: 0xffffff,
-      linewidth: 1,
-      linecap: 'round', //ignored by WebGLRenderer
-      linejoin:  'round' //ignored by WebGLRenderer
-    } ));
-
-  return bx ;
-}
-
-function geometryFromBox(box)
-{
-  // make a BoxBufferGeometry of the same size as Box3
-  const dimensions = new THREE.Vector3().subVectors( box.max, box.min );
-  const boxGeo = new THREE.BoxBufferGeometry(dimensions.x, dimensions.y, dimensions.z);
-
-  // move new mesh center so it's aligned with the original object
-  const matrix = new THREE.Matrix4().setPosition(dimensions.addVectors(box.min, box.max).multiplyScalar( 0.5 ));
-  boxGeo.applyMatrix(matrix);
-
-  return boxGeo ;
-}
-
-function debugMeshFromBox(box)
-{
-  const material = new THREE.LineBasicMaterial({
-    color: 0x0000ff
-  });
-  
-  const boxGeometry = geometryFromBox(box);
-
-  const line = new THREE.Line( boxGeometry, material );  
-
-  return line ;
 }
 
 function layoutLyphs(scene, hostLyphDic, lyphDic, lyphInLyph)
@@ -539,6 +460,8 @@ export function autoLayout(scene, graphData, showLabelWires) {
       });
     }
   });
+
+  tagCollidingObjects(scene, "Lyph");
   
   //FIXME : Fix chians with nodes
   //autoLayoutChains(scene, graphData, links);
