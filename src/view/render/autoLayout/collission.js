@@ -8,7 +8,7 @@ import { getSceneObjectByModelClass
 
   const LABEL_SPACE_PARTITION_NUM = 5 ;
   const LABEL_CLOSE_ENOUGH_DISTANCE = 15.00; 
-  const DEBUG = true ;
+  const DEBUG = false ;
   const COLLIDE_COLOR    = 0x00ff00;
 
 function checkCollide(a, b) {
