@@ -1,11 +1,15 @@
 import { getSceneObjectByModelClass
   , calculateSpace
-  , debugMeshFromBox } 
+  , debugMeshFromBox 
+  , highlight
+  , unhighlight 
+  } 
   from './objects'
 
   const LABEL_SPACE_PARTITION_NUM = 5 ;
   const LABEL_CLOSE_ENOUGH_DISTANCE = 15.00; 
   const DEBUG = true ;
+  const COLLIDE_COLOR    = 0x00ff00;
 
 function checkCollide(a, b) {
   const collideX = ( ( b.position.x > a.position.x - a.width / 2 ) && (b.position.x < a.position.x + a.width / 2) ) ;
@@ -89,10 +93,29 @@ export function tagCollidingObjects(scene, type) {
     const spacePartitionBoxes = getSpacePartitions(spaceBox, LABEL_SPACE_PARTITION_NUM);
     for (var i = 0; i < spacePartitionBoxes.length ; i ++)
     {      
+      const partition = spacePartitionBoxes[i] ;
       if (DEBUG)
       {
-        const debugBox = debugMeshFromBox(spacePartitionBoxes[i]);
+        const debugBox = debugMeshFromBox(partition);
         scene.add(debugBox);
+      }
+      const partitionMeshes = getMeshesWithinPartition(partition, meshes)
+      for (var j = 0 ; j < partitionMeshes.length; j ++ )
+      {
+        for (var k = j ; k < partitionMeshes.length; k ++ )
+        {
+          if ( i != j )
+          {
+            const first = partitionMeshes[j];
+            const second = partitionMeshes[k];
+            if (checkClose(first, second))
+            {
+              //paint red
+              highlight(first, COLLIDE_COLOR);
+              highlight(second, COLLIDE_COLOR);
+            }
+          }
+        }
       }
     }
   }
