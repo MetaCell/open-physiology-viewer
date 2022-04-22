@@ -24,12 +24,12 @@ function renderUsingPuppeteer(modelName)
       .then(()=>{
         return page.screenshot()
         .then((image)=>{
+          page.close();
+          browser.close();
           return Promise.resolve(image);
         })    
       })
-      page.close();
     })
-    browser.close();
   });
 }
 
@@ -38,92 +38,158 @@ test("BasalGanglia", () => {
   .then((image)=>{
     expect(image).toMatchImageSnapshot(snapshotTestConfig);
   })
-});
+}, 10000);
 
-// describe("BasalGangliaInternal", () => {
+test("BasalGangliaInternal", () => {
+  return renderUsingPuppeteer("BasalGangliaInternal")
+  .then((image)=>{
+    expect(image).toMatchImageSnapshot(snapshotTestConfig);
+  })
+}, 10000);
 
-// });
+test("BasalGangliaAuto", () => {
+  return renderUsingPuppeteer("BasalGangliaAuto")
+  .then((image)=>{
+    expect(image).toMatchImageSnapshot(snapshotTestConfig);
+  })
+}, 10000);
 
-// describe("BasalGangliaAuto", () => {
+test("Basic", () => {
+  return renderUsingPuppeteer("Basic")
+  .then((image)=>{
+    expect(image).toMatchImageSnapshot(snapshotTestConfig);
+  })
+}, 10000);
 
-// });
+test("BasicChainsInGroup", () => {
+  return renderUsingPuppeteer("BasicChainsInGroup")
+  .then((image)=>{
+    expect(image).toMatchImageSnapshot(snapshotTestConfig);
+  })
+}, 10000);
 
-// describe("Basic", () => {
+test("BasicHostedNode", () => {
+  return renderUsingPuppeteer("BasicHostedNode")
+  .then((image)=>{
+    expect(image).toMatchImageSnapshot(snapshotTestConfig);
+  })
+}, 10000);
 
-// });
+test("BasicLyphOnBorder", () => {
+  return renderUsingPuppeteer("BasicLyphOnBorder")
+  .then((image)=>{
+    expect(image).toMatchImageSnapshot(snapshotTestConfig);
+  })
+}, 10000);
 
-// describe("BasicChainsInGroup", () => {
+test("BasicLyphTypes", () => {
+  return renderUsingPuppeteer("BasicLyphTypes")
+  .then((image)=>{
+    expect(image).toMatchImageSnapshot(snapshotTestConfig);
+  })
+}, 10000);
 
-// });
+test("BasicHousedTree", () => {
+  return renderUsingPuppeteer("BasicHousedTree")
+  .then((image)=>{
+    expect(image).toMatchImageSnapshot(snapshotTestConfig);
+  })
+}, 10000);
 
-// describe("BasicHostedNode", () => {
+test("BasicJointTrees", () => {
+  return renderUsingPuppeteer("BasicJointTrees")
+  .then((image)=>{
+    expect(image).toMatchImageSnapshot(snapshotTestConfig);
+  })
+}, 10000);
 
-// });
+test("BasicLyphsWithNoAxis", () => {
+  return renderUsingPuppeteer("BasicLyphsWithNoAxis")
+  .then((image)=>{
+    expect(image).toMatchImageSnapshot(snapshotTestConfig);
+  })
+}, 10000);
 
-// describe("BasicLyphOnBorder", () => {
+test("BasicSharedNodes", () => {
+  return renderUsingPuppeteer("BasicSharedNodes")
+  .then((image)=>{
+    expect(image).toMatchImageSnapshot(snapshotTestConfig);
+  })
+}, 10000);
 
-// });
+test("BasicVillus", () => {
+  return renderUsingPuppeteer("BasicVillus")
+  .then((image)=>{
+    expect(image).toMatchImageSnapshot(snapshotTestConfig);
+  })
+}, 10000);
 
-// describe("BasicLyphTypes", () => {
+test("FullBody", () => {
+  return renderUsingPuppeteer("FullBody")
+  .then((image)=>{
+    expect(image).toMatchImageSnapshot(snapshotTestConfig);
+  })
+}, 10000);
 
-// });
+test("KeastSpinal", () => {
+  return renderUsingPuppeteer("KeastSpinal")
+  .then((image)=>{
+    expect(image).toMatchImageSnapshot(snapshotTestConfig);
+  })
+}, 10000);
 
-// describe("BasicHousedTree", () => {
+test("Neuron", () => {
+  return renderUsingPuppeteer("Neuron")
+  .then((image)=>{
+    expect(image).toMatchImageSnapshot(snapshotTestConfig);
+  })
+}, 10000);
 
-// });
+test("NeuronTemplate", () => {
+  return renderUsingPuppeteer("NeuronTemplate")
+  .then((image)=>{
+    expect(image).toMatchImageSnapshot(snapshotTestConfig);
+  })
+}, 10000);
 
-// describe("BasicJointTrees", () => {
+test("NeuronTemplateRegion", () => {
+  return renderUsingPuppeteer("NeuronTemplateRegion")
+  .then((image)=>{
+    expect(image).toMatchImageSnapshot(snapshotTestConfig);
+  })
+}, 10000);
 
-// });
+test("NeuronTree", () => {
+  return renderUsingPuppeteer("NeuronTree")
+  .then((image)=>{
+    expect(image).toMatchImageSnapshot(snapshotTestConfig);
+  })
+}, 10000);
 
-// describe("BasicLyphsWithNoAxis", () => {
+test("NeuronTreeWithLevels", () => {
+  return renderUsingPuppeteer("NeuronTreeWithLevels")
+  .then((image)=>{
+    expect(image).toMatchImageSnapshot(snapshotTestConfig);
+  })
+}, 10000);
 
-// });
+test("Respiratory", () => {
+  return renderUsingPuppeteer("Respiratory")
+  .then((image)=>{
+    expect(image).toMatchImageSnapshot(snapshotTestConfig);
+  })
+}, 10000);
 
-// describe("BasicSharedNodes", () => {
+test("RespiratoryInternalLyphsInLayers", () => {
+  return renderUsingPuppeteer("RespiratoryInternalLyphsInLayers")
+  .then((image)=>{
+    expect(image).toMatchImageSnapshot(snapshotTestConfig);
+  })
+}, 10000);
 
-// });
-
-// describe("BasicVillus", () => {
-
-// });
-
-// describe("FullBody", () => {
-
-// });
-
-// describe("KeastSpinal", () => {
-
-// });
-
-// describe("Neuron", () => {
-
-// });
-
-// describe("NeuronTemplate", () => {
-
-// });
-
-// describe("NeuronTemplateRegion", () => {
-
-// });
-
-// describe("NeuronTree", () => {
-
-// });
-
-// describe("NeuronTreeWithLevels", () => {
-
-// });
-
-// describe("Respiratory", () => {
-
-// });
-
-// describe("RespiratoryInternalLyphsInLayers", () => {
-
-// });
-
-// describe("Uot", () => {
-
-// });
+test("Uot", () => {
+  return renderUsingPuppeteer("Uot")
+  .then((image)=>{
+    expect(image).toMatchImageSnapshot(snapshotTestConfig);
+  })
+}, 10000);
