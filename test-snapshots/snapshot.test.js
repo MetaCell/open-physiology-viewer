@@ -8,9 +8,9 @@ const snapshotTestConfig = {
   failureThresholdType: 'percent'
 }
 
-async function selectCanvasOnly(page){
+async function removeAllButCanvas(page){
   return page.evaluate(() => {
-    (document.querySelectorAll('.banner') || []).forEach(el => el.remove());
+    document.children(":not(#main_canvas)").remove();
   });
 }
 
@@ -22,12 +22,15 @@ function renderUsingPuppeteer(modelName)
     .then((page)=>{
       return page.goto(`file:///${__dirname}/../dist/test-app/index.html?initModel=${modelName}}`)
       .then(()=>{
-        return page.screenshot()
-        .then((image)=>{
-          page.close();
-          browser.close();
-          return Promise.resolve(image);
-        })    
+        return removeAllButCanvas()
+        .then(()=>{
+          return page.screenshot()
+          .then((image)=>{
+            page.close();
+            browser.close();
+            return Promise.resolve(image);
+          }) 
+        })   
       })
     })
   });

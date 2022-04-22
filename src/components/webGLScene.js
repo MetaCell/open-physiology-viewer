@@ -102,7 +102,7 @@ const WindowResize = require('three-window-resize');
                         </button>
                     </section>
                 </section>
-                <canvas #canvas> </canvas>
+                <canvas #canvas id="main-canvas"> </canvas>
             </section>
             <section id="apiLayoutSettingsPanel" *ngIf="showPanel && isConnectivity" class="w3-quarter">
                 <settingsPanel
