@@ -172,5 +172,11 @@ tree-node-checkbox {
   padding: 1px;
 }
 
+.resizeMenu {
+  display : flex;
+  padding : 1rem;
+  text-align : center;
+}
+
 
 

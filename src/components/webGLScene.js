@@ -2,6 +2,7 @@ import {NgModule, Component, ViewChild, ElementRef, Input, Output, EventEmitter,
 import {CommonModule} from '@angular/common';
 import {FormsModule} from '@angular/forms';
 import {MatSliderModule} from '@angular/material/slider';
+import {MatMenuModule} from '@angular/material/menu';
 import {MatDialog, MatDialogModule} from '@angular/material/dialog';
 
 import FileSaver  from 'file-saver';
@@ -17,8 +18,16 @@ import {OrbitControls} from "three/examples/jsm/controls/OrbitControls";
 import {$Field, $SchemaClass} from "../model";
 import {QuerySelectModule, QuerySelectDialog} from "./gui/querySelectDialog";
 import {HotkeyModule, HotkeysService, Hotkey, HotkeysCheatsheetComponent} from 'angular2-hotkeys';
+import initModel from '../data/graph.json';
+import { autoLayout } from './../view/render/autoLayout'
 
 const WindowResize = require('three-window-resize');
+
+const TOO_MAP_SIZE = {
+    "T" : 50,
+    "O" : 50,
+    "O" : 50
+}
 
 /**
  * @ignore
@@ -52,6 +61,65 @@ const WindowResize = require('three-window-resize');
                                 (click)="toggleAntialias()" title="Disable antialiasing">
                             <i class="fa fa-paper-plane"> </i>
                         </button>
+                        <button mat-button [matMenuTriggerFor]="menu"class="w3-bar-item w3-hover-light-grey"
+                            title="Resize TOO Map">
+                                <i class="fa fa-arrows"></i>
+                        </button>
+                        <mat-menu #menu="matMenu" class="resizeMenu">
+                            <h6>Resize TOO Rings and Wires </h6>
+                            <div>
+                                <span class="text-medium">0% </span>
+                                <mat-slider horizontal class=""
+                                    title="Label size"
+                                    (change)="resizeTOOMap($event, 'wires-f')"
+                                    (click)="$event.stopPropagation();"
+                                    [displayWith]="formatLabel"
+                                    tickInterval="1"
+                                    step="1"
+                                    min="1"
+                                    max="100"
+                                    value="100"
+                                    aria-label="units">
+                                </mat-slider>
+                                <span class="text-medium">100%</span>
+                            </div>
+                            <span class="text-medium">Wires F </span>
+                            <div>
+                                <span class="text-medium">0% </span>
+                                <mat-slider horizontal class=""
+                                    title="Label size"
+                                    (change)="resizeTOOMap($event, 'wires-d')"
+                                    (click)="$event.stopPropagation();"
+                                    [displayWith]="formatLabel"
+                                    tickInterval="1"
+                                    step="1"
+                                    min="1"
+                                    max="100"
+                                    value="100"
+                                    aria-label="units">
+                                </mat-slider>
+                                <span class="text-medium">100%</span>
+                            </div>
+                            <span class="text-medium">Wires D</span>
+                            <div>
+                                <span class="text-medium">0%</span>
+                                <mat-slider horizontal class=""
+                                    title="Label size"
+                                    (change)="resizeTOOMap($event, 'wires-n')"
+                                    (click)="$event.stopPropagation();"
+                                    thumbLabel
+                                    [displayWith]="formatLabel"
+                                    tickInterval="1"
+                                    step="1"
+                                    min="1"
+                                    max="100"
+                                    value="100"
+                                    aria-label="units">
+                                </mat-slider>
+                                <span class="text-medium">100%</span>
+                            </div>
+                            <span class="text-medium">Wires N</span>
+                        </mat-menu>
                         <button class="w3-bar-item w3-hover-light-grey" (click)="graph?.graphData(graphData)"
                                 title="Update layout">
                             <i class="fa fa-refresh"> </i>
@@ -337,6 +405,38 @@ export class WebGLSceneComponent {
         if (this.graph){ this.graph.labelRelSize(this.labelRelSize); }
     }
 
+    resizeTOOMap(event, ring){
+        const model = initModel;
+
+        let wires = model.scaffolds[0]?.components?.find( component => component.id === ring )?.wires;
+
+        let meshes = this.graph.children.filter( child => wires?.includes(child.userData.id));
+
+        meshes.forEach( mesh => {
+            mesh.scale.set(event.value/100, event.value/100, mesh.scale.z );
+        });
+
+        meshes = this.graph.children.filter( child => wires?.includes(child.userData?.levelIn?.wiredTo?.id));
+        wires.concat(meshes.map(m => m?.userData?.id));
+
+        meshes.forEach( mesh => {
+            mesh.scale.set(event.value/100, event.value/100,  mesh.scale.z );
+        });
+
+        meshes = this.graph.children.filter( child => wires?.includes(child.userData?.hostedBy?.id));
+
+        meshes.forEach( mesh => {
+            mesh.userData.relocate({x : mesh.position.x * ( event.value /100 ), y : mesh.position.y, z :0});
+            mesh.userData.updateViewObjects(mesh.userData.state);
+            this.graph.graphData(this._graphData);
+            this.scaffoldUpdated.emit(mesh);
+        });
+        
+        //this.graph.graphData(this._graphData);
+
+        autoLayout(this.scene, this._graphData);
+    }
+
     get graphData() {
         return this._graphData;
     }
@@ -521,6 +621,7 @@ export class WebGLSceneComponent {
                 obj.userData.relocate(delta);
                 this.graph.graphData(this.graphData);
                 this.scaffoldUpdated.emit(obj);
+                console.log("Posiiton ", obj.position);
             })
             .onRegionDragEnd((obj, delta) => {
                 obj.userData.relocate(delta);
@@ -737,7 +838,7 @@ export class WebGLSceneComponent {
 }
 
 @NgModule({
-    imports: [CommonModule, FormsModule, MatSliderModule, MatDialogModule, LogInfoModule, SettingsPanelModule, QuerySelectModule, HotkeyModule.forRoot()],
+    imports: [CommonModule, FormsModule, MatSliderModule, MatMenuModule, MatDialogModule, LogInfoModule, SettingsPanelModule, QuerySelectModule, HotkeyModule.forRoot()],
     declarations: [WebGLSceneComponent],
     entryComponents: [LogInfoDialog, QuerySelectDialog],
     exports: [WebGLSceneComponent]
