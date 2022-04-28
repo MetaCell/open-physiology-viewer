@@ -407,34 +407,87 @@ export class WebGLSceneComponent {
 
     resizeTOOMap(event, ring){
         const model = initModel;
+        const radius = event.value/100;
 
-        let wires = model.scaffolds[0]?.components?.find( component => component.id === ring )?.wires;
+        // Find all wires for this ring
+        let wiresIds = model.scaffolds[0]?.components?.find( component => component.id === ring )?.wires;
 
-        let meshes = this.graph.children.filter( child => wires?.includes(child.userData.id));
+        // Find all meshes for the wires
+        let meshes = this.graph.children.filter( child => wiresIds?.includes(child.userData.id));
 
+        // Scale down wires by radius
         meshes.forEach( mesh => {
-            mesh.scale.set(event.value/100, event.value/100, mesh.scale.z );
+            mesh.scale.set(radius, radius, mesh.scale.z );
         });
 
-        meshes = this.graph.children.filter( child => wires?.includes(child.userData?.levelIn?.wiredTo?.id));
-        wires.concat(meshes.map(m => m?.userData?.id));
+        wiresIds.concat(this.graph.children.filter( child => wiresIds?.includes(child.userData?.levelIn?.wiredTo?.id)).map(m => m?.userData?.id));
 
+        // Scale down attached wires
         meshes.forEach( mesh => {
-            mesh.scale.set(event.value/100, event.value/100,  mesh.scale.z );
+            mesh.scale.set(radius, radius, mesh.scale.z );
         });
 
-        meshes = this.graph.children.filter( child => wires?.includes(child.userData?.hostedBy?.id));
-
-        meshes.forEach( mesh => {
-            mesh.userData.relocate({x : mesh.position.x * ( event.value /100 ), y : mesh.position.y, z :0});
-            mesh.userData.updateViewObjects(mesh.userData.state);
-            this.graph.graphData(this._graphData);
-            this.scaffoldUpdated.emit(mesh);
+        const anchors = [];
+        this.graph.children.forEach( child => { 
+            if ( wiresIds?.includes(child.userData?.id) ) {
+                child.userData?.target ? anchors.push(child.userData?.target) : null;
+                child.userData?.source ? anchors.push(child.userData?.source) : null;
+            }
         });
-        
-        //this.graph.graphData(this._graphData);
 
-        autoLayout(this.scene, this._graphData);
+        // Reposition anchor nodes after resizing ring
+        // meshes = this.graph.children.filter( child => wiresIds?.includes(child.userData?.hostedBy?.id));
+
+        anchors.forEach( anchor => {
+            const position = new THREE.Vector3();
+            const mesh = anchor.viewObjects.main;
+            mesh.getWorldPosition(position);
+            if ( mesh.userData?.originalPosition === undefined ) {
+                mesh.userData.originalPosition = position;
+            }
+            let newPosition = new THREE.Vector3();
+            const xDist = mesh.userData?.originalPosition?.x;
+            const yDist = mesh.userData?.originalPosition?.y;
+            const dist = Math.sqrt(xDist * xDist + yDist * yDist);
+            const length = dist * radius;
+            const fractionOfTotal = length/dist;
+            
+            newPosition.x = xDist * fractionOfTotal;
+            newPosition.y = yDist * fractionOfTotal;
+
+            mesh.position.set(newPosition.x, newPosition.y, 0);
+            anchor.viewObjects?.label?.position.set(newPosition.x, newPosition.y, 0);
+        });
+
+        if ( ring === "wires-f" ) {
+            meshes = this.graph.children.filter( child => child.userData?.class == "Region" || child.userData?.class == "Wire" );
+            // Scale down wires by radius
+            meshes.forEach( mesh => {
+                mesh.scale.set(radius, radius, mesh.scale.z );
+            });
+
+            meshes = this.graph.children.filter( child => child.userData?.class == "Anchor" );
+            meshes.forEach( mesh => {
+                const position = new THREE.Vector3();
+                mesh.getWorldPosition(position);
+                if ( mesh.userData?.originalPosition === undefined ) {
+                    mesh.userData.originalPosition = position;
+                }
+                let newPosition = new THREE.Vector3();
+                const xDist = mesh.userData?.originalPosition?.x;
+                const yDist = mesh.userData?.originalPosition?.y;
+                const dist = Math.sqrt(xDist * xDist + yDist * yDist);
+                const length = dist * radius;
+                const fractionOfTotal = length/dist;
+                
+                newPosition.x = xDist * fractionOfTotal;
+                newPosition.y = yDist * fractionOfTotal;
+    
+                mesh.position.set(newPosition.x, newPosition.y, 0);
+                mesh.userData?.viewObjects?.label?.position.set(newPosition.x, newPosition.y, 0);
+            });
+        }
+
     }
 
     get graphData() {
