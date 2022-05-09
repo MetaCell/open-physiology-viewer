@@ -17,8 +17,11 @@ import {OrbitControls} from "three/examples/jsm/controls/OrbitControls";
 import {$Field, $SchemaClass} from "../model";
 import {QuerySelectModule, QuerySelectDialog} from "./gui/querySelectDialog";
 import {HotkeyModule, HotkeysService, Hotkey, HotkeysCheatsheetComponent} from 'angular2-hotkeys';
-
+import { highlight, unhighlight } from '../view/render/autoLayout/objects';
 const WindowResize = require('three-window-resize');
+
+import { autoLayout, layoutLabelCollide } from '../view/render/autoLayout'
+
 
 /**
  * @ignore
@@ -119,6 +122,7 @@ const WindowResize = require('three-window-resize');
                         (onEditResource)="editResource.emit($event)"
                         (onUpdateLabels)="graph?.showLabels($event)"
                         (onToggleMode)="graph?.numDimensions($event)"
+                        (onToggleWireView)="graph?.showLabelWires($event)"
                         (onToggleLayout)="toggleLayout($event)"
                         (onToggleGroup)="toggleGroup($event)"
                         (onUpdateLabelContent)="graph?.labels($event)"
@@ -212,11 +216,11 @@ export class WebGLSceneComponent {
     @Input('highlighted') set highlighted(entity) {
         if (this._highlighted === entity){ return; }
         if (this._highlighted !== this._selected){
-            this.unhighlight(this._highlighted);
+            unhighlight(this._highlighted, this.defaultColor);
         } else {
-            this.highlight(this._selected, this.selectColor, false);
+            highlight(this._selected, this.selectColor, false);
         }
-        this.highlight(entity, this.highlightColor, entity !== this._selected);
+        highlight(entity, this.highlightColor, entity !== this._selected);
         this._highlighted = entity;
         this.highlightedItemChange.emit(entity);
 
@@ -229,8 +233,8 @@ export class WebGLSceneComponent {
 
     @Input('selected') set selected(entity){
         if (this.selected === entity){ return; }
-        this.unhighlight(this._selected);
-        this.highlight(entity, this.selectColor, entity !== this.highlighted);
+        unhighlight(this._selected, this.defaultColor);
+        highlight(entity, this.selectColor, entity !== this.highlighted);
         this._selected = entity;
         this.selectedItemChange.emit(entity);
     }
@@ -271,7 +275,8 @@ export class WebGLSceneComponent {
                 "showLayers"      : true,
                 "showLyphs3d"     : false,
                 "showCoalescences": false,
-                "numDimensions"   : 3
+                "numDimensions"   : 3,
+                "wireView"        : true
             },
             "groups": true,
             "labels": {
@@ -527,6 +532,10 @@ export class WebGLSceneComponent {
                 this.graph.graphData(this.graphData);
                 this.scaffoldUpdated.emit(obj);
             })
+            .onFinishLoading(() => {
+              //this.parseDefaultColors(this.getSceneObjects());
+              //layoutLabelCollide(this.scene);
+            })
             .graphData(this.graphData);
 
         const isLayoutDimValid = (layout, key) => layout::isObject() && (key in layout) && (typeof layout[key] !== 'undefined');
@@ -544,6 +553,7 @@ export class WebGLSceneComponent {
 
         this.graph.labelRelSize(this.labelRelSize);
         this.graph.showLabels(this.config["labels"]);
+        this.graph.showLabelWires(this.config["labelsWires"]);
         this.scene.add(this.graph);
     }
 
@@ -652,46 +662,7 @@ export class WebGLSceneComponent {
     get selected(){
         return this._selected;
     }
-
-    highlight(entity, color, rememberColor = true){
-        if (!entity || !entity.viewObjects) { return; }
-        let obj = entity.viewObjects["main"];
-        if (obj && obj.material) {
-            // store color of closest object (for later restoration)
-            if (rememberColor){
-                obj.currentHex = obj.material.color.getHex();
-                (obj.children || []).forEach(child => {
-                    if (child.material) {
-                        child.currentHex = child.material.color.getHex();
-                    }
-                });
-            }
-
-            // set a new color for closest object
-            obj.material.color.setHex(color);
-            (obj.children || []).forEach(child => {
-                if (child.material) {
-                    child.material.color.setHex(color);
-                }
-            });
-        }
-    }
-
-    unhighlight(entity){
-        if (!entity || !entity.viewObjects) { return; }
-        let obj = entity.viewObjects["main"];
-        if (obj){
-            if (obj.material){
-                obj.material.color.setHex( obj.currentHex || this.defaultColor);
-            }
-            (obj.children || []).forEach(child => {
-                if (child.material) {
-                    child.material.color.setHex(child.currentHex || this.defaultColor);
-                }
-            })
-        }
-    }
-
+    
     selectByName(name) {
         let options = (this.graphData.resources||[]).filter(e => e.name === name);
         if (options.length > 0){
