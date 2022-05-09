@@ -194,6 +194,10 @@ const COLORS = {
                         <h5>Layout</h5>
 
                         <div class="wrap">
+                          <mat-slide-toggle matTooltip="Toggle view mode" (change)="toggleWireView()" [checked]="config.layout.wireView === true">Show label wires</mat-slide-toggle>
+                        </div>
+
+                        <div class="wrap">
                           <mat-slide-toggle matTooltip="Toggle view mode" (change)="toggleMode()" [checked]="config.layout.numDimensions === 2">2D mode</mat-slide-toggle>
                         </div>
 
@@ -915,6 +919,7 @@ export class SettingsPanel {
     @Output() onUpdateLabels       = new EventEmitter();
     @Output() onUpdateLabelContent = new EventEmitter();
     @Output() onToggleGroup        = new EventEmitter();
+    @Output() onToggleWireView     = new EventEmitter();
     @Output() onToggleMode         = new EventEmitter();
     @Output() onToggleLayout       = new EventEmitter();
     @Output() onToggleHelperPlane  = new EventEmitter();
@@ -945,6 +950,11 @@ export class SettingsPanel {
             this.onSelectBySearch.emit(name);
         }
     }
+
+    toggleWireView(){
+      this.config.layout.wireView = ! this.config.layout.wireView ;
+      this.onToggleWireView.emit(this.config.layout.wireView);
+  }
 
     toggleMode(){
         this.config.layout.numDimensions = (this.config.layout.numDimensions === 3)? 2: 3;
