@@ -7,7 +7,7 @@ import basalGangliaAuto from './basalGangliaAuto.json'
 import basicSharedNodes from './basicSharedNodes.json'                  
 import neuron from './neuron.json'
 import basalGangliaInternal from './basalGangliaInternal.json'              
-import babasicVillussic from './basicVillus.json'                       
+import basicVillus from './basicVillus.json'                       
 import neuronTemplate from './neuronTemplate.json'
 import basic from './basic.json'                             
 import bolserLewis from './bolserLewis.json'                       
@@ -41,11 +41,10 @@ export const test_data = {
   basicLyphWithNoAxis,               
   keastSpinalTestScaffold,
   basalGangliaAuto,   
-  babasicVillussic, 
+  basicVillus, 
   basicSharedNodes,               
   neuron,
-  basalGangliaInternal,              
-  basicVillus,    
+  basalGangliaInternal,                  
   neuronTemplate,
   basic,             
   bolserLewis,              
@@ -53,8 +52,7 @@ export const test_data = {
   basicChainHousedInOneLyph,        
   fullBody,     
   neuronTree,
-  basicChainWireConflict,         
-  index,                               
+  basicChainWireConflict,                                       
   neuronTreeWithLevels,
   basicChainWithNestedLevels,      
   keastNamespaces,           
@@ -66,7 +64,6 @@ export const test_data = {
   keastSpinal,                   
   respiratoryInternalLyphsInLayers,
   basicHousedTree,               
-  keastSpinalFull,   
   bakeastSpinalFullsic,
   uot,
   basicJointTrees,            
