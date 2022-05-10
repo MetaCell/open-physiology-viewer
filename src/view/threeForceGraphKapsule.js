@@ -97,6 +97,7 @@ export default Kapsule({
                             }
                             state.canvas.classList.remove('grabbable');
                             state.isPointerDragging = false;
+                            
                         })
                 );
 
@@ -186,6 +187,7 @@ export default Kapsule({
         showLyphs3d      : { default: false},
         showCoalescences : { default: false},
         showLabels       : { default: {}},
+        showLabelWires       : { default: true },
 
         labels           : { default: {Anchor: 'id', Wire: 'id', Node: 'id', Link: 'id', Lyph: 'id', Region: 'id'}},
         labelRelSize     : { default: 0.1},
@@ -311,7 +313,7 @@ export default Kapsule({
           } else { layout['tick'](); }
 
           state.graphData.updateViewObjects(state);
-          autoLayout(state.graphScene, state.graphData);
+          autoLayout(state.graphScene, state.graphData, state.showLabelWires);
         }
     }
 });

@@ -4,10 +4,11 @@
   "description": "Open-physiology viewer",
   "main": "dist/index.js",
   "scripts": {
+    "test-snapshots": "jest",
     "test": "mocha-webpack --opts mocha-webpack.opts",
     "build": "cross-env BABEL_ENV=production webpack",
     "watch": "webpack --progress --watch",
-    "dev-server": "webpack-dev-server --open --hot --config webpack.config-dev.js",
+    "dev-server": "webpack-dev-server --host 0.0.0.0 --open --hot --config webpack.config-dev.js",
     "esdoc": "./node_modules/.bin/esdoc",
     "bootprint": "bootprint json-schema src/model/graphScheme.json docs/schema"
   },
@@ -47,6 +48,7 @@
     "esdoc-flow-plugin": "^1.0.0",
     "esdoc-standard-plugin": "^1.0.0",
     "file-loader": "0.11",
+    "jest-image-snapshot": "^4.5.1",
     "jsdom": "13.0.0",
     "jsdom-global": "3.0.2",
     "license-webpack-plugin": "^2.3.11",
@@ -55,6 +57,7 @@
     "node-sass": "^4.10.0",
     "polyfill-function-prototype-bind": "0.0.1",
     "power-assert": "1",
+    "puppeteer": "^13.6.0",
     "sass-loader": "^7.1.0",
     "sinon": "^4.1.3",
     "source-map-support": "0.4",
@@ -68,16 +71,16 @@
     "webpack-xlsx-loader": "^1.0.0"
   },
   "dependencies": {
-    "@angular-devkit/schematics": "^9.1.13",
-    "@angular/animations": "^9.1.13",
+    "@angular-devkit/schematics": "^12.0.0",
+    "@angular/animations": "^9.0.0",
     "@angular/cdk": "^9.0.0",
-    "@angular/common": "^9.1.13",
-    "@angular/compiler": "^9.1.13",
-    "@angular/core": "^9.1.13",
-    "@angular/forms": "^9.1.13",
+    "@angular/common": "^12.0.0",
+    "@angular/compiler": "^12.0.0",
+    "@angular/core": "^12.0.0",
+    "@angular/forms": "^12.0.0",
     "@angular/material": "^9.0.0",
-    "@angular/platform-browser": "^9.1.13",
-    "@angular/platform-browser-dynamic": "^9.1.13",
+    "@angular/platform-browser": "^12.0.0",
+    "@angular/platform-browser-dynamic": "^12.0.0",
     "@babel/cli": "^7.5.5",
     "@babel/polyfill": "^7.4.4",
     "@circlon/angular-tree-component": "^11.0.4",
@@ -113,7 +116,7 @@
     "three-text2d": "^0.4.1",
     "three-window-resize": "^1.0.4",
     "tinycolor2": "^1.4.1",
-    "xlsx": "^0.17.5",
-    "zone.js": "^0.8.26"
+    "xlsx": "^0.14.1",
+    "zone.js": "^0.11.4"
   }
 }

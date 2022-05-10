@@ -1,3 +1,5 @@
+import { over } from "lodash";
+import { Vector2, Vector3 } from "three";
 import {$Field, modelClasses} from "../../model";
 import {
  getDefaultControlPoint
@@ -23,6 +25,8 @@ import { trasverseHostedBy
 import { rotateAroundCenter
   , translateMeshToTarget
   , translateGroupToTarget   } from "./autoLayout/transform";
+
+import { tagCollidingObjects } from './autoLayout/collission.js'
 
 const {Edge} = modelClasses;
 
@@ -198,11 +202,6 @@ function arrangeLyphsGrid(lyphs, h, v) {
   group.translateY( maxY / -2);
 
   return group ;
-}
-
-function avg(a,b)
-{
-  return (a+b)/2;
 }
 
 function layoutLyphs(scene, hostLyphDic, lyphDic, lyphInLyph)
@@ -396,7 +395,7 @@ function autoLayoutChains(scene, graphData, links){
   }
 }
 
-export function autoLayout(scene, graphData) {
+export function autoLayout(scene, graphData, showLabelWires) {
 
   let lyphs = {};
   scene.children.forEach( child => {
@@ -446,6 +445,7 @@ export function autoLayout(scene, graphData) {
       const height = targetSize?.y;
       const middle = host ? getWorldPosition(host) : null;
       middle ? middle.x = middle.x - (width/2) : null;
+      middle ? middle.y = middle.y - ( targetSize?.y/6) : null;
       middle ? middle.z = middle.z + 1 : null;
       lyphs?.forEach( lyph => {
         if ( lyph?.userData?.supertype?.id?.includes(DENDRYTE) && middle){
@@ -456,10 +456,12 @@ export function autoLayout(scene, graphData) {
           (host && lyph) && layoutChainLyph(host, lyph, middle, AXON_SIZE);
         }
         middle ? middle.x = middle.x + ((width/lyphs.length)/2) : null;
-        middle ? middle.y = middle.y - ( targetSize?.y/6) : null;
+
       });
     }
   });
+
+  tagCollidingObjects(scene, "Lyph");
   
   //FIXME : Fix chians with nodes
   //autoLayoutChains(scene, graphData, links);

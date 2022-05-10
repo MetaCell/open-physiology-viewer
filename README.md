@@ -20,6 +20,12 @@ Live demonstration of this application can be found [here](http://open-physiolog
 * Install build dependencies: `npm install`
 * Run the build script: `npm run build`
 
+## Snapshot tests
+* install jtest globally with npm 
+* `run jest test-snapshots/snapshot.test.js `
+
+The first run will capture the snapshots needed for any following tests. Once they are generated, upcoming tests will do the comparison.
+
 The compiled code is in the `open-physiology/dist/` folder. After that you should be able to open a demo app `test-app/index.html` in your browser.
 
 ## Google Chrome flags

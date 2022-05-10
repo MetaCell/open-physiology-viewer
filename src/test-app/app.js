@@ -50,6 +50,8 @@ import {enableProdMode} from '@angular/core';
 
 import { removeDisconnectedObjects } from '../../src/view/render/autoLayout'
 
+import { test_data } from '../../test/data'
+
 enableProdMode();
 
 const ace = require('ace-builds');
@@ -226,7 +228,6 @@ const fileExtensionRe = /(?:\.([^.]+))?$/;
         #main-panel{            
             margin-top : 40px;
             margin-left: 48px; 
-            width : calc(100% - 48px);
             height : 90vh
         }
 
@@ -236,6 +237,11 @@ const fileExtensionRe = /(?:\.([^.]+))?$/;
 
         #viewer-panel {
             width : 100%;
+        }
+
+        #main-panel mat-tab-group{            
+            height : inherit;
+            width : calc(100%);
         }
 
         #json-editor{
@@ -280,7 +286,16 @@ export class TestApp {
     @ViewChild('jsonEditor') _container: ElementRef;
 
     constructor(dialog: MatDialog){
-        this.model = initModel;
+        const params = new Proxy(new URLSearchParams(window.location.search), {
+          get: (searchParams, prop) => searchParams.get(prop),
+        });
+        let testModel ;
+        if (params.initModel)
+        {
+          if (params.initModel in test_data)
+            testModel = test_data[params.initModel]
+        }
+        this.model = testModel ?? initModel;
         this._dialog = dialog;
         this._flattenGroups = false;
     }
