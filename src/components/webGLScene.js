@@ -1,11 +1,11 @@
-import {NgModule, Component, ViewChild, ElementRef, Input, Output, EventEmitter, ChangeDetectionStrategy} from '@angular/core';
+import {NgModule, Component, ViewChild, ElementRef, Input, Output, EventEmitter, ChangeDetectionStrategy, NgZone} from '@angular/core';
 import {CommonModule} from '@angular/common';
 import {FormsModule} from '@angular/forms';
 import {MatSliderModule} from '@angular/material/slider';
 import {MatDialog, MatDialogModule} from '@angular/material/dialog';
 
 import FileSaver  from 'file-saver';
-import {keys, values, isObject, cloneDeep} from 'lodash-bound';
+import {keys, values, defaults, isObject, cloneDeep, isArray } from 'lodash-bound';
 import * as THREE from 'three';
 import ThreeForceGraph from '../view/threeForceGraph';
 import {forceX, forceY, forceZ} from 'd3-force-3d';
@@ -28,7 +28,7 @@ import { autoLayout, layoutLabelCollide } from '../view/render/autoLayout'
  */
 @Component({
     selector: 'webGLScene',
-    changeDetection: ChangeDetectionStrategy.Default,
+    changeDetection: ChangeDetectionStrategy.OnPush,
     template: `
         <hotkeys-cheatsheet></hotkeys-cheatsheet>
         <section id="apiLayoutPanel" class="w3-row">            
@@ -105,7 +105,7 @@ import { autoLayout, layoutLabelCollide } from '../view/render/autoLayout'
                         </button>
                     </section>
                 </section>
-                <canvas #canvas> </canvas>
+                <canvas #canvas id="main-canvas"> </canvas>
             </section>
             <section id="apiLayoutSettingsPanel" *ngIf="showPanel && isConnectivity" class="w3-quarter">
                 <settingsPanel
@@ -191,6 +191,7 @@ export class WebGLSceneComponent {
     labelRelSize   = 0.1 * this.scaleFactor;
     lockControls   = false;
     isConnectivity = true;
+    lastNow = performance.now();
 
     queryCounter = 0;
 
@@ -266,8 +267,9 @@ export class WebGLSceneComponent {
      */
     @Output() onImportExternal = new EventEmitter();
 
-    constructor(dialog: MatDialog, hotkeysService: HotkeysService) {
+    constructor(dialog: MatDialog, hotkeysService: HotkeysService, ngZone: NgZone) {
         this.dialog = dialog;
+        this.ngZone = ngZone;
         this.hotkeysService = hotkeysService ;
         this.defaultConfig = {
             "layout": {
@@ -343,7 +345,8 @@ export class WebGLSceneComponent {
     }
 
     get graphData() {
-        return this._graphData;
+      this.requestFrame();
+      return this._graphData;
     }
 
     ngAfterViewInit() {
@@ -364,6 +367,10 @@ export class WebGLSceneComponent {
         this.scene = new THREE.Scene();
 
         this.controls = new OrbitControls(this.camera, this.renderer.domElement);
+    
+        this.controls.addEventListener('change', () => {
+          this.requestFrame();
+        });        
 
         this.controls.minDistance = 10;
         this.controls.maxDistance = 4000 - 100 * this.scaleFactor;
@@ -388,8 +395,7 @@ export class WebGLSceneComponent {
         this.createEventListeners(); // keyboard / mouse events
         this.resizeToDisplaySize();
         this.createHelpers();
-        this.createGraph();
-        this.animate();
+        this.createGraph();      
     }
 
     processQuery(){
@@ -479,14 +485,23 @@ export class WebGLSceneComponent {
         }
     }
 
+    skipRender() {
+      if (performance.now() - this.lastNow < 1000/30) return true;
+      this.lastNow = performance.now();
+      return false;
+    }
+
     animate() {
+      this.ngZone.runOutsideAngular(() => {        
+        //if (this.skipRender()) return;
+
         this.resizeToDisplaySize();
         if (this.graph) {
             this.graph.tickFrame();
         }
         this.controls.update();
-        this.renderer.render(this.scene, this.camera);
-        window.requestAnimationFrame(() => this.animate());
+        this.renderer.render(this.scene, this.camera);           
+      });
     }
 
     createHelpers() {
@@ -533,6 +548,7 @@ export class WebGLSceneComponent {
                 this.scaffoldUpdated.emit(obj);
             })
             .onFinishLoading(() => {
+              this.animate();
               //this.parseDefaultColors(this.getSceneObjects());
               //layoutLabelCollide(this.scene);
             })
@@ -594,6 +610,7 @@ export class WebGLSceneComponent {
         this.camera.position.set(...position);
         this.camera.up.set(...lookup);
         this.camera.updateProjectionMatrix();
+        this.requestFrame()
     }
 
     updateGraph(){
@@ -679,9 +696,14 @@ export class WebGLSceneComponent {
         this.selected = this.getMouseOverEntity();
     }
 
+    requestFrame() {
+      window.requestAnimationFrame( () => { this.animate(); })
+    }
+
     createEventListeners() {
         window.addEventListener('mousemove', evt => this.onMouseMove(evt), false);
         window.addEventListener('dblclick', () => this.onDblClick(), false );
+        window.addEventListener('resize', () => this.requestFrame(), false );
     }
 
     onMouseMove(evt) {
