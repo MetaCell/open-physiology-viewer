@@ -18,6 +18,8 @@ import {$Field, $SchemaClass} from "../model";
 import {QuerySelectModule, QuerySelectDialog} from "./gui/querySelectDialog";
 import {HotkeyModule, HotkeysService, Hotkey, HotkeysCheatsheetComponent} from 'angular2-hotkeys';
 import { highlight, unhighlight } from '../view/render/autoLayout/objects';
+import {$LogMsg} from "../model/logger";
+
 const WindowResize = require('three-window-resize');
 
 import { autoLayout, layoutLabelCollide } from '../view/render/autoLayout'
@@ -109,7 +111,7 @@ import { autoLayout, layoutLabelCollide } from '../view/render/autoLayout'
             </section>
             <section id="apiLayoutSettingsPanel" *ngIf="showPanel && isConnectivity" class="w3-quarter">
                 <settingsPanel
-                        [config]="config"
+                        [config]="_config"
                         [selected]="_selected" 
                         [highlighted]="_highlighted"
                         [helperKeys]="_helperKeys"
@@ -120,12 +122,12 @@ import { autoLayout, layoutLabelCollide } from '../view/render/autoLayout'
                         (onSelectBySearch)="selectByName($event)"
                         (onOpenExternal)="openExternal($event)"
                         (onEditResource)="editResource.emit($event)"
-                        (onUpdateLabels)="graph?.showLabels($event)"
+                        (onUpdateShowLabels)="graph?.showLabels($event)"
+                        (onUpdateLabelContent)="graph?.labels($event)"
                         (onToggleMode)="graph?.numDimensions($event)"
                         (onToggleWireView)="graph?.showLabelWires($event)"
                         (onToggleLayout)="toggleLayout($event)"
                         (onToggleGroup)="toggleGroup($event)"
-                        (onUpdateLabelContent)="graph?.labels($event)"
                         (onToggleHelperPlane)="this.helpers[$event].visible = !this.helpers[$event].visible"
                 > </settingsPanel>
             </section>
@@ -214,6 +216,15 @@ export class WebGLSceneComponent {
         }
     }
 
+    @Input('config') set config(newConfig) {
+        this._config = newConfig::defaults(this.defaultConfig);
+        if (this.graph){
+            this.graph.showLabels(this._config.showLabels);
+            this.graph.labels(this._config.labels);
+            this._config.layout::keys().forEach(prop => this.graph[prop](this._config.layout[prop]))
+        }
+    }
+
     @Input('highlighted') set highlighted(entity) {
         if (this._highlighted === entity){ return; }
         if (this._highlighted !== this._selected){
@@ -280,8 +291,7 @@ export class WebGLSceneComponent {
                 "numDimensions"   : 3,
                 "wireView"        : true
             },
-            "groups": true,
-            "labels": {
+            showLabels: {
                 [$SchemaClass.Wire]  : false,
                 [$SchemaClass.Anchor]: true,
                 [$SchemaClass.Node]  : false,
@@ -289,10 +299,19 @@ export class WebGLSceneComponent {
                 [$SchemaClass.Lyph]  : false,
                 [$SchemaClass.Region]: false
             },
-            "highlighted": true,
-            "selected"   : true
+            labels:{
+                [$SchemaClass.Wire]  : $Field.id,
+                [$SchemaClass.Anchor]: $Field.id,
+                [$SchemaClass.Node]  : $Field.id,
+                [$SchemaClass.Link]  : $Field.id,
+                [$SchemaClass.Lyph]  : $Field.id,
+                [$SchemaClass.Region]: $Field.id
+            },
+            groups      : true,
+            highlighted : true,
+            selected    : true
         };
-        this.config = this.defaultConfig::cloneDeep();
+        this._config = this.defaultConfig::cloneDeep();
         this.hotkeysService.add(new Hotkey('shift+meta+r', (event: KeyboardEvent): boolean => {
           this.resetCamera();
           return false; // Prevent bubbling
@@ -415,13 +434,11 @@ export class WebGLSceneComponent {
                 if (nodes.length || links.length || lyphs.length) {
                     this.graphData.createDynamicGroup(this.queryCounter, result.query || "?", {nodes, links, lyphs}, this.modelClasses);
                 } else {
-                    this.graphData.logger.error("No resources identified to match SciGraph nodes and edges", nodeIDs, edgeIDs);
+                    this.graphData.logger.error($LogMsg.GRAPH_QUERY_EMPTY_RES, nodeIDs, edgeIDs);
                 }
             }
         })
     }
-
-
 
     exportJSON(){
         if (this._graphData){
@@ -568,8 +585,8 @@ export class WebGLSceneComponent {
                 (d.source && d.source.fixed && d.target && d.target.fixed || !d.length) ? 0 : 1));
 
         this.graph.labelRelSize(this.labelRelSize);
-        this.graph.showLabels(this.config["labels"]);
-        this.graph.showLabelWires(this.config["labelsWires"]);
+        this.graph.showLabels(this._config.showLabels);
+        this.graph.labels(this._config.labels);
         this.scene.add(this.graph);
     }
 
@@ -654,7 +671,7 @@ export class WebGLSceneComponent {
 
         const selectLayer = (entity) => {
             //Refine selection to layers
-            if (entity && entity.layers && this.config.layout["showLayers"]) {
+            if (entity && entity.layers && this._config.layout.showLayers) {
                 let layerMeshes = entity.layers.map(layer => layer.viewObjects["main"]);
                 let layerIntersects = this.ray.intersectObjects(layerMeshes);
                 if (layerIntersects.length > 0) {
@@ -679,7 +696,45 @@ export class WebGLSceneComponent {
     get selected(){
         return this._selected;
     }
-    
+
+    highlight(entity, color, rememberColor = true){
+        if (!entity || !entity.viewObjects) { return; }
+        let obj = entity.viewObjects["main"];
+        if (obj && obj.material) {
+            // store color of closest object (for later restoration)
+            if (rememberColor){
+                obj.currentHex = obj.material.color.getHex();
+                (obj.children || []).forEach(child => {
+                    if (child.material) {
+                        child.currentHex = child.material.color.getHex();
+                    }
+                });
+            }
+            // set a new color for closest object
+            obj.material.color.setHex(color);
+            (obj.children || []).forEach(child => {
+                if (child.material) {
+                    child.material.color.setHex(color);
+                }
+            });
+        }
+    }
+
+    unhighlight(entity){
+        if (!entity || !entity.viewObjects) { return; }
+        let obj = entity.viewObjects["main"];
+        if (obj){
+            if (obj.material){
+                obj.material.color.setHex( obj.currentHex || this.defaultColor);
+            }
+            (obj.children || []).forEach(child => {
+                if (child.material) {
+                    child.material.color.setHex(child.currentHex || this.defaultColor);
+                }
+            })
+        }
+    }
+
     selectByName(name) {
         let options = (this.graphData.resources||[]).filter(e => e.name === name);
         if (options.length > 0){
@@ -715,7 +770,7 @@ export class WebGLSceneComponent {
     }
 
     toggleLayout(prop){
-        if (this.graph){ this.graph[prop](this.config.layout[prop]); }
+        if (this.graph){ this.graph[prop](this._config.layout[prop]); }
     }
 
     toggleGroup(group) {

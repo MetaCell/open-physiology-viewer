@@ -4,23 +4,26 @@ import {Node} from "./verticeModel";
 import {Link, Wire} from "./edgeModel";
 import {Coalescence} from "./coalescenceModel";
 
-
 import {
     mergeGenResource,
-    findResourceByID,
+    refToResource,
+    refsToResources,
     getNewID,
     getGenID,
-    addBorderNode,
+    getFullID,
     getID,
-    compareResources,
+    isDefined,
     getGenName,
+    addBorderNode,
+    compareResources,
+    getRefNamespace,
     $Field,
     $Color,
     $Prefix,
     $SchemaClass
 } from "./utils";
 import {logger, $LogMsg} from './logger';
-import {defaults, isObject, isArray, flatten, isString} from 'lodash-bound';
+import {defaults, isObject, flatten, isString, values} from 'lodash-bound';
 
 /**
  * Chain model
@@ -50,30 +53,35 @@ export class Chain extends GroupTemplate {
           return res;
     }
 
+    static validateTemplate(chain){
+       if (!chain){
+            logger.warn($LogMsg.CHAIN_UNDEFINED);
+            return false;
+       }
+       if (chain.generated){
+            return false;
+       }
+
+       if (!(chain.numLevels || isDefined(chain.levels) || isDefined(chain.lyphs) ||
+            isDefined(chain.housingLyphs) || chain.housingChain)) {
+            logger.warn($LogMsg.CHAIN_SKIPPED, chain);
+            return false;
+        }
+        return true;
+    }
+
     /**
      * Generate a group from chain template
      * @param parentGroup - model resources that may be referred from the template
      * @param chain - chain template in JSON
      */
     static expandTemplate(parentGroup, chain){
-        if (!chain){
-            logger.warn($LogMsg.CHAIN_UNDEFINED);
+        if (!this.validateTemplate(chain)){
             return;
         }
-
-        if (chain.generated){return;}
 
         chain.id = chain.id || getGenID($Prefix.chain, getNewID());
         chain.name = chain.name || getGenName(chain.name || chain.id, $Prefix.group);
-
-        const isDefined = value => value && value::isArray() && value.length > 0;
-
-        if ( !(chain.numLevels || isDefined(chain.levels) || isDefined(chain.lyphs) ||
-            isDefined(chain.housingLyphs) || chain.housingChain)) {
-            logger.warn($LogMsg.CHAIN_SKIPPED, chain);
-            return;
-        }
-
         chain.group = this.createTemplateGroup(chain, parentGroup);
 
         function getLyphTemplate(){
@@ -85,7 +93,7 @@ export class Chain extends GroupTemplate {
                     chain.lyphTemplate = template.id;
                 } else {
                     //find lyph template to establish chain topology
-                    template = (parentGroup.lyphs||[]).find(e => e.id === chain.lyphTemplate);
+                    template = refToResource(chain.lyphTemplate, parentGroup, $Field.lyphs);
                     if (!template){
                         logger.error($LogMsg.CHAIN_LYPH_TEMPLATE_MISSING, chain.lyphTemplate);
                     }
@@ -113,31 +121,33 @@ export class Chain extends GroupTemplate {
         }
 
         function deriveFromLyphs(){
-
-            let lyphs = chain.lyphs.map(lyphID => findResourceByID(parentGroup.lyphs, lyphID) || {[$Field.id]: lyphID});
+            let lyphs = refsToResources(chain.lyphs, parentGroup, $Field.lyphs,true);
 
             if (chain.lyphTemplate){
                 let lyphTemplate = getLyphTemplate();
                 lyphs.forEach(subtype => {
                     if (!subtype.supertype && !isDefined(subtype.layers)){
                         subtype.supertype = chain.lyphTemplate;
-                        Lyph.clone(parentGroup.lyphs, lyphTemplate, subtype)
+                        Lyph.clone(parentGroup, lyphTemplate, subtype);
                     }
-                })
-            }
-
-            let conveyingMaterials = lyphs.filter(lyph => lyph.layers && lyph.layers[0] && lyph.layers[0].materials).map(lyph => lyph.layers[0].materials)::flatten();
-            conveyingMaterials = [...new Set(conveyingMaterials)];
-
-            if (conveyingMaterials.length > 0){
-                logger.warn($LogMsg.CHAIN_MAT_DIFF, chain.lyphs);
+                });
             }
 
             const n = lyphs.length;
             let existingLinks = new Array(n);
             for (let i = 0; i < n; i++) {
-                 existingLinks[i] = lyphs[i].conveys? findResourceByID(parentGroup.links, lyphs[i].id):
-                    (parentGroup.links||[]).find(lnk => lnk.conveyingLyph === lyphs[i].id);
+                let nm = getRefNamespace(lyphs[i]) || parentGroup.namespace;
+                //Try to find an explicitly defined link via chain lyph's conveys property,
+                //it will be default in the same namespace as the lyph or will include explicit namespace
+                if (lyphs[i].conveys) {
+                    existingLinks[i] = refToResource(getFullID(nm, lyphs[i].conveys), parentGroup, $Field.links);
+                }
+                //Try to find explicitly defined link with given conveying lyph,
+                //it will be default in the same namespace as the lyph or will include explicit namespace
+                const condition = lnk => getFullID(nm, lnk.conveyingLyph) === getFullID(parentGroup.namespace, chain.lyphs[i]);
+                if (!existingLinks[i]){
+                    existingLinks[i] = parentGroup.linksByID::values().find(condition) || (parentGroup.links || []).find(condition);
+                }
             }
 
             let nodeIDs = new Array(n + 1);
@@ -145,36 +155,41 @@ export class Chain extends GroupTemplate {
             nodeIDs[n] = chain.leaf;
 
             let existingNodes = new Array(n + 1);
-            existingNodes[0] = findResourceByID(parentGroup.nodes, chain.root);
-            existingNodes[n] = findResourceByID(parentGroup.nodes, chain.leaf);
+            existingNodes[0] = refToResource(chain.root, parentGroup, $Field.nodes);
+            existingNodes[n] = refToResource(chain.leaf, parentGroup, $Field.nodes);
 
             for (let i = 0; i < n; i++) {
-               if (existingLinks[i]) {
-                   if (existingLinks[i].source) {
-                       if (nodeIDs[i]) {
-                           if (nodeIDs[i] !== existingLinks[i].source) {
-                               logger.warn($LogMsg.CHAIN_NODE_CONFLICT, chain.id, i, existingLinks[i], nodeIDs[i], existingLinks[i].source);
+               if (!existingNodes[i]) {
+                   if (existingLinks[i]) {
+                       if (existingLinks[i].source) {
+                           if (nodeIDs[i]) {
+                               if (nodeIDs[i] !== existingLinks[i].source) {
+                                   logger.warn($LogMsg.CHAIN_NODE_CONFLICT, chain.id, i, existingLinks[i], nodeIDs[i], existingLinks[i].source);
+                               }
+                           } else {
+                               nodeIDs[i] = existingLinks[i].source;
                            }
-                       } else {
-                           nodeIDs[i] = existingLinks[i].source;
+                       }
+                       if (existingLinks[i].target) {
+                           if (nodeIDs[i + 1]) {
+                               if (nodeIDs[i + 1] !== existingLinks[i].target) {
+                                   logger.warn($LogMsg.CHAIN_NODE_CONFLICT, chain.id, i, existingLinks[i], nodeIDs[i + 1], existingLinks[i].source);
+                               }
+                           } else {
+                               nodeIDs[i + 1] = existingLinks[i].target;
+                           }
                        }
                    }
-                   if (existingLinks[i].target) {
-                       if (nodeIDs[i + 1]) {
-                           if (nodeIDs[i + 1] !== existingLinks[i].target) {
-                               logger.warn($LogMsg.CHAIN_NODE_CONFLICT, chain.id, i, existingLinks[i], nodeIDs[i+1], existingLinks[i].source);
-                           }
-                       } else {
-                           nodeIDs[i + 1] = existingLinks[i].target;
-                       }
-                   }
+                   existingNodes[i] = existingNodes[i] || refToResource(nodeIDs[i], parentGroup, $Field.nodes);
                }
             }
+            existingNodes[n] = existingNodes[n] || refToResource(nodeIDs[n], parentGroup, $Field.nodes);
 
             for (let i = 0; i < n + 1; i++) {
-                nodeIDs[i] = nodeIDs[i] || getGenID(chain.id, $Prefix.node, i);
+                nodeIDs[i] = getID(nodeIDs[i]) || getGenID(chain.id, $Prefix.node, i);
                 let node = existingNodes[i] || {
                         [$Field.id]        : nodeIDs[i],
+                        [$Field.namespace] : parentGroup.namespace,
                         [$Field.color]     : $Color.InternalNode,
                         [$Field.val]       : 1,
                         [$Field.skipLabel] : true,
@@ -183,20 +198,33 @@ export class Chain extends GroupTemplate {
                 mergeGenResource(chain.group, parentGroup, node, $Field.nodes);
             }
 
+            //FIXME assign namespace to materials
+            let conveyingMaterials = lyphs.filter(lyph => lyph.layers && lyph.layers[0] && lyph.layers[0].materials)
+                .map(lyph => lyph.layers[0].materials)::flatten();
+            conveyingMaterials = [...new Set(conveyingMaterials)];
+            if (conveyingMaterials.length > 1){
+                logger.warn($LogMsg.CHAIN_MAT_DIFF, chain.lyphs);
+            }
+
             chain.levels = [];
             let prevLink;
             for (let i = 0; i < n; i++) {
+                let nm = getRefNamespace(lyphs[i]) || parentGroup.namespace;
                 let link = existingLinks[i] || {
                     [$Field.id]                 : getGenID(chain.id, $Prefix.link, i + 1),
+                    [$Field.namespace]          : parentGroup.namespace,
                     [$Field.source]             : chain.group.nodes[i],
                     [$Field.target]             : chain.group.nodes[i + 1],
-                    [$Field.conveyingLyph]      : lyphs[i].id,
+                    [$Field.conveyingLyph]      : getFullID(nm, lyphs[i].id),
                     [$Field.conveyingType]      : chain.conveyingType || Link.PROCESS_TYPE.ADVECTIVE,
                     [$Field.conveyingMaterials] : conveyingMaterials,
                     [$Field.color]              : $Color.Link,
                     [$Field.skipLabel]          : true,
                     [$Field.generated]          : true
                 };
+                //NK: it is important to set lyph's 'conveys' property to be able to find generated links in other namespaces
+                //Alternatively, generated links must be added to the linksByID map to be accessible to other models
+                lyphs[i].conveys = lyphs[i].conveys || getFullID(parentGroup.namespace, link.id);
                 if (chain.length){
                     link.length = chain.length / lyphs.length;
                 }
@@ -206,24 +234,23 @@ export class Chain extends GroupTemplate {
                 prevLink = link;
                 mergeGenResource(chain.group, parentGroup, link, $Field.links);
                 chain.levels[i] = link.id;
-                link.levelIn = chain.id;
+                link.levelIn = link.levelIn || [];
+                link.levelIn.push(chain.id);
             }
             chain.numLevels = chain.levels.length;
-            if (chain.root === undefined) {
-                chain.root = nodeIDs[0];
-            }
-            if (chain.leaf === undefined) {
-                chain.leaf = nodeIDs[n];
-            }
+            chain.root = chain.root || nodeIDs[0];
+            chain.leaf = chain.leaf || nodeIDs[n];
         }
 
+
+        //FIXME revise for different namespaces
         function deriveFromLevels(){
             if (chain.housingChain){
                 if (chain.housingLyphs){
                     logger.warn($LogMsg.CHAIN_CONFLICT, chain);
                 } else {
                     //Retrieve lyphs from housing chain
-                    let housingChain = findResourceByID(parentGroup.chains, chain.housingChain);
+                    let housingChain = refToResource(chain.housingChain, parentGroup, $Field.chains);
                     if (!housingChain){
                         logger.warn($LogMsg.CHAIN_NO_HOUSING, chain.id);
                         return;
@@ -247,7 +274,7 @@ export class Chain extends GroupTemplate {
 
             //Levels should contain link objects for generation/validation
             for (let i = 0; i < chain.levels.length; i++) {
-                let level = findResourceByID(parentGroup.links, chain.levels[i]);
+                let level = refToResource(chain.levels[i], parentGroup, $Field.links);
                 if (level){
                     chain.levels[i] = level;
                     if (chain.levels[i]::isString()){
@@ -290,6 +317,7 @@ export class Chain extends GroupTemplate {
 
             const getNewNode = i => ({
                     [$Field.id]        : getGenID(chain.id, $Prefix.node, i),
+                    [$Field.namespace] : parentGroup.namespace,
                     [$Field.color]     : $Color.InternalNode,
                     [$Field.val]       : 1,
                     [$Field.skipLabel] : true,
@@ -298,21 +326,13 @@ export class Chain extends GroupTemplate {
 
             for (let i = 0; i < N; i++){
                 sources[i] = sources[i] || ((i > 0) && targets[i - 1]) || getNewNode(i);
-                if (sources[i]::isString()){
-                    sources[i] = {
-                        "id": sources[i]
-                    };
-                }
+                sources[i] = refToResource(sources[i], parentGroup, $Field.nodes,true);
             }
             for (let i = 1; i < N; i++){
                 targets[i - 1] = sources[i];
             }
             targets[N - 1] = targets[N - 1] || getNewNode(N);
-            if (targets[N - 1]::isString()){
-                targets[N - 1] = {
-                    "id": targets[N - 1]
-                };
-            }
+            targets[N - 1] = refToResource(targets[N - 1], parentGroup, $Field.nodes,true);
             chain.root = getID(sources[0]);
             chain.leaf = getID(targets[N - 1]);
 
@@ -333,13 +353,15 @@ export class Chain extends GroupTemplate {
                 let link = chain.levels[i];
                 link::defaults({
                     [$Field.id]        : getGenID(chain.id, $Prefix.link, i+1),
+                    [$Field.namespace] : parentGroup.namespace,
                     [$Field.source]    : getID(sources[i]),
                     [$Field.target]    : getID(targets[i]),
-                    [$Field.levelIn]   : chain.id,
                     [$Field.color]     : $Color.Link,
                     [$Field.skipLabel] : true,
                     [$Field.generated] : true
                 });
+                link.levelIn = link.levelIn || [];
+                link.levelIn.push(chain.id);
                 if (chain.length){
                     link.length = chain.length / N;
                 }
@@ -352,6 +374,7 @@ export class Chain extends GroupTemplate {
                     //Only create ID, conveying lyphs will be generated and added to the group by the "expandTemplate" method
                     let lyph = {
                         [$Field.id]         : getGenID(chain.id, $Prefix.lyph, i+1),
+                        [$Field.namespace]  : parentGroup.namespace,
                         [$Field.supertype]  : chain.lyphTemplate,
                         [$Field.conveys]    : chain.levels[i].id,
                         [$Field.topology]   : getLevelTopology(i, N, lyphTemplate),
@@ -402,7 +425,8 @@ export class Chain extends GroupTemplate {
 
         for (let i = 0; i < N; i++) {
             if (!chain.housingLyphs[i]) {return; }
-            let housingLyph = findResourceByID(parentGroup.lyphs, chain.housingLyphs[i]);
+            let housingLyph =
+                refToResource(chain.housingLyphs[i], parentGroup, $Field.lyphs);
             if (!housingLyph) {
                 logger.warn($LogMsg.CHAIN_NO_HOUSING_LYPH, chain.housingLyphs[i]);
                 return;
@@ -419,7 +443,7 @@ export class Chain extends GroupTemplate {
             let sourceBorderIndex = 1;
             let targetBorderIndex = 3;
             if (hostLyph.layers){
-                let layers = hostLyph.layers.map(layerID => findResourceByID(parentGroup.lyphs, layerID));
+                let layers = hostLyph.layers.map(layerID =>refToResource(layerID, parentGroup, $Field.lyphs));
                 layers = layers.filter(layer => !!layer);
                 if (layers.length < hostLyph.layers){
                     logger.warn($LogMsg.CHAIN_NO_HOUSING_LAYERS, hostLyph.layers, hostLyph.id);
@@ -439,7 +463,7 @@ export class Chain extends GroupTemplate {
                 hostLyph = bundlingLayer || layers[index] || hostLyph;
             }
 
-            let level = findResourceByID(parentGroup.links, chain.levels[i]);
+            let level = refToResource(chain.levels[i], parentGroup, $Field.links);
 
             if (!hostLyph || !level)  {
                 logger.warn($LogMsg.CHAIN_NO_HOUSING_LYPH, housingLyph.id, chain.levels[i], level, hostLyph);
@@ -476,19 +500,16 @@ export class Chain extends GroupTemplate {
                 if (targetInternal){
                     addInternalNode(hostLyph, level.target);
                 } else {
-                    let targetNode = findResourceByID(parentGroup.nodes, level.target) || {
-                        [$Field.id] : level.target,
-                        [$Field.skipLabel] : true,
-                        [$Field.generated] : true
-                    };
+                    let targetNode = refToResource(level.target, parentGroup, $Field.nodes, true);
+                    if (targetNode.generated){
+                        targetNode.skipLabel = true;
+                    }
                     let targetClone = Node.clone(targetNode);
                     addBorderNode(hostLyph.border.borders[sourceBorderIndex], targetClone.id);
-                    // Note: the commented broke chain connectivity, it could be a reason issue #129 appeared
-                    // let lnk = Link.createCollapsibleLink(targetNode.id, targetClone.id);
                     let lnk = Link.createCollapsibleLink(targetClone.id, targetNode.id);
                     level.target = targetClone.id;
-                    chain.group.nodes.push(targetClone);
-                    chain.group.links.push(lnk);
+                    mergeGenResource(chain.group, parentGroup, targetClone, $Field.nodes);
+                    mergeGenResource(chain.group, parentGroup, lnk, $Field.links);
                 }
             } else {
                 logger.warn($LogMsg.CHAIN_HOUSING_TEMPLATE, hostLyph);
@@ -514,7 +535,7 @@ export class Chain extends GroupTemplate {
         (chains||[]).forEach(chain => {
             if (chain::isObject() && !chain.root){
                 if (!rootNodes.find(node => node.rootOf === chain.id)){
-                    logger.error($LogMsg.CHAIN_NO_ROOT_INPUT, chain.id);
+                    logger.warn($LogMsg.CHAIN_NO_ROOT_INPUT, chain.id);
                 }
             }
         });
@@ -527,6 +548,7 @@ export class Chain extends GroupTemplate {
      */
     resizeLyphs(sameWidth = true){
         const MAX_WIDTH = 1000;
+        const MIN_WIDTH = 5;
         let minWidth = MAX_WIDTH;
         (this.levels||[]).forEach(lnk => {
             let lyph = lnk.conveyingLyph;
@@ -540,7 +562,7 @@ export class Chain extends GroupTemplate {
             }
         });
         if (sameWidth && minWidth < MAX_WIDTH){
-            (this.levels||[]).forEach(lnk => lnk.conveyingLyph && (lnk.conveyingLyph.width = minWidth));
+            (this.levels||[]).forEach(lnk => lnk.conveyingLyph && (lnk.conveyingLyph.width = Math.max(minWidth, MIN_WIDTH)));
         }
     }
 
@@ -565,13 +587,13 @@ export class Chain extends GroupTemplate {
             (this.root.leafOf||[]).forEach(prevChain => prevChain.levels &&
                 connectNeighbor(this.levels[0], prevChain.levels[prevChain.levels.length - 1], $Field.prevChainEndLevels));
         } else {
-            logger.error($LogMsg.CHAIN_NO_ROOT, this.id)
+            logger.warn($LogMsg.CHAIN_NO_ROOT, this.id)
         }
         if (this.leaf){
             (this.leaf.rootOf||[]).forEach(nextChain => nextChain.levels &&
                 connectNeighbor(this.levels[this.levels.length - 1], nextChain.levels[0], $Field.nextChainStartLevels));
         } else {
-            logger.error($LogMsg.CHAIN_NO_LEAF, this.id)
+            logger.warn($LogMsg.CHAIN_NO_LEAF, this.id)
         }
     }
 
@@ -605,21 +627,22 @@ export class Chain extends GroupTemplate {
     validateAnchoring(){
         if (this.wiredTo) {
             if (!(this.wiredTo instanceof Wire)){
-                throw Error("Cannot validate chain wiring before scaffold generation!");
+                logger.error($LogMsg.CHAIN_NO_WIRE, this.id, this.wiredTo);
+                return;
             }
             let {start, end} = this.getWireEnds();
             if (this.root && this.root.achoredTo) {
                 let id1 = getID(start);
                 let id2 = getID(this.root.anchoredTo);
-                if (id1 !== id2) {
-                    logger.error($LogMsg.CHAIN_CONFLICT_ROOT, "chain: " + this.id, "wire source: " + id1, "chain root: " + id2);
+                if (id1 && id2 && id1 !== id2) {
+                    logger.error($LogMsg.CHAIN_CONFLICT_ROOT, this.id, id1, id2);
                 }
             }
             if (this.leaf && this.leaf.anchoredTo) {
                 let id1 = getID(end);
                 let id2 = getID(this.leaf.anchoredTo);
-                if (id1 !== id2) {
-                    logger.error($LogMsg.CHAIN_CONFLICT_LEAF, "chain: " + this.id, "wire target: " + id1, "chain leaf: " + id2);
+                if (id1 && id2 && id1 !== id2) {
+                    logger.error($LogMsg.CHAIN_CONFLICT_LEAF, this.id, id1, id2);
                 }
             }
         }
@@ -643,10 +666,7 @@ export class Chain extends GroupTemplate {
             return false;
         }
         const endLyph = this.levels[n - 1].conveyingLyph;
-        if (endLyph && [Lyph.LYPH_TOPOLOGY["BAG+"], Lyph.LYPH_TOPOLOGY.BAG2, Lyph.LYPH_TOPOLOGY.CYST].includes(endLyph.topology)){
-            return false;
-        }
-        return true;
+        return !(endLyph && [Lyph.LYPH_TOPOLOGY["BAG+"], Lyph.LYPH_TOPOLOGY.BAG2, Lyph.LYPH_TOPOLOGY.CYST].includes(endLyph.topology));
     }
 }
 
