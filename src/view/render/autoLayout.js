@@ -25,8 +25,6 @@ import { rotateAroundCenter
 
 import { tagCollidingObjects } from './autoLayout/collission.js'
 
-const {Edge} = modelClasses;
-
 const LYPH_H_PERCENT_MARGIN = 0.10;
 const LYPH_V_PERCENT_MARGIN = 0.10;
 const MAX_LYPH_WIDTH = 100;
