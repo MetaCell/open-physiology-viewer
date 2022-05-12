@@ -406,6 +406,11 @@ export function autoLayout(scene, graphData, showLabelWires) {
     }
   });
 
+  const geometry = new THREE.SphereGeometry( 55, 52, 56 );
+  const material = new THREE.MeshBasicMaterial( { color: 0xffff00 } );
+  const sphere = new THREE.Mesh( geometry, material );
+  scene.add( sphere );
+
   preventZFighting(scene);
   //clearByObjectType(scene, "Node");
   let hostLyphRegionDic = {}, lyphDic = {};

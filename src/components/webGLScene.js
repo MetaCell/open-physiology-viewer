@@ -10,11 +10,13 @@ import {keys, values, defaults, isObject, cloneDeep, isArray } from 'lodash-boun
 import * as THREE from 'three';
 import ThreeForceGraph from '../view/threeForceGraph';
 import {forceX, forceY, forceZ} from 'd3-force-3d';
+import { Capsule } from 'three/examples/jsm/math/Capsule.js';
 
 import {LogInfoModule, LogInfoDialog} from "./gui/logInfoDialog";
 import {SettingsPanelModule} from "./settingsPanel";
 
 import {OrbitControls} from "three/examples/jsm/controls/OrbitControls";
+import { Octree } from 'three/examples/jsm/math/Octree.js';
 import {$Field, $SchemaClass} from "../model";
 import {QuerySelectModule, QuerySelectDialog} from "./gui/querySelectDialog";
 import {HotkeyModule, HotkeysService, Hotkey, HotkeysCheatsheetComponent} from 'angular2-hotkeys';
@@ -411,20 +413,43 @@ export class WebGLSceneComponent {
         if (this.graph){ this.graph.labelRelSize(this.labelRelSize); }
     }
 
+    repositionMesh (mesh, radius) {
+        const position = new THREE.Vector3();
+        mesh.getWorldPosition(position);
+        if ( mesh.userData?.originalPosition === undefined ) {
+            mesh.userData.originalPosition = position;
+        }
+        let newPosition = new THREE.Vector3();
+        const xDist = mesh.userData?.originalPosition?.x;
+        const yDist = mesh.userData?.originalPosition?.y;
+        const dist = Math.sqrt(xDist * xDist + yDist * yDist);
+        const length = dist * radius;
+        const fractionOfTotal = length/dist;
+            
+        newPosition.x = xDist * fractionOfTotal;
+        newPosition.y = yDist * fractionOfTotal;
+
+        mesh.position.set(newPosition.x, newPosition.y, 0);
+        mesh.userData?.viewObjects?.label?.position.set(newPosition.x, newPosition.y, 0);
+    }
+
     resizeTOOMap(event, ring){
         const model = initModel;
         const radius = event.value/100;
 
         // Find all wires for this ring
         let wiresIds = model.scaffolds[0]?.components?.find( component => component.id === ring )?.wires;
+        console.log("WiresIds ", wiresIds);
 
         // Find all meshes for the wires
         let meshes = this.graph.children.filter( child => wiresIds?.includes(child.userData.id));
+        console.log("Meshes, ", meshes);
 
-        // Scale down wires by radius
-        meshes.forEach( mesh => {
-            mesh.scale.set(radius, radius, mesh.scale.z );
-        });
+        let maxDistance = 0;
+        for ( let i = 0; i < meshes.length; i++ ){
+            meshes[i].geometry.computeBoundingSphere();
+            maxDistance = Math.max(maxDistance, meshes[i].geometry.boundingSphere.center.distanceTo(new THREE.Vector3(0,0,0)));
+        }
 
         wiresIds.concat(this.graph.children.filter( child => wiresIds?.includes(child.userData?.levelIn?.wiredTo?.id)).map(m => m?.userData?.id));
 
@@ -441,59 +466,26 @@ export class WebGLSceneComponent {
             }
         });
 
-        // Reposition anchor nodes after resizing ring
-        // meshes = this.graph.children.filter( child => wiresIds?.includes(child.userData?.hostedBy?.id));
+        const centerPosition = new THREE.Vector3(0,0,0);
 
-        anchors.forEach( anchor => {
-            const position = new THREE.Vector3();
-            const mesh = anchor.viewObjects.main;
-            mesh.getWorldPosition(position);
-            if ( mesh.userData?.originalPosition === undefined ) {
-                mesh.userData.originalPosition = position;
-            }
-            let newPosition = new THREE.Vector3();
-            const xDist = mesh.userData?.originalPosition?.x;
-            const yDist = mesh.userData?.originalPosition?.y;
-            const dist = Math.sqrt(xDist * xDist + yDist * yDist);
-            const length = dist * radius;
-            const fractionOfTotal = length/dist;
-            
-            newPosition.x = xDist * fractionOfTotal;
-            newPosition.y = yDist * fractionOfTotal;
-
-            mesh.position.set(newPosition.x, newPosition.y, 0);
-            anchor.viewObjects?.label?.position.set(newPosition.x, newPosition.y, 0);
+        this.graph.children.forEach( child => {
+                child.userData?.viewObjects?.main?.geometry?.computeBoundingSphere();
+                child.userData?.viewObjects?.main?.geometry?.computeBoundingBox();
         });
 
-        if ( ring === "wires-f" ) {
-            meshes = this.graph.children.filter( child => child.userData?.class == "Region" || child.userData?.class == "Wire" );
-            // Scale down wires by radius
-            meshes.forEach( mesh => {
-                mesh.scale.set(radius, radius, mesh.scale.z );
-            });
-
-            meshes = this.graph.children.filter( child => child.userData?.class == "Anchor" );
-            meshes.forEach( mesh => {
-                const position = new THREE.Vector3();
-                mesh.getWorldPosition(position);
-                if ( mesh.userData?.originalPosition === undefined ) {
-                    mesh.userData.originalPosition = position;
-                }
-                let newPosition = new THREE.Vector3();
-                const xDist = mesh.userData?.originalPosition?.x;
-                const yDist = mesh.userData?.originalPosition?.y;
-                const dist = Math.sqrt(xDist * xDist + yDist * yDist);
-                const length = dist * radius;
-                const fractionOfTotal = length/dist;
-                
-                newPosition.x = xDist * fractionOfTotal;
-                newPosition.y = yDist * fractionOfTotal;
-    
-                mesh.position.set(newPosition.x, newPosition.y, 0);
-                mesh.userData?.viewObjects?.label?.position.set(newPosition.x, newPosition.y, 0);
-            });
-        }
-
+        console.log("Max ", maxDistance);
+        meshes = this.graph.children.filter( child => 
+            child.userData?.viewObjects?.main?.geometry?.boundingSphere?.center?.distanceTo(centerPosition) < maxDistance
+        );
+        console.log("Lyph D ", meshes);
+        meshes.forEach( child => {
+            if ( child.userData?.class == "Wire" || child.userData?.class == "Region" || child.userData?.class == "Lyph" || child.userData?.class == "Link" || child.userData?.class == "Shape" || child.userData?.class == "Link" ) {
+                child.scale.set(radius, radius, child.scale.z );
+            }
+            if ( child.userData?.class == "Anchor" || child.userData?.class == "Region" || child.userData?.class == "Lyph" || child.userData?.class == "Link" || child.userData?.class == "Node" ) {
+                this.repositionMesh(child, radius);
+            }
+        });
     }
 
     get graphData() {
