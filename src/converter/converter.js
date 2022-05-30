@@ -1,6 +1,5 @@
-import {$Field} from "../model/utils";
-import {loadModel, fromJSON, fromJSONGenerated, fromJsonLD} from '../model/modelClasses';
-
+// import {$Field} from "../model/utils";
+// import {loadModel, fromJSON, fromJSONGenerated, fromJsonLD} from '../model/modelClasses';
 
 function fromXLSXToJson(data) {
     let model = loadModel(data, ".xlsx", "xlsx");

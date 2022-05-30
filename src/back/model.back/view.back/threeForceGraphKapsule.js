@@ -9,12 +9,10 @@ import {select as d3Select } from 'd3-selection';
 import {drag as d3Drag } from 'd3-drag';
 
 import Kapsule from 'kapsule';
-import {modelClasses} from '../model/index';
-import './modelView';
-import {extractCoords} from './utils';
-import { autoLayout } from './render/autoLayout'
-
-const {Graph} = modelClasses;
+//import {modelClasses} from '../model/index';
+//import './modelView';
+//import {extractCoords} from './utils';
+//const {Graph} = modelClasses;
 
 /**
  * A closure-based component for the force-directed 3d graph layout

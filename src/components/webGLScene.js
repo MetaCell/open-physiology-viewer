@@ -1,27 +1,20 @@
 import {NgModule, Component, ViewChild, ElementRef, Input, Output, EventEmitter, ChangeDetectionStrategy, NgZone} from '@angular/core';
-import {CommonModule} from '@angular/common';
-import {FormsModule} from '@angular/forms';
-import {MatSliderModule} from '@angular/material/slider';
-import {MatDialog, MatDialogModule} from '@angular/material/dialog';
+
 
 import FileSaver  from 'file-saver';
 import {keys, values, defaults, isObject, cloneDeep, isArray } from 'lodash-bound';
 import * as THREE from 'three';
-import ThreeForceGraph from '../view/threeForceGraph';
+import ThreeForceGraph from '../render/threeForceGraph';
 import {forceX, forceY, forceZ} from 'd3-force-3d';
 
-import {LogInfoModule, LogInfoDialog} from "./gui/logInfoDialog";
-import {SettingsPanelModule} from "./settingsPanel";
-
 import {OrbitControls} from "three/examples/jsm/controls/OrbitControls";
-import {$Field, $SchemaClass} from "../model";
+//import {$Field, $SchemaClass} from "../model";
 import {QuerySelectModule, QuerySelectDialog} from "./gui/querySelectDialog";
 import {HotkeyModule, HotkeysService, Hotkey, HotkeysCheatsheetComponent} from 'angular2-hotkeys';
-import { highlight, unhighlight } from '../view/render/autoLayout/objects';
+//import { highlight, unhighlight } from '../view/render/autoLayout/objects';
 const WindowResize = require('three-window-resize');
 
-import { autoLayout, layoutLabelCollide } from '../view/render/autoLayout'
-
+//import { autoLayout, layoutLabelCollide } from '../view/render/autoLayout'
 
 /**
  * @ignore
@@ -31,105 +24,7 @@ import { autoLayout, layoutLabelCollide } from '../view/render/autoLayout'
     changeDetection: ChangeDetectionStrategy.OnPush,
     template: `
         <hotkeys-cheatsheet></hotkeys-cheatsheet>
-        <section id="apiLayoutPanel" class="w3-row">            
-            <section id="apiLayoutContainer" [class.w3-threequarter]="showPanel">
-                <section class="w3-padding-right" style="position:relative;">
-                    <section class="w3-bar-block w3-right" style="position:absolute; right:0">
-                        <button *ngIf="!lockControls" class="w3-bar-item w3-hover-light-grey"
-                                (click)="toggleLockControls()" title="Lock controls">
-                            <i class="fa fa-lock"> </i>
-                        </button>
-                        <button *ngIf="lockControls" class="w3-bar-item w3-hover-light-grey"
-                                (click)="toggleLockControls()" title="Unlock controls">
-                            <i class="fa fa-unlock"> </i>
-                        </button>
-                        <button class="w3-bar-item w3-hover-light-grey"
-                                (click)="resetCamera()" title="Reset controls">
-                            <i class="fa fa-compass"> </i>
-                        </button>
-                        <button *ngIf="!antialias" class="w3-bar-item w3-hover-light-grey"
-                                (click)="toggleAntialias()" title="Enable antialiasing">
-                            <i class="fa fa-paper-plane-o"> </i>
-                        </button>
-                        <button *ngIf="antialias" class="w3-bar-item w3-hover-light-grey"
-                                (click)="toggleAntialias()" title="Disable antialiasing">
-                            <i class="fa fa-paper-plane"> </i>
-                        </button>
-                        <button class="w3-bar-item w3-hover-light-grey" (click)="graph?.graphData(graphData)"
-                                title="Update layout">
-                            <i class="fa fa-refresh"> </i>
-                        </button>
-                        <button *ngIf="!showPanel" class="w3-bar-item w3-hover-light-grey"
-                                (click)="showPanel = !showPanel" title="Show settings">
-                            <i class="fa fa-cog"> </i>
-                        </button>
-                        <button *ngIf="showPanel" class="w3-bar-item w3-hover-light-grey"
-                                (click)="showPanel = !showPanel" title="Hide settings">
-                            <i class="fa fa-window-close"> </i>
-                        </button>
-                        <button id="importBtn" class="w3-bar-item w3-hover-light-grey" 
-                                *ngIf ="graphData?.imports"
-                                (click)="onImportExternal.emit()" title="Download external models">
-                            <i class="fa fa-download"> </i>
-                        </button>
-                        <mat-slider vertical class="w3-grey"
-                                    [min]="0.1 * scaleFactor" [max]="0.4 * scaleFactor"
-                                    [step]="0.05 * scaleFactor" tickInterval="1"
-                                    [value]="labelRelSize" title="Label size"
-                                    (change)="onScaleChange($event.value)">
-                        </mat-slider>
-                        <button class="w3-bar-item w3-hover-light-grey"
-                                (click)="processQuery()" title="Show query result as group">
-                            <i class="fa fa-question-circle-o"> </i>
-                        </button>
-                        <button class="w3-bar-item w3-hover-light-grey"
-                                (click)="exportJSON()" title="Export json">
-                            <i class="fa fa-file-code-o"> </i>
-                        </button>
-                        <button class="w3-bar-item w3-hover-light-grey"
-                                (click)="exportResourceMapLD()" title="Export json-ld resource map">
-                            <i class="fa fa-file-text"> </i>
-                        </button>
-                        <button class="w3-bar-item w3-hover-light-grey"
-                                (click)="exportResourceMapLDFlat()" title="Export flattened json-ld resource map">
-                            <i class="fa fa-file-text-o"> </i>
-                        </button>
-                        <button *ngIf="graphData?.logger" class="w3-bar-item w3-hover-light-grey"
-                                (click)="showReport()" title="Show logs">
-                            <i *ngIf="graphData.logger.status === graphData.logger.statusOptions.ERROR"
-                               class="fa fa-exclamation-triangle" style="color:red"> </i>
-                            <i *ngIf="graphData.logger.status === graphData.logger.statusOptions.WARNING"
-                               class="fa fa-exclamation-triangle" style="color:yellow"> </i>
-                            <i *ngIf="graphData.logger.status === graphData.logger.statusOptions.OK"
-                               class="fa fa-check-circle" style="color:green"> </i>
-                        </button>
-                    </section>
-                </section>
-                <canvas #canvas id="main-canvas"> </canvas>
-            </section>
-            <section id="apiLayoutSettingsPanel" *ngIf="showPanel && isConnectivity" class="w3-quarter">
-                <settingsPanel
-                        [config]="config"
-                        [selected]="_selected" 
-                        [highlighted]="_highlighted"
-                        [helperKeys]="_helperKeys"
-                        [groups]="graphData?.activeGroups"
-                        [dynamicGroups]="graphData?.dynamicGroups"
-                        [scaffolds]="graphData?.scaffoldComponents"
-                        [searchOptions]="_searchOptions"
-                        (onSelectBySearch)="selectByName($event)"
-                        (onOpenExternal)="openExternal($event)"
-                        (onEditResource)="editResource.emit($event)"
-                        (onUpdateLabels)="graph?.showLabels($event)"
-                        (onToggleMode)="graph?.numDimensions($event)"
-                        (onToggleWireView)="graph?.showLabelWires($event)"
-                        (onToggleLayout)="toggleLayout($event)"
-                        (onToggleGroup)="toggleGroup($event)"
-                        (onUpdateLabelContent)="graph?.labels($event)"
-                        (onToggleHelperPlane)="this.helpers[$event].visible = !this.helpers[$event].visible"
-                > </settingsPanel>
-            </section>
-        </section> 
+        <canvas #canvas id="main-canvas"> </canvas>
     `,
     styles: [` 
 
@@ -267,8 +162,7 @@ export class WebGLSceneComponent {
      */
     @Output() onImportExternal = new EventEmitter();
 
-    constructor(dialog: MatDialog, hotkeysService: HotkeysService, ngZone: NgZone) {
-        this.dialog = dialog;
+    constructor(hotkeysService: HotkeysService, ngZone: NgZone) {
         this.ngZone = ngZone;
         this.hotkeysService = hotkeysService ;
         this.defaultConfig = {
@@ -281,14 +175,14 @@ export class WebGLSceneComponent {
                 "wireView"        : true
             },
             "groups": true,
-            "labels": {
-                [$SchemaClass.Wire]  : false,
-                [$SchemaClass.Anchor]: true,
-                [$SchemaClass.Node]  : false,
-                [$SchemaClass.Link]  : false,
-                [$SchemaClass.Lyph]  : false,
-                [$SchemaClass.Region]: false
-            },
+            // "labels": {
+            //     [$SchemaClass.Wire]  : false,
+            //     [$SchemaClass.Anchor]: true,
+            //     [$SchemaClass.Node]  : false,
+            //     [$SchemaClass.Link]  : false,
+            //     [$SchemaClass.Lyph]  : false,
+            //     [$SchemaClass.Region]: false
+            // },
             "highlighted": true,
             "selected"   : true
         };
@@ -396,79 +290,6 @@ export class WebGLSceneComponent {
         this.resizeToDisplaySize();
         this.createHelpers();
         this.createGraph();      
-    }
-
-    processQuery(){
-        let config = {
-            parameterValues: [this.selected? (this.selected.externals||[""])[0]: "UBERON:0005453"],
-            baseURL : "http://sparc-data.scicrunch.io:9000/scigraph"
-        };
-        let dialogRef = this.dialog.open(QuerySelectDialog, { width: '60%', data: config });
-        dialogRef.afterClosed().subscribe(result => {
-            if (result && result.response){
-                this.queryCounter++;
-                const nodeIDs  = (result.response.nodes||[]).filter(e => (e.id.indexOf(this.graphData.id) > -1)).map(r => (r.id||"").substr(r.id.lastIndexOf("/") + 1));
-                const edgeIDs =  (result.response.edges||[]).filter(e => (e.sub.indexOf(this.graphData.id) > -1)).map(r => (r.sub||"").substr(r.sub.lastIndexOf("/") + 1));
-                const nodes = (this.graphData.nodes||[]).filter(e => nodeIDs.includes(e.id));
-                const links = (this.graphData.links||[]).filter(e => edgeIDs.includes(e.id));
-                const lyphs = (this.graphData.lyphs||[]).filter(e => edgeIDs.includes(e.id));
-                if (nodes.length || links.length || lyphs.length) {
-                    this.graphData.createDynamicGroup(this.queryCounter, result.query || "?", {nodes, links, lyphs}, this.modelClasses);
-                } else {
-                    this.graphData.logger.error("No resources identified to match SciGraph nodes and edges", nodeIDs, edgeIDs);
-                }
-            }
-        })
-    }
-
-
-
-    exportJSON(){
-        if (this._graphData){
-            let result = JSON.stringify(this._graphData.toJSON(3, {
-                [$Field.border]   : 3,
-                [$Field.borders]  : 3,
-                [$Field.villus]   : 3,
-                [$Field.scaffolds]: 5
-            }), null, 2);
-            const blob = new Blob([result], {type: 'application/json'});
-            FileSaver.saveAs(blob, this._graphData.id + '-generated.json');
-        }
-    }
-
-    exportResourceMapLD(){
-        if (this._graphData){
-            let result = JSON.stringify(this._graphData.entitiesToJSONLD(), null, 2);
-            const blob = new Blob([result], {type: 'application/ld+json'});
-            FileSaver.saveAs(blob, this._graphData.id + '-resourceMap.jsonld');
-        }
-    }
-
-    exportResourceMapLDFlat(){
-        if (this._graphData){
-            let filename = this._graphData.id + '-resourceMap-flattened.jsonld';
-            const callback = res => {
-                let result = JSON.stringify(res, null, 2);
-                const blob = new Blob([result], {type: 'application/ld+json'});
-                FileSaver.saveAs(blob, filename);
-            };
-            this._graphData.entitiesToJSONLDFlat(callback);
-        }
-    }
-
-    showReport(){
-        const dialogRef = this.dialog.open(LogInfoDialog, {
-            width : '75%',
-            data  : this.graphData.logger.print()
-        });
-
-        dialogRef.afterClosed().subscribe(res => {
-            if (res !== undefined){
-                let result = JSON.stringify(res, null, 2);
-                const blob = new Blob([result], {type: 'application/txt'});
-                FileSaver.saveAs(blob, this._graphData.id + '-log.json');
-            }
-        });
     }
 
     resizeToDisplaySize() {
@@ -730,9 +551,8 @@ export class WebGLSceneComponent {
 }
 
 @NgModule({
-    imports: [CommonModule, FormsModule, MatSliderModule, MatDialogModule, LogInfoModule, SettingsPanelModule, QuerySelectModule, HotkeyModule.forRoot()],
+    imports: [HotkeyModule.forRoot()],
     declarations: [WebGLSceneComponent],
-    entryComponents: [LogInfoDialog, QuerySelectDialog],
     exports: [WebGLSceneComponent]
 })
 export class WebGLSceneModule {
