@@ -11,7 +11,7 @@ import {OrbitControls} from "three/examples/jsm/controls/OrbitControls";
 //import {$Field, $SchemaClass} from "../model";
 import {QuerySelectModule, QuerySelectDialog} from "./gui/querySelectDialog";
 import {HotkeyModule, HotkeysService, Hotkey, HotkeysCheatsheetComponent} from 'angular2-hotkeys';
-//import { highlight, unhighlight } from '../view/render/autoLayout/objects';
+import { highlight, unhighlight } from '../utils/highlight'
 const WindowResize = require('three-window-resize');
 
 //import { autoLayout, layoutLabelCollide } from '../view/render/autoLayout'
@@ -24,7 +24,11 @@ const WindowResize = require('three-window-resize');
     changeDetection: ChangeDetectionStrategy.OnPush,
     template: `
         <hotkeys-cheatsheet></hotkeys-cheatsheet>
-        <canvas #canvas id="main-canvas"> </canvas>
+        <section id="apiLayoutPanel" class="w3-row">            
+          <section id="apiLayoutContainer">
+            <canvas #canvas id="main-canvas"> </canvas>
+          </section>
+        </section>
     `,
     styles: [` 
 

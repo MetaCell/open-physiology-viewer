@@ -14,8 +14,6 @@ import Kapsule from 'kapsule';
 //import {extractCoords} from './utils';
 //const {Graph} = modelClasses;
 
-const Graph = {};
-
 /**
 * A closure-based component for the force-directed 3d graph layout
 */
@@ -50,53 +48,24 @@ export default Kapsule({
               state.canvas = canvas;
               if (!state.canvas){ return;}
 
-              state.toolTipElem = document.createElement('div');
-              state.toolTipElem.classList.add('graph-tooltip');
-
               const container = canvas.parentNode;
               if (container) {
-                  container.classList.add('force-graph-container');
-                  container.style.position = 'relative';
-                  container.appendChild(state.toolTipElem);
+
               }
 
               d3Select(state.canvas).call(
                   d3Drag()
                       .subject(() => {
-                          return state.hoverObj && state.hoverObj.__isDraggable ? state.hoverObj : null;
+
                       })
                       .on('start', ev => {
-                          const obj = ev.subject;
-                          if (!obj){ return; }
-                          obj.__initialDragPos = extractCoords(ev);
-                          state.canvas.classList.add('grabbable');
+
                       })
                       .on('drag', ev => {
-                          const obj = ev.subject;
-                          if (!obj){ return; }
-                          const currentPos = extractCoords(ev);
-                          const translate = currentPos.clone().sub(obj.__initialDragPos);
-                          translate.y = -translate.y;
 
-                          const fn = state[`on${obj.userData.class}Drag`];
-                          fn && fn(obj, translate);
-
-                          obj.__dragged = true;
                       })
                       .on('end', ev => {
-                          const obj = ev.subject;
-                          if (!obj){ return; }
-                          const currentPos = extractCoords(ev);
-                          const translate = currentPos.clone().sub(obj.__initialDragPos);
-                          translate.y = -translate.y;
 
-                          if (obj.__dragged) {
-                              const fn = state[`on${obj.userData.class}DragEnd`];
-                              fn && fn(obj, translate);
-                              delete(obj.__dragged);
-                          }
-                          state.canvas.classList.remove('grabbable');
-                          state.isPointerDragging = false;
                           
                       })
               );
@@ -156,20 +125,7 @@ export default Kapsule({
           default: undefined,
           triggerUpdate: false,
           onChange(obj, state){
-              if (state.hoverObj) {
-                  delete state.hoverObj.__isDraggable;
-              }
-              state.hoverObj = obj;
-              obj && (obj.__isDraggable = state.enableDrag && obj && (
-                      obj.userData instanceof modelClasses.Anchor ||
-                      obj.userData instanceof modelClasses.Wire ||
-                      obj.userData instanceof modelClasses.Region));
-              state.canvas && (state.canvas.style.cursor = obj && obj.__isDraggable? 'pointer' : null);
-              const tooltipContent = obj? obj.userData.id + "-" + (obj.userData.name || '?') : '';
-              if (state.toolTipElem) {
-                  state.toolTipElem.style.visibility = tooltipContent ? 'visible' : 'hidden';
-                  state.toolTipElem.innerHTML = tooltipContent;
-              }
+
           }
       },
 
@@ -274,16 +230,10 @@ export default Kapsule({
       state.onFrame = null; // Pause simulation
       state.onLoading();
 
-      if (state.graphData.visibleNodes || state.graphData.visibleLinks) {
-          console.info('force-graph loading',
-              (state.graphData.visibleNodes||[]).length + ' nodes',
-              (state.graphData.visibleLinks||[]).length + ' links');
-      }
-
       while (state.graphScene.children.length) { state.graphScene.remove(state.graphScene.children[0]) } // Clear the place
 
       // Add WebGL objects
-      state.graphData.createViewObjects(state);
+      state.graphData.render(state);
 
       // Feed data to force-directed layout
       let layout;
@@ -312,7 +262,7 @@ export default Kapsule({
             state.onFrame = null;
         } else { layout['tick'](); }
 
-        state.graphData.updateViewObjects(state);
+        state.graphData.render(state);
         autoLayout(state.graphScene, state.graphData, state.showLabelWires);
       }
   }
