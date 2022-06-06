@@ -1,23 +1,23 @@
-import { base } from '../base';
+import { objectBase } from '../objectBase';
 import { objectTypes } from '../objectTypes';
 
 function Chain(json){
-  base.call(this, json, objectTypes.CHAIN);
+  objectBase.call(this, json, objectTypes.CHAIN);
 }
 
-base.prototype.render = function() {
-
-}
-
-base.prototype.highlight = function() {
+Chain.prototype.render = function() {
 
 }
 
-base.prototype.hide = function() {
+Chain.prototype.highlight = function() {
+
+}
+
+Chain.prototype.hide = function() {
   
 }
 
-base.prototype.delete = function() {
+Chain.prototype.delete = function() {
   
 }
 

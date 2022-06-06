@@ -1,13 +1,17 @@
-import { base } from '../base';
+import { objectBase } from '../objectBase';
 import { objectTypes } from '../objectTypes';
 import { MaterialFactory } from '../materialFactory';
 import { ThreeDFactory } from '../threeDFactory';
 
 function Node(json){
-  base.call(this, json, objectTypes.NODE);
+  objectBase.call(this, json, objectTypes.NODE);
 }
 
-base.prototype.render = function() {
+Node.prototype.fromJSON = function (json) {
+  return objectBase.fromJSON(json);
+}
+
+Node.prototype.render = function() {
   const geometry = ThreeDFactory.createSphereGeometry(this.json.val);
 
   const material = MaterialFactory.createMeshLambertMaterial({

@@ -1,23 +1,23 @@
-import { base } from '../base';
+import { objectBase } from '../objectBase';
 import { objectTypes } from '../objectTypes';
 
 function Link(json){
-  base.call(this, json, objectTypes.LINK);
+  objectBase.call(this, json, objectTypes.LINK);
 }
 
-base.prototype.render = function() {
-
-}
-
-base.prototype.highlight = function() {
+Link.prototype.render = function() {
 
 }
 
-base.prototype.hide = function() {
+Link.prototype.highlight = function() {
+
+}
+
+Link.prototype.hide = function() {
   
 }
 
-base.prototype.delete = function() {
+Link.prototype.delete = function() {
   
 }
 

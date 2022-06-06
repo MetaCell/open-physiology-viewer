@@ -11,7 +11,7 @@ import {OrbitControls} from "three/examples/jsm/controls/OrbitControls";
 //import {$Field, $SchemaClass} from "../model";
 import {QuerySelectModule, QuerySelectDialog} from "./gui/querySelectDialog";
 import {HotkeyModule, HotkeysService, Hotkey, HotkeysCheatsheetComponent} from 'angular2-hotkeys';
-import { highlight, unhighlight } from '../utils/highlight'
+import { highlight, unhighlight } from '../render/utils/highlight'
 const WindowResize = require('three-window-resize');
 
 //import { autoLayout, layoutLabelCollide } from '../view/render/autoLayout'

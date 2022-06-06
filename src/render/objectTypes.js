@@ -1,7 +1,7 @@
 var objectTypes = Object.freeze({
-  CHAIN: 'chain',
-  LINK: 'link',
-  NODE: 'node'
+  chain: 'chain',
+  link: 'link',
+  node: 'node'
 })
 
 export default objectTypes;
