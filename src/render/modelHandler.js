@@ -1,9 +1,9 @@
 import { objectTypes } from "./objectTypes"
-import { objectFactory } from "./objectFactory"
+import objectFactory from "./objectFactory"
 
 export class modelHandler
 {
-  _json = json ;
+  _json ;
   _createdObjects = [];
   _renderedObjects = [];
 
@@ -15,7 +15,7 @@ export class modelHandler
     const validObjNames = Object.getOwnPropertyNames(objectTypes);
 
     props.forEach((objType)=>{
-      if (validObjNames.indexOf(objType))
+      if (validObjNames.indexOf(objType) > -1)
       {
         const children = this._json[objType];
         children.forEach((c)=>{
@@ -28,7 +28,7 @@ export class modelHandler
 
   createdObjects()
   {
-    return this._createdObjects();
+    return this._createdObjects;
   }
 
   render()

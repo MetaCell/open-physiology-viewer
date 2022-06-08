@@ -3,15 +3,16 @@ import { Chain } from './objects/chain';
 import { Link } from './objects/link';
 import { objectTypes } from './objectTypes';
 
-var objectFactory = function () {
-  this.create = function (type, json) {
-    var threeObj;
+export default class objectFactory
+{
+  static create(type, json) {
+    let threeObj;
 
-    if (type === objectTypes.CHAIN) {
+    if (type === objectTypes.chains) {
       threeObj = new Chain();
-    } else if (type === objectTypes.LINK) {
+    } else if (type === objectTypes.links) {
       threeObj = new Link();
-    } else if (type === objectTypes.NODE) {
+    } else if (type === objectTypes.nodes) {
       threeObj = new Node(json);
     }
 
@@ -19,4 +20,3 @@ var objectFactory = function () {
   }
 }
 
-export default objectFactory;

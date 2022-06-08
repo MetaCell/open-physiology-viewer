@@ -1,7 +1,5 @@
-var objectTypes = Object.freeze({
-  chain: 'chain',
-  link: 'link',
-  node: 'node'
-})
-
-export default objectTypes;
+export const objectTypes = {
+  chains: 'chains',
+  links: 'links',
+  nodes: 'nodes'
+}

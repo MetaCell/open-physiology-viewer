@@ -13,8 +13,8 @@ export const renderConsts = Object.freeze({
 
 export class objectBase
 {
-  _json = json ;
-  _type = type ;
+  _json ;
+  _type ;
   _hidden = false ;
   _cache = null ;
   _isHighlighted = false ;
