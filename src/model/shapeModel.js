@@ -1,7 +1,7 @@
 import {VisualResource} from './visualResourceModel';
 import {Node} from './verticeModel';
 import {Edge, Link} from './edgeModel';
-import {clone, merge, pick, isObject, mergeWith} from 'lodash-bound';
+import {clone, merge, pick, isObject, mergeWith, values} from 'lodash-bound';
 import {$LogMsg, logger} from './logger';
 import {
     LYPH_TOPOLOGY,
@@ -15,7 +15,8 @@ import {
     getID,
     mergeResources,
     refToResource,
-    findResourceByID,
+    getFullID,
+    mergeGenResource,
 } from './utils';
 import tinycolor from "tinycolor2";
 
@@ -29,6 +30,8 @@ import tinycolor from "tinycolor2";
  * @property internalLyphsInLayers
  * @property internalNodes
  * @property internalNodesInLayers
+ * @property internalIn
+ * @property internalInLayer
  * @property hostedLyphs
  */
 export class Shape extends VisualResource {
@@ -115,18 +118,42 @@ export class Lyph extends Shape {
     static expandTemplate(parentGroup, template){
         if (!template || template._inactive || !parentGroup) { return; }
 
-        //Validate subtype
+        //If subtypes contain resource definitions, include them to the group's list of lyphs
         (template.subtypes||[]).forEach(s => {
-            if (s::isObject() && s.id && !refToResource(s.id, parentGroup, $Field.lyphs)
-                //!findResourceByID(lyphs, s.id)
-            ){
-                parentGroup.lyphs.push(s); //generate a lyph for the template supertype
+            if (s::isObject() && s.id && !refToResource(s.id, parentGroup, $Field.lyphs)){
+                parentGroup.lyphs.push(s); //generate a lyph for the template subtype
             }
         });
         //Template supertype must contain id's for correct generation
-        // template.subtypes = (template.subtypes||[]).map(e => e::isObject()? e.id: e);
         template.subtypes = (template.subtypes||[]).map(e => getID(e));
-        let subtypes = parentGroup.lyphs.filter(e => e.supertype === template.id || template.subtypes.includes(e.id));
+        // let subtypes = parentGroup.lyphs.filter(e => e.supertype === template.id || template.subtypes.includes(e.id));
+        if (parentGroup.namespace === template.namespace) {
+            parentGroup.lyphs.forEach(e => {
+                if (e.supertype === template.id) {
+                    if (!template.subtypes.includes(e.id)) {
+                        template.subtypes.push(e.id);
+                    }
+                }
+            });
+        } else {
+            template.subtypes = template.subtypes.map(ref => getFullID(template.namespace, ref));
+            (parentGroup.lyphsByID || {})::values().forEach(e => {
+                if ((e.supertype === template.id || e.supertype === template.fullID) &&
+                    !template.subtypes.includes(e.fullID)) {
+                    template.subtypes.push(e.fullID);
+                }
+            });
+        }
+        let subtypes = [];
+        template.subtypes.forEach(ref => {
+            let lyph = refToResource(ref, parentGroup, $Field.lyphs);
+            if (lyph){
+                subtypes.push(lyph);
+            } else {
+                logger.error($LogMsg.LYPH_SUBTYPE_NOT_FOUND, template.namespace, template.id, ref);
+            }
+        });
+
         subtypes.forEach(subtype => this.clone(parentGroup, template, subtype));
         template._inactive = true;
     }
@@ -146,6 +173,7 @@ export class Lyph extends Shape {
         }
 
         targetLyph = targetLyph || {};
+
         if (!parentGroup.lyphs) {parentGroup.lyphs = [];}
  
         if (sourceLyph.supertype && (sourceLyph.layers||[]).length === 0){
@@ -175,7 +203,7 @@ export class Lyph extends Shape {
                 }
             }
         } else {
-            targetLyph.cloneOf = sourceLyph.id;
+            targetLyph.cloneOf = sourceLyph.fullID;
         }
 
         targetLyph.name = targetLyph.name || getGenName(sourceLyph.name);
@@ -189,9 +217,10 @@ export class Lyph extends Shape {
         let missingLayers = [];
         (sourceLyph.layers || []).forEach((layerRef, i) => {
             let nm = sourceLyph.namespace || parentGroup.namespace;
-            let sourceLayer = refToResource(layerRef, parentGroup, $Field.lyphs);
+            let fullLayerRef = getFullID(nm, layerRef);
+            let sourceLayer = refToResource(fullLayerRef, parentGroup, $Field.lyphs);
             if (!sourceLayer) {
-                missingLayers.push(layerRef);
+                missingLayers.push(fullLayerRef);
                 return;
             }
 
@@ -200,15 +229,16 @@ export class Lyph extends Shape {
             if (n > i){
                 targetLayer = targetLyph.layers[i];
             }
+            let targetLayerID = getGenID(sourceLayer.id, targetLyph.id, i+1);
             targetLayer = targetLayer::merge({
-                [$Field.id]        : getGenID(sourceLayer.id, targetLyph.id, i+1),
-                [$Field.name]      : getGenName(sourceLayer.name || '?', "in", targetLyph.name || '?', "layer", i+1),
+                [$Field.id]        : targetLayerID,
+                [$Field.namespace] : targetLyph.namespace,
+                [$Field.fullID]    : getFullID(targetLyph.namespace, targetLayerID),
+                [$Field.name]      : getGenName(sourceLayer.name || '?', "in", targetLyph.name || '?', $Prefix.layer, i+1),
                 [$Field.skipLabel] : true,
                 [$Field.generated] : true
             });
-            if (!findResourceByID(parentGroup.lyphs, targetLayer.id)) {
-                parentGroup.lyphs.push(targetLayer);
-            }
+            mergeGenResource(undefined, parentGroup, targetLayer, $Field.lyphs);
             this.clone(parentGroup, sourceLayer, targetLayer);
 
             targetLayer::merge(targetLyph::pick([$Field.topology, $Field.namespace]));
@@ -217,7 +247,7 @@ export class Lyph extends Shape {
         });
 
         if (missingLayers.length > 0) {
-            logger.error($LogMsg.LYPH_NO_TEMPLATE_LAYER, sourceLyph.id, missingLayers.join(", "));
+            logger.error($LogMsg.LYPH_NO_TEMPLATE_LAYER, sourceLyph.fullID, missingLayers.join(", "));
         }
 
         return targetLyph;
@@ -229,38 +259,67 @@ export class Lyph extends Shape {
      */
     static mapInternalResourcesToLayers(parentGroup){
 
-        function moveResourceToLayer(resourceIndex, layerIndex, lyph, prop){
+        function moveResourceToLayer(resource, layerIndex, lyph, prop){
             if (layerIndex < lyph.layers.length){
                 let layer = refToResource(lyph.layers[layerIndex], parentGroup, $Field.lyphs);
                 if (layer){
                     layer[prop] = layer[prop] || [];
-                    let internalID = getID(lyph[prop][resourceIndex]);
+                    let internalID = getID(resource);
                     if (internalID && !layer[prop].find(x => x === internalID)){
                         layer[prop].push(internalID);
                     }
                     logger.info($LogMsg.RESOURCE_TO_LAYER, internalID, layer.id, prop, layer[prop]);
-                    lyph[prop][resourceIndex] = null;
                 } else {
                     logger.warn($LogMsg.LYPH_INTERNAL_NO_LAYER, lyph, layerIndex, lyph.layers[layerIndex]);
                 }
             } else {
-                logger.warn($LogMsg.LYPH_INTERNAL_OUT_RANGE, layerIndex, lyph.layers.length, lyph.id, resourceIndex);
+                logger.warn($LogMsg.LYPH_INTERNAL_OUT_RANGE, layerIndex, lyph.layers.length, lyph.id);
             }
         }
 
-        function processLyphs(key1, key2){
+        //A.internalLyphs=[B,C] + A.internalLyphsInLayers=[1,2]
+        /**
+         * Map internal lyph resources to its layers
+         * @param key1 property containing references to internal resources (internalLyphs or internalNodes)
+         * @param key2 property containing indexes of layers to map internal resources into
+         */
+        function mapToLayers1(key1, key2){
             (parentGroup.lyphs||[]).forEach(lyph => {
                 if (lyph.layers && lyph[key1] && lyph[key2]) {
                     for (let i = 0; i < Math.min(lyph[key1].length, lyph[key2].length); i++) {
-                        moveResourceToLayer(i, lyph[key2][i], lyph, $Field.internalLyphs);
+                        moveResourceToLayer(lyph[key1][i], lyph[key2][i], lyph, key1);
+                        lyph[key1][i] = null;
                     }
                     lyph[key1] = lyph[key1].filter(x => !!x);
                 }
             });
         }
+        mapToLayers1($Field.internalLyphs, $Field.internalLyphsInLayers);
+        mapToLayers1($Field.internalNodes, $Field.internalNodesInLayers);
 
-        processLyphs($Field.internalLyphs, $Field.internalLyphsInLayers);
-        processLyphs($Field.internalNodes, $Field.internalNodesInLayers);
+        //B.internalIn=A + B.internalInLayer=1
+        /**
+         * Map internal resource into hosting lyph layer
+         * @param key1 property containing references to internal resources (internalLyphs or internalNodes)
+         * @param key2 property defining type of the resource to which the mapping is applied (lyphs or nodes)
+         */
+        function mapToLayers2(key1, key2){
+            (parentGroup[key2]||[]).forEach(resource => {
+                if (resource.internalIn) {
+                    let lyph = refToResource(resource.internalIn, parentGroup, $Field.lyphs);
+                    if (lyph){
+                        if (resource.internalInLayer){
+                            moveResourceToLayer(resource, resource.internalInLayer, lyph, key1);
+                            delete resource.internalIn;
+                        }
+                    } else {
+                        logger.error($LogMsg.LYPH_INTERNAL_IN_NOT_FOUND, resource.id, resource.internalIn);
+                    }
+                }
+            });
+        }
+        mapToLayers2($Field.internalLyphs, $Field.lyphs);
+        mapToLayers2($Field.internalNodes, $Field.nodes);
     }
 
     collectInheritedExternals(){
@@ -437,10 +496,10 @@ export class Lyph extends Shape {
 
         let link = Link.fromJSON({
             [$Field.id]           : getGenID($Prefix.link, this.id),
-            [$Field.source]       : sNode.id,
-            [$Field.target]       : tNode.id,
+            [$Field.source]       : sNode.fullID || sNode.id,
+            [$Field.target]       : tNode.fullID || tNode.id,
             [$Field.geometry]     : Link.LINK_GEOMETRY.INVISIBLE,
-            [$Field.conveyingLyph]: this.id,
+            [$Field.conveyingLyph]: this.fullID,
             [$Field.skipLabel]    : true,
             [$Field.generated]    : true
         }, modelClasses, entitiesByID, namespace);
@@ -633,12 +692,12 @@ export class Region extends Shape {
             let wires = [];
             for (let i = 1; i < anchors.length + 1; i++) {
                 wires.push({
-                    [$Field.id]: getGenID($Prefix.wire, template.id, i),
-                    [$Field.source]: anchors[i - 1].id,
-                    [$Field.target]: anchors[i % anchors.length].id,
-                    [$Field.color]: template.color? tinycolor(template.color).darken(25): $Color.Wire,
-                    [$Field.skipLabel]: true,
-                    [$Field.generated]: true
+                    [$Field.id]        : getGenID($Prefix.wire, template.id, i),
+                    [$Field.source]    : anchors[i - 1].id,
+                    [$Field.target]    : anchors[i % anchors.length].id,
+                    [$Field.color]     : template.color? tinycolor(template.color).darken(25): $Color.Wire,
+                    [$Field.skipLabel] : true,
+                    [$Field.generated] : true
                 });
             }
             parentGroup.wires = parentGroup.wires || [];

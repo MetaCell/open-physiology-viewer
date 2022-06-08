@@ -20,7 +20,8 @@ import {
     getGenName,
     prepareForExport,
     findResourceByID,
-    collectNestedResources
+    collectNestedResources,
+    getFullID
 } from "./utils";
 import {
     extractLocalConventions,
@@ -130,7 +131,6 @@ export class Graph extends Group{
 
         //Copy existing entities to a map to enable nested model instantiation
         let inputModel = json::cloneDeep()::defaults({id: "mainGraph"});
-        let namespace = inputModel.namespace;
 
         /**
          * @property waitingList
@@ -143,15 +143,19 @@ export class Graph extends Group{
         let count = 1;
         const prefix = [$Prefix.node, $Prefix.link];
         [$Field.nodes, $Field.links].forEach((prop, i) => (inputModel[prop]||[]).forEach(e => {
-                if (e::isObject && !e.id){
+                if (e::isObject() && !e.id){
                     e.id = getGenID(prefix[i], $Prefix.default, count++);
+                    e.fullID = getFullID(inputModel.namespace, e.id);
                 }
             }
         ));
 
         inputModel.groups = inputModel.groups || [];
+        const defaulID =  getGenID($Prefix.group, $Prefix.default);
         let defaultGroup = {
-            [$Field.id]       : getGenID($Prefix.group, $Prefix.default),
+            [$Field.id]       : defaulID,
+            [$Field.fullID]   : getFullID(inputModel.namespace, defaulID),
+            [$Field.namespace]: inputModel.namespace,
             [$Field.name]     : "Ungrouped",
             [$Field.generated]: true,
             [$Field.hidden]   : true,
@@ -161,12 +165,25 @@ export class Graph extends Group{
         inputModel.groups.unshift(defaultGroup);
 
         //Collect resources necessary for template expansion from all groups
-        let relFieldNames = [$Field.nodes, $Field.links, $Field.lyphs, $Field.materials];
+        let relFieldNames = [$Field.nodes, $Field.links, $Field.lyphs, $Field.materials, $Field.groups, $Field.channels];
+
         collectNestedResources(inputModel, relFieldNames, $Field.groups);
+
+        modelClasses.Channel.defineChannelLyphTemplates(inputModel);
+
+        modelClasses.Group.replaceReferencesToTemplates(inputModel);
+        inputModel.groupsByID::values().forEach(json => {
+            modelClasses.Group.replaceReferencesToTemplates(json);
+        });
+
+        modelClasses.Group.expandLyphTemplates(inputModel, modelClasses);
+        inputModel.groupsByID::values().forEach(json => {
+            modelClasses.Group.expandLyphTemplates(json, modelClasses);
+        });
 
         //Create graph
         inputModel.class = $SchemaClass.Graph;
-        let res = super.fromJSON(inputModel, modelClasses, entitiesByID, namespace);
+        let res = super.fromJSON(inputModel, modelClasses, entitiesByID, inputModel.namespace);
 
         //Auto-create missing definitions for used references
         let added = [];
@@ -179,7 +196,7 @@ export class Graph extends Group{
                 }
                 let clsName = schemaClassModels[obj.class].relClassNames[key];
                 if (clsName && !schemaClassModels[clsName].schema.abstract){
-                    let e = modelClasses.Resource.createResource(id, clsName, res, modelClasses, entitiesByID, namespace);
+                    let e = modelClasses.Resource.createResource(id, clsName, res, modelClasses, entitiesByID, inputModel.namespace || refs[0].namespace);
                     added.push(e.fullID);
                     //A created link needs end nodes
                     if (e instanceof modelClasses.Link) {
@@ -187,7 +204,7 @@ export class Graph extends Group{
                         const related = [$Field.sourceOf, $Field.targetOf];
                         e.applyToEndNodes(end => {
                             if (end::isString()) {
-                                let s = modelClasses.Resource.createResource(end, $SchemaClass.Node, res, modelClasses, entitiesByID, namespace);
+                                let s = modelClasses.Resource.createResource(end, $SchemaClass.Node, res, modelClasses, entitiesByID, e.namespace);
                                 added.push(s.fullID);
                                 s[related[i]] = [e];
                             }
@@ -225,15 +242,19 @@ export class Graph extends Group{
 
         if (!res.generated) {
             let noAxisLyphsInternal = (res.lyphs||[]).filter(lyph => lyph.internalIn && !lyph.axis && !lyph.isTemplate);
-            res.createAxes(noAxisLyphsInternal, modelClasses, entitiesByID, namespace);
+            res.createAxes(noAxisLyphsInternal, modelClasses, entitiesByID);
             let noAxisLyphs = (res.lyphs||[]).filter(lyph => lyph::isObject() && !lyph.conveys && !lyph.layerIn && !lyph.isTemplate);
-            res.createAxes(noAxisLyphs, modelClasses, entitiesByID, namespace);
+            res.createAxes(noAxisLyphs, modelClasses, entitiesByID);
             (res.groups||[]).forEach(group => group.includeRelated && group.includeRelated());
             (res.coalescences || []).forEach(r => r.createInstances(res, modelClasses));
             //Collect inherited externals
             (res.lyphs||[]).forEach(lyph => {
                 if (lyph.supertype) {
-                    lyph.collectInheritedExternals();
+                    if (!lyph.collectInheritedExternals){
+                        logger.error($LogMsg.CLASS_ERROR_RESOURCE, lyph.id, lyph.class, "collectInheritedExternals");
+                    } else {
+                        lyph.collectInheritedExternals();
+                    }
                 }
             });
         }
@@ -247,17 +268,6 @@ export class Graph extends Group{
         (res.chains||[]).forEach(r => r.connect? r.connect(): logger.error($LogMsg.CLASS_ERROR_UNDEFINED, r));
 
         validateExternal(res.external, res.localConventions);
-
-        //Assign helper property housingLyph for simpler Cypher queries
-        (res.lyphs||[]).forEach(lyph => {
-            if (lyph instanceof modelClasses.Lyph) {
-                let axis = lyph.axis;
-                let housingLyph = axis && (axis.fasciculatesIn || axis.endsIn);
-                if (housingLyph) {
-                    lyph.housingLyph = housingLyph
-                }
-            }
-        });
 
         //Assign helper property housingLyph for simpler Cypher queries
         (res.lyphs||[]).forEach(lyph => {
@@ -483,12 +493,11 @@ export class Graph extends Group{
      * @param noAxisLyphs - a list of lyphs without axis
      * @param modelClasses - model resource classes
      * @param entitiesByID - a global resource map to include the generated resources
-     * @param namespace
      */
-    createAxes(noAxisLyphs, modelClasses, entitiesByID, namespace){
+    createAxes(noAxisLyphs, modelClasses, entitiesByID){
         let group = (this.groups||[]).find(g => g.id === getGenID($Prefix.group, $Prefix.default));
         noAxisLyphs.forEach(lyph => {
-            let link = lyph.createAxis(modelClasses, entitiesByID, namespace);
+            let link = lyph.createAxis(modelClasses, entitiesByID, lyph.namespace);
             this.links.push(link);
             link.applyToEndNodes(end => this.nodes.push(end));
             if (group){

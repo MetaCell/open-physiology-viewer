@@ -103,6 +103,7 @@ export class Villus extends GroupTemplate{
             });
             villus_layers = villus_layers.map(x => x.id);
 
+            //FIXME
             let villusLyph = {
                 [$Field.id]        : getGenID($Prefix.villus, $Prefix.lyph, lyph.id, layer.id),
                 [$Field.layers]    : villus_layers.reverse(),
@@ -111,12 +112,6 @@ export class Villus extends GroupTemplate{
                 [$Field.skipLabel] : true,
                 [$Field.generated] : true
             };
-            // if (i === 0 && villus.numLevels > 0){
-            //     villus = {
-            //         "numLayers": villus.numLayers,
-            //         "numLevels": villus.numLevels - 1
-            //     }
-            // }
 
             mergeGenResource(villus.group, parentGroup, villusLyph, $Field.lyphs);
 
