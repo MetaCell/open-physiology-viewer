@@ -202,6 +202,7 @@ const COLORS = {
                     </resourceVisibility>
 
                     <div class="default-box">
+<<<<<<< HEAD
                       <div class="settings-wrap">
                         <h5>Layout</h5>
 
@@ -220,12 +221,12 @@ const COLORS = {
                         <div class="wrap">
                           <mat-slide-toggle matTooltip="Toggle layers" [disabled]="!config.layout.showLyphs" (change)="toggleLayout('showLayers')" [checked]="config.layout.showLayers">Layers</mat-slide-toggle>
                         </div>
-
                         <div class="wrap">
                           <mat-slide-toggle matTooltip="Toggle scaffold resource visibility" (change)="toggleVisibility()"
                             [checked]="scaffoldResourceVisibility">Show all resources
                           </mat-slide-toggle>
                         </div>
+                      </div>
                     </div>
                     
                     <!-- Wire visibility -->
