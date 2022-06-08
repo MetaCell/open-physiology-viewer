@@ -11,41 +11,49 @@ export const renderConsts = Object.freeze({
   arrowLength      : 40,     // arrow length for directed links
 });
 
-function objectBase(json, type) {
-  this._json = json ;
-  this._type = type ;
-  this._hidden = false ;
-  this._cache = null ;
-  this._isHighlighted = false ;
-  this_.transformedCache = null ;
-  this._transformationMatrixes = [] ;
-}
+export class objectBase
+{
+  _json = json ;
+  _type = type ;
+  _hidden = false ;
+  _cache = null ;
+  _isHighlighted = false ;
+  _transformedCache = null ;
+  _transformationMatrixes = [] ;
 
-objectBase.prototype.fromJSON = function(json, modelClasses = {}, entitiesByID, namespace) {
-  this._json = json ;
-}
 
-//move, scale, skew, etc.
-objectBase.prototype.transform = function(m) {
-  const clone = Object.clone(this_.cache.transformation.apply(m));
-  this._transformationMatrixes.push(m);
-  this._transformedCache = clone ;
-}
+  constructor(json, type)
+  {
+    this._json = json ;
+    this._type = type ;
+  }
 
-objectBase.prototype.highlight = function() {
-  this._isHighlighted = true ;
-  hightlight(objectBase._cache);
-}
+  fromJSON(json, modelClasses = {}, entitiesByID, namespace) {
+    this._json = json ;
+  }
 
-objectBase.prototype.unhighlight = function() {
-  this._isHighlighted = false ;
-  unhighlight(objectBase._cache);
-}
+  //move, scale, skew, etc.
+  transform(m) {
+    const clone = Object.clone(this_.cache.transformation.apply(m));
+    this._transformationMatrixes.push(m);
+    this._transformedCache = clone ;
+  }
 
-objectBase.prototype.hide = function() {
-  this.visible = false ;
-}
+  highlight() {
+    this._isHighlighted = true ;
+    hightlight(objectBase._cache);
+  }
 
-objectBase.prototype.delete = function() {
-  this._cache = null ;
+  unhighlight() {
+    this._isHighlighted = false ;
+    unhighlight(objectBase._cache);
+  }
+
+  hide() {
+    this.visible = false ;
+  }
+
+  delete() {
+    this._cache = null ;
+  }
 }

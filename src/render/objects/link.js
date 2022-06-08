@@ -1,24 +1,29 @@
 import { objectBase } from '../objectBase';
 import { objectTypes } from '../objectTypes';
 
-function Link(json){
-  objectBase.call(this, json, objectTypes.LINK);
+export class Link extends objectBase
+{
+
+  constructor(json)
+  {
+    this._json = json ;
+    this._type = objectTypes.Link ;
+  }
+
+
+  render = function() {
+
+  }
+
+  highlight = function() {
+
+  }
+
+  hide = function() {
+    
+  }
+
+  delete = function() {
+    
+  }
 }
-
-Link.prototype.render = function() {
-
-}
-
-Link.prototype.highlight = function() {
-
-}
-
-Link.prototype.hide = function() {
-  
-}
-
-Link.prototype.delete = function() {
-  
-}
-
-export default Link ;

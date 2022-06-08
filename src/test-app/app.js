@@ -4,7 +4,7 @@ import { cloneDeep, isArray, isObject, keys, merge, mergeWith, pick} from 'lodas
 
 import FileSaver  from 'file-saver';
 import JSONEditor from "jsoneditor/dist/jsoneditor.min.js";
-import { modelLoader } from "../render/modelHandler"
+import { modelHandler } from "../render/modelHandler"
 
 // import {MainToolbarModule} from "../components/mainToolbar";
 // import {SnapshotToolbarModule} from "../components/snapshotToolbar";
@@ -344,8 +344,9 @@ export class TestApp {
         this._model = model;
         //try{
             this._modelName = this._model.name || "?";
-            var loader = new modelLoader(this._model);
-            this._graphData = loader.parse();
+            var loader = new modelHandler(this._model);
+            loader.parse();
+            this._graphData = loader.createdObjects();
         // } catch(err){
         //    throw new Error(err);
         // }

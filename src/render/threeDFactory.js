@@ -1,4 +1,4 @@
-import { renderConsts } from 'objectBase';
+import { renderConsts } from './objectBase';
 
 export class ThreeDFactory {
   static createSphereGeometry(val){
