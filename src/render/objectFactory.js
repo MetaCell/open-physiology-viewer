@@ -9,9 +9,9 @@ export default class objectFactory
     let threeObj;
 
     if (type === objectTypes.chains) {
-      threeObj = new Chain();
+      threeObj = new Chain(json);
     } else if (type === objectTypes.links) {
-      threeObj = new Link();
+      threeObj = new Link(json);
     } else if (type === objectTypes.nodes) {
       threeObj = new Node(json);
     }

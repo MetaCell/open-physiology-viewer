@@ -4,7 +4,6 @@ import { cloneDeep, isArray, isObject, keys, merge, mergeWith, pick} from 'lodas
 
 import FileSaver  from 'file-saver';
 import JSONEditor from "jsoneditor/dist/jsoneditor.min.js";
-import { modelHandler } from "../render/modelHandler"
 
 // import {MainToolbarModule} from "../components/mainToolbar";
 // import {SnapshotToolbarModule} from "../components/snapshotToolbar";
@@ -71,7 +70,7 @@ const fileExtensionRe = /(?:\.([^.]+))?$/;
 
       <ng-template mat-tab-label><i class="fa fa-heartbeat"> Viewer </i></ng-template>
       <webGLScene #webGLScene
-              [graphData]="_graphData"
+              [model]="_model"
               (onImportExternal)="importExternal($event)"    
               (selectedItemChange)="onSelectedItemChange($event)"
               (highlightedItemChange)="onHighlightedItemChange($event)"
@@ -336,23 +335,16 @@ export class TestApp {
         this.model = this._model::merge({[$Field.lastUpdated]: this.currentDate});
     }
 
-    onSelectedItemChange(item){}
+  onSelectedItemChange(item){}
 
 	onHighlightedItemChange(item){}
 
 	set model(model){
-        this._model = model;
-        //try{
-            this._modelName = this._model.name || "?";
-            var loader = new modelHandler(this._model);
-            loader.parse();
-            this._graphData = loader.createdObjects();
-        // } catch(err){
-        //    throw new Error(err);
-        // }
-        if (this._editor){
-            this._editor.set(this._model);
-        }
+      this._model = model;
+
+      if (this._editor){
+          this._editor.set(this._model);
+      }
     }
 
     get graphData(){

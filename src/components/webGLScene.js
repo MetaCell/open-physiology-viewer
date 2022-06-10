@@ -98,19 +98,8 @@ export class WebGLSceneComponent {
 
     @Input() modelClasses;
 
-    @Input('graphData') set graphData(newGraphData) {
-        if (this._graphData !== newGraphData) {
-            this._graphData = newGraphData;
-            this._searchOptions = (this._graphData.resources||[]).filter(e => e.name).map(e => e.name);
-            this.selected = null;
-            this._graphData.scale(this.scaleFactor);
-            if (this._graphData.neurulator) {
-                this._graphData.neurulator();
-            }
-            if (this.graph) {
-                this.graph.graphData(this._graphData);
-            }
-        }
+    @Input('model') set model(newModel) {
+      this._model = newModel;
     }
 
     @Input('highlighted') set highlighted(entity) {
@@ -359,17 +348,17 @@ export class WebGLSceneComponent {
             .scaleFactor(this.scaleFactor)
             .onAnchorDragEnd((obj, delta) => {
                 obj.userData.relocate(delta);
-                this.graph.graphData(this.graphData);
+                //this.graph.graphData(this.graphData);
                 this.scaffoldUpdated.emit(obj);
             })
             .onWireDragEnd((obj, delta) => {
                 obj.userData.relocate(delta);
-                this.graph.graphData(this.graphData);
+                //this.graph.graphData(this.graphData);
                 this.scaffoldUpdated.emit(obj);
             })
             .onRegionDragEnd((obj, delta) => {
                 obj.userData.relocate(delta);
-                this.graph.graphData(this.graphData);
+                //this.graph.graphData(this.graphData);
                 this.scaffoldUpdated.emit(obj);
             })
             .onFinishLoading(() => {
@@ -377,7 +366,7 @@ export class WebGLSceneComponent {
               //this.parseDefaultColors(this.getSceneObjects());
               //layoutLabelCollide(this.scene);
             })
-            .graphData(this.graphData);
+            .graphData(this._model);
 
         const isLayoutDimValid = (layout, key) => layout::isObject() && (key in layout) && (typeof layout[key] !== 'undefined');
         const forceVal = (d, key) => isLayoutDimValid(d.layout, key)? d.layout[key] : 0;

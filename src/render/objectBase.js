@@ -9,6 +9,11 @@ export const renderConsts = Object.freeze({
 
   edgeResolution   : 32,     // number of points on curved link
   arrowLength      : 40,     // arrow length for directed links
+  highlightColor : 0xff0000,
+  selectColor    : 0x00ff00,
+  defaultColor   : 0x000000,
+  scaleFactor    : 10,
+  isConnectivity : true,
 });
 
 export class objectBase
@@ -20,6 +25,9 @@ export class objectBase
   _isHighlighted = false ;
   _transformedCache = null ;
   _transformationMatrixes = [] ;
+  //render props
+  _color = renderConsts.defaultColor ;
+  _val = 1.0 ;
 
 
   constructor(json, type)

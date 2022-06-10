@@ -6,8 +6,13 @@ export class modelHandler
   _json ;
   _createdObjects = [];
   _renderedObjects = [];
+  _secene ;
 
-  constructor(json) { this._json = json }
+  constructor(json, scene) { 
+    this._json = json ;
+    this._scene = scene ;
+    this.parse();
+  }
 
   parse()
   {
@@ -18,13 +23,15 @@ export class modelHandler
       if (validObjNames.indexOf(objType) > -1)
       {
         const children = this._json[objType];
-        children.forEach((c)=>{
-          const createdObject = objectFactory.create(objType, children);
+        children.forEach((node)=>{
+          const createdObject = objectFactory.create(objType, node);
           this._createdObjects.push(createdObject);
         });
       }
     })
   }
+
+  scene(scene) { this._scene = scene ; }
 
   createdObjects()
   {
@@ -33,11 +40,16 @@ export class modelHandler
 
   render()
   {
-    this.clearCreatedObjects();
+    debugger; 
+    while (this._scene.children.length) { this._scene.remove(this._scene.children[0]) } // Clear the place
+
     this._createdObjects.forEach(o =>{
       const renderedObject = o.render();
       this._renderedObjects.push(renderedObject);
-    })
+    });
+
+    this._renderedObjects.forEach(o => this._scene.add(o));
+
   }
 
   clearCreatedObjects()

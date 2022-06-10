@@ -19,8 +19,8 @@ import Kapsule from 'kapsule';
  */
 export default Kapsule({
     props: {
-        graphData: {
-            default: Graph.fromJSON({}, modelClasses),
+        model: {
+            default: {},
             onChange(value, state) {
                 state.onFrame = null;
             }
@@ -28,16 +28,7 @@ export default Kapsule({
         numDimensions: {
             default: 3,
             onChange(numDim, state) {
-                if (numDim < 3) {
-                    eraseDimension(state.graphData.visibleNodes||[], 'z');
-                }
 
-                function eraseDimension(nodes, dim) {
-                    (nodes||[]).forEach(node => {
-                        node[dim] = 0;          // position, set to 0 instead of deleting
-                        delete node[`v${dim}`]; // velocity
-                    });
-                }
             }
         },
         scaleFactor: { default: 10 },
@@ -262,6 +253,8 @@ export default Kapsule({
             .force('charge', forceManyBody(d => d.charge || 0))
             .force('collide', forceCollide(d => d.collide || 0))
         .stop()
+
+        //graphData.scene()
     }),
 
     init(threeObj, state) {
@@ -272,17 +265,6 @@ export default Kapsule({
         state.onFrame = null; // Pause simulation
         state.onLoading();
 
-        if (state.graphData.visibleNodes || state.graphData.visibleLinks) {
-            console.info('force-graph loading',
-                (state.graphData.visibleNodes||[]).length + ' nodes',
-                (state.graphData.visibleLinks||[]).length + ' links');
-        }
-
-        while (state.graphScene.children.length) { state.graphScene.remove(state.graphScene.children[0]) } // Clear the place
-
-        // Add WebGL objects
-        state.graphData.createViewObjects(state);
-
         // Feed data to force-directed layout
         let layout;
         // D3-force
@@ -291,10 +273,8 @@ export default Kapsule({
             .alpha(1)// re-heat the simulation
             .alphaDecay(state.d3AlphaDecay)
             .velocityDecay(state.d3VelocityDecay)
-            .numDimensions(state.numDimensions)
-            .nodes(state.graphData.visibleNodes||[]);
-
-        layout.force('link').id(d => d.id).links(state.graphData.visibleLinks||[]);
+            .numDimensions(state.numDimensions);
+            //.nodes(state.graphData.visibleNodes||[]);
 
         // Initial ticks before starting to render
         for (let i = 0; i < state.warmupTicks; i++) { layout['tick'](); }
@@ -305,13 +285,7 @@ export default Kapsule({
         state.onFinishLoading();
 
         function layoutTick() {
-          if (++state.cntTicks > state.cooldownTicks || (new Date()) - startTickTime > state.cooldownTime) {
-              // Stop ticking graph
-              state.onFrame = null;
-          } else { layout['tick'](); }
-
-          state.graphData.updateViewObjects(state);
-          autoLayout(state.graphScene, state.graphData, state.showLabelWires);
+          
         }
     }
 });

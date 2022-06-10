@@ -7,6 +7,7 @@ import {
 } from 'd3-force-3d';
 import {select as d3Select } from 'd3-selection';
 import {drag as d3Drag } from 'd3-drag';
+import { modelHandler } from "../render/modelHandler"
 
 import Kapsule from 'kapsule';
 //import {modelClasses} from '../model/index';
@@ -47,6 +48,9 @@ export default Kapsule({
           onChange(canvas, state){
               state.canvas = canvas;
               if (!state.canvas){ return;}
+
+              state.toolTipElem = document.createElement('div');
+              state.toolTipElem.classList.add('graph-tooltip');
 
               const container = canvas.parentNode;
               if (container) {
@@ -230,11 +234,9 @@ export default Kapsule({
       state.onFrame = null; // Pause simulation
       state.onLoading();
 
-      while (state.graphScene.children.length) { state.graphScene.remove(state.graphScene.children[0]) } // Clear the place
-
-      // Add WebGL objects
-      state.graphData.render(state);
-
+      this._modelHandler = new modelHandler(state.graphData, state.graphScene);
+      console.log(this._modelHandler.createdObjects());
+      this._modelHandler.render();
       // Feed data to force-directed layout
       let layout;
       // D3-force
@@ -243,10 +245,8 @@ export default Kapsule({
           .alpha(1)// re-heat the simulation
           .alphaDecay(state.d3AlphaDecay)
           .velocityDecay(state.d3VelocityDecay)
-          .numDimensions(state.numDimensions)
-          .nodes(state.graphData.visibleNodes||[]);
-
-      layout.force('link').id(d => d.id).links(state.graphData.visibleLinks||[]);
+          .numDimensions(state.numDimensions);
+          //.nodes(state.graphData.visibleNodes||[]);
 
       // Initial ticks before starting to render
       for (let i = 0; i < state.warmupTicks; i++) { layout['tick'](); }
@@ -257,13 +257,8 @@ export default Kapsule({
       state.onFinishLoading();
 
       function layoutTick() {
-        if (++state.cntTicks > state.cooldownTicks || (new Date()) - startTickTime > state.cooldownTime) {
-            // Stop ticking graph
-            state.onFrame = null;
-        } else { layout['tick'](); }
-
-        state.graphData.render(state);
-        autoLayout(state.graphScene, state.graphData, state.showLabelWires);
+        if (this._modelHandler)
+          this._modelHandler.render();
       }
   }
 });
