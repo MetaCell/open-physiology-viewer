@@ -44,7 +44,6 @@ export class objectBase
   }
 
   _render() {
-    debugger;
     this._geometry.translate(this._position.x, this._position.y, 0);
     this._mesh = new THREE.Mesh(this._geometry, this._material);
  
