@@ -25,6 +25,9 @@ export class objectBase
   _isHighlighted = false ;
   _transformedCache = null ;
   _transformationMatrixes = [] ;
+  _geometry = null;
+  _material = null ;
+  _mesh = null ;
   //render props
   _color = renderConsts.defaultColor ;
   _val = 1.0 ;
@@ -38,6 +41,14 @@ export class objectBase
 
   fromJSON(json, modelClasses = {}, entitiesByID, namespace) {
     this._json = json ;
+  }
+
+  _render() {
+    debugger;
+    this._geometry.translate(this._position.x, this._position.y, 0);
+    this._mesh = new THREE.Mesh(this._geometry, this._material);
+ 
+    return this._mesh ;
   }
 
   //move, scale, skew, etc.

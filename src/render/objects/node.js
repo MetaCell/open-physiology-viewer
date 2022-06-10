@@ -16,15 +16,17 @@ export class Node extends objectBase
 
   render() {
     const geometry = ThreeDFactory.createSphereGeometry(this._val);
-  
-    geometry.translate(this._position.x, this._position.y, 0);
+    
 
     const material = MaterialFactory.createMeshLambertMaterial({
         color: this._color,
         polygonOffsetFactor: this._polygonOffsetFactor
     });
   
-    return new THREE.Mesh(geometry, material);
+    this._geometry = geometry ;
+    this._material = material ;
+
+    return this._render();
   }
 
   highlight() {
