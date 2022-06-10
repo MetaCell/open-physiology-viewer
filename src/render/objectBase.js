@@ -28,7 +28,7 @@ export class objectBase
   //render props
   _color = renderConsts.defaultColor ;
   _val = 1.0 ;
-
+  _position = new THREE.Vector3();
 
   constructor(json, type)
   {

@@ -40,7 +40,6 @@ export class modelHandler
 
   render()
   {
-    debugger; 
     while (this._scene.children.length) { this._scene.remove(this._scene.children[0]) } // Clear the place
 
     this._createdObjects.forEach(o =>{

@@ -11,14 +11,13 @@ export class Node extends objectBase
     super(json, objectTypes.nodes);
     this._color = json.color || this._color;
     this._val = json.val || this._val;;
+    this._position = this._json.layout ?? new THREE.Vector3(this._json.layout.x, this._json.layout.y, 0);
   }
 
   render() {
     const geometry = ThreeDFactory.createSphereGeometry(this._val);
-    const layout = this._json.layout ;
-    
-    if (layout);
-      geometry.translate(layout.x, layout.y, 0)
+  
+    geometry.translate(this._position.x, this._position.y, 0);
 
     const material = MaterialFactory.createMeshLambertMaterial({
         color: this._color,
