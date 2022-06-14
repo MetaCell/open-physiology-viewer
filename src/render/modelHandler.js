@@ -1,5 +1,6 @@
 import { objectTypes } from "./objectTypes"
-import objectFactory from "./objectFactory"
+import objectFactory from "./objects/factory"
+import { Mediator, mediatorTypes } from "./mediator";
 
 export class modelHandler
 {
@@ -14,6 +15,41 @@ export class modelHandler
     this.parse();
   }
 
+  scene(scene) { this._scene = scene ; }
+
+  createdObjects()
+  {
+    return this._createdObjects;
+  }
+
+  mediate(objectId, type, ...params)
+  {
+    const target = this._createdObjects.find(o => o.id == objectId);
+    switch(type)
+    {
+      case mediatorTypes.height:
+      {
+        target.height(...params);
+        break;
+      }
+      case mediatorTypes.width:
+      {
+        target.width(...params);
+        break;
+      }
+      case mediatorTypes.position:
+      {
+        target.position(...params);
+        break;
+      }
+      case mediatorTypes.transformation:
+      {
+        target.transformation(...params);
+        break;
+      }
+    }
+  }
+
   parse()
   {
     const props = Object.getOwnPropertyNames(this._json);
@@ -24,18 +60,11 @@ export class modelHandler
       {
         const children = this._json[objType];
         children.forEach((node)=>{
-          const createdObject = objectFactory.create(objType, node);
+          const createdObject = objectFactory.create(objType, node, this.mediate);
           this._createdObjects.push(createdObject);
         });
       }
     })
-  }
-
-  scene(scene) { this._scene = scene ; }
-
-  createdObjects()
-  {
-    return this._createdObjects;
   }
 
   render()
@@ -49,6 +78,13 @@ export class modelHandler
 
     this._renderedObjects.forEach(o => this._scene.add(o));
 
+  }
+
+  visit()
+  {
+    this._createdObjects.forEach(o =>{
+      o.accept(renderObjectVisitor);
+    });
   }
 
   clearCreatedObjects()

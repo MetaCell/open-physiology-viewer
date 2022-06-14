@@ -1,4 +1,4 @@
-import { hightlight, unhighlight } from './utils/highlight';
+import { hightlight, unhighlight } from '../utils/highlight';
 
 export const renderConsts = Object.freeze({
   verticeRelSize   : 4 ,     // volume per val unit
@@ -32,11 +32,17 @@ export class objectBase
   _color = renderConsts.defaultColor ;
   _val = 1.0 ;
   _position = new THREE.Vector3();
+  _width = 0 ;
+  _height = 0 ;
+  _radius = 0 ;
 
-  constructor(json, type)
+  _mediator = undefined ;
+
+  constructor(json, type, mediator)
   {
     this._json = json ;
     this._type = type ;
+    this._mediator = mediator
   }
 
   fromJSON(json, modelClasses = {}, entitiesByID, namespace) {
@@ -57,6 +63,11 @@ export class objectBase
     this._transformedCache = clone ;
   }
 
+  set height(h) { this._height = h }
+  set width(w) { this._width = w }
+  set transformation(t) {  }
+  set radius(r) { this._radius = r }
+
   highlight() {
     this._isHighlighted = true ;
     hightlight(objectBase._cache);
@@ -73,5 +84,9 @@ export class objectBase
 
   delete() {
     this._cache = null ;
+  }
+
+  accept(renderObjectVisitor){
+
   }
 }

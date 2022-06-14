@@ -1,5 +1,6 @@
 export const objectTypes = {
   chains: 'chains',
   links: 'links',
-  nodes: 'nodes'
+  nodes: 'nodes',
+  lyphs: 'lyphs'
 }

@@ -1,11 +1,13 @@
 import { objectBase } from './base';
 import { objectTypes } from '../objectTypes';
 
-export class Chain extends objectBase
+export class Lyph extends objectBase
 {
+  _polygonOffsetFactor = 0;
+
   constructor(json, mediate)
   {
-    super(json, objectTypes.chains, mediate)
+    super(json, objectTypes.lyphs, mediate)
   }
 
   render = function() {

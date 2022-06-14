@@ -1,11 +1,11 @@
-import { objectBase } from '../objectBase';
+import { objectBase } from './base';
 import { objectTypes } from '../objectTypes';
 
-export class Node extends objectBase
+export class Link extends objectBase
 {
-  constructor(json)
+  constructor(json, mediate)
   {
-    super(json, objectTypes.links)
+    super(json, objectTypes.links, mediate)
   }
 
   render = function() {
