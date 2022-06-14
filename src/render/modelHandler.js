@@ -71,6 +71,7 @@ export class modelHandler
   {
     while (this._scene.children.length) { this._scene.remove(this._scene.children[0]) } // Clear the place
 
+    //handle THREEJS Groups
     this._createdObjects.forEach(o =>{
       const renderedObject = o.render();
       this._renderedObjects.push(renderedObject);

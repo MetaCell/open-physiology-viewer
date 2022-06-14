@@ -1,6 +1,6 @@
 import { objectBase } from './base';
 import { objectTypes } from '../objectTypes';
-
+import { mediatorTypes } from '../mediator';
 export class Lyph extends objectBase
 {
   _polygonOffsetFactor = 0;
@@ -10,8 +10,8 @@ export class Lyph extends objectBase
     super(json, objectTypes.lyphs, mediate)
   }
 
-  render = function() {
-    const geometry = ThreeDFactory.createSphereGeometry(this.json.val);
+  render() {
+    const geometry = ThreeDFactory.createBoxGeometry(this.json.val);
 
     const material = MaterialFactory.createMeshLambertMaterial({
         color: this.json.color,
@@ -19,6 +19,14 @@ export class Lyph extends objectBase
     });
   
     this._cache = new THREE.Mesh(geometry, material);
+
+    //mediate for layers
+    const layers = this._json.layers ;
+    const layerHeight = this._height / layers.length ; 
+    layers.forEach(l => {
+      this._mediator(l.id, mediatorTypes.height, layerHeight)
+    });
+
   }
 
   highlight() {
