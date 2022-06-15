@@ -2,7 +2,7 @@ import { Node } from './node';
 import { Chain } from './chain';
 import { Link } from './link';
 import { objectTypes } from '../objectTypes';
-
+import { Lyph } from './lyph';
 export default class factory
 {
   static create(type, json, mediate) {
@@ -14,6 +14,8 @@ export default class factory
       threeObj = new Link(json, mediate);
     } else if (type === objectTypes.nodes) {
       threeObj = new Node(json, mediate);
+    } else if (type === objectTypes.lyphs) {
+      threeObj = new Lyph(json, mediate);
     }
 
     return threeObj;

@@ -13,6 +13,7 @@ export class modelHandler
     this._json = json ;
     this._scene = scene ;
     this.parse();
+    this.merge();
   }
 
   scene(scene) { this._scene = scene ; }
@@ -24,30 +25,42 @@ export class modelHandler
 
   mediate(objectId, type, ...params)
   {
-    const target = this._createdObjects.find(o => o.id == objectId);
-    switch(type)
+    debugger;
+    const targetIndex = this._createdObjects.findIndex(o => o._json.id == objectId);
+    let target ;
+    if (targetIndex > -1)
     {
-      case mediatorTypes.height:
+      target = this._createdObjects[targetIndex];
+      switch(type)
       {
-        target.height(...params);
-        break;
-      }
-      case mediatorTypes.width:
-      {
-        target.width(...params);
-        break;
-      }
-      case mediatorTypes.position:
-      {
-        target.position(...params);
-        break;
-      }
-      case mediatorTypes.transformation:
-      {
-        target.transformation(...params);
-        break;
+        case mediatorTypes.height:
+        {
+          Mediator.changeHeight(target, ...params);
+          break;
+        }
+        case mediatorTypes.width:
+        {
+          Mediator.changeWidth(target, ...params);
+          break;
+        }
+        case mediatorTypes.position:
+        {
+          Mediator.changePosition(target, ...params);
+          break;
+        }
+        case mediatorTypes.transformation:
+        {
+          Mediator.changeTransformation(target, ...params);
+          break;
+        }
+        case mediatorTypes.delete:
+        {
+
+          this._createdObjects = this._createdObjects.splice(targetIndex, 1);
+        }
       }
     }
+    return target ;
   }
 
   parse()
@@ -60,32 +73,31 @@ export class modelHandler
       {
         const children = this._json[objType];
         children.forEach((node)=>{
-          const createdObject = objectFactory.create(objType, node, this.mediate);
+          const createdObject = objectFactory.create(objType, node, this.mediate.bind(this));
           this._createdObjects.push(createdObject);
         });
       }
     })
   }
 
+  merge()
+  {
+    this._createdObjects.forEach(o =>{ o.merge() });
+  }
+
   render()
   {
     while (this._scene.children.length) { this._scene.remove(this._scene.children[0]) } // Clear the place
 
-    //handle THREEJS Groups
+    //TODO handle THREEJS Groups
     this._createdObjects.forEach(o =>{
       const renderedObject = o.render();
-      this._renderedObjects.push(renderedObject);
+      if(renderedObject)
+        this._renderedObjects.push(renderedObject);
     });
 
     this._renderedObjects.forEach(o => this._scene.add(o));
 
-  }
-
-  visit()
-  {
-    this._createdObjects.forEach(o =>{
-      o.accept(renderObjectVisitor);
-    });
   }
 
   clearCreatedObjects()

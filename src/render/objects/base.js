@@ -35,6 +35,7 @@ export class objectBase
   _width = 0 ;
   _height = 0 ;
   _radius = 0 ;
+  _children = [];
 
   _mediator = undefined ;
 
@@ -49,11 +50,10 @@ export class objectBase
     this._json = json ;
   }
 
-  _render() {
-    this._geometry.translate(this._position.x, this._position.y, 0);
-    this._mesh = new THREE.Mesh(this._geometry, this._material);
- 
-    return this._mesh ;
+  _render(geometry, material, position) {
+    geometry.translate(position.x, position.y, 0);
+    const mesh = new THREE.Mesh(geometry, material);
+    return mesh ;
   }
 
   //move, scale, skew, etc.
@@ -84,6 +84,10 @@ export class objectBase
 
   delete() {
     this._cache = null ;
+  }
+
+  merge() {
+
   }
 
   accept(renderObjectVisitor){

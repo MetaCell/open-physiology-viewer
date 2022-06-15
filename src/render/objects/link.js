@@ -9,14 +9,7 @@ export class Link extends objectBase
   }
 
   render = function() {
-    const geometry = ThreeDFactory.createSphereGeometry(this.json.val);
-
-    const material = MaterialFactory.createMeshLambertMaterial({
-        color: this.json.color,
-        polygonOffsetFactor: this.json.polygonOffsetFactor
-    });
-  
-    this._cache = new THREE.Mesh(geometry, material);
+    return null ;
   }
 
   highlight() {

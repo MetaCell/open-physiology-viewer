@@ -10,23 +10,20 @@ export class Node extends objectBase
   {
     super(json, objectTypes.nodes, mediate);
     this._color = json.color || this._color;
-    this._val = json.val || this._val;;
-    this._position = this._json.layout ?? new THREE.Vector3(this._json.layout.x, this._json.layout.y, 0);
+    this._val = json.val || this._val;
+    if (this._json.layout)
+      this._position = new THREE.Vector3(this._json.layout.x, this._json.layout.y, 0);
   }
 
   render() {
     const geometry = ThreeDFactory.createSphereGeometry(this._val);
     
-
     const material = MaterialFactory.createMeshLambertMaterial({
         color: this._color,
         polygonOffsetFactor: this._polygonOffsetFactor
     });
   
-    this._geometry = geometry ;
-    this._material = material ;
-
-    return this._render();
+    return this._render(geometry, material, this._position);
   }
 
   highlight() {
