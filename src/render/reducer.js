@@ -1,4 +1,4 @@
-export const mediatorTypes = {
+export const reducerTypes = {
   width: 'width',
   height: 'height',
   position: 'position',
@@ -7,7 +7,7 @@ export const mediatorTypes = {
   pop: 'pop'
 }
 
-export class Mediator {
+export class Reducer {
   static changeWidth(o, width) {
     o.width = width ;
   }

@@ -36,14 +36,15 @@ export class objectBase
   _height = 0 ;
   _radius = 0 ;
   _children = [];
+  _groupped = false ;
 
-  _mediator = undefined ;
+  _reducer = undefined ;
 
-  constructor(json, type, mediator)
+  constructor(json, type, reducer)
   {
     this._json = json ;
     this._type = type ;
-    this._mediator = mediator
+    this._reducer = reducer
   }
 
   fromJSON(json, modelClasses = {}, entitiesByID, namespace) {

@@ -9,13 +9,15 @@ export default class factory
     let threeObj;
 
     if (type === objectTypes.chains) {
-      threeObj = new Chain(json, mediate);
+      threeObj = new Chain(json, reducer);
     } else if (type === objectTypes.links) {
-      threeObj = new Link(json, mediate);
+      threeObj = new Link(json, reducer);
     } else if (type === objectTypes.nodes) {
-      threeObj = new Node(json, mediate);
+      threeObj = new Node(json, reducer);
     } else if (type === objectTypes.lyphs) {
-      threeObj = new Lyph(json, mediate);
+      threeObj = new Lyph(json, reducer);
+    } else if (type === objectTypes.layers) {
+      threeObj = new Layer(json, reducer);
     }
 
     return threeObj;

@@ -1,37 +1,61 @@
 import { objectBase } from './base';
 import { objectTypes } from '../objectTypes';
-import { mediatorTypes } from '../mediator';
+import { reducerTypes } from '../reducer';
 import { ThreeDFactory } from '../threeDFactory'; 
 import { MaterialFactory } from '../materialFactory';
 
 export class Lyph extends objectBase
 {
   _polygonOffsetFactor = 0;
+  _layers = [];
 
-  constructor(json, mediator)
+  constructor(json, reducer)
   {
-    super(json, objectTypes.lyphs, mediator);
+    super(json, objectTypes.lyphs, reducer);
+    this._groupped = true ;
   }
 
   merge() {
-    this._json.layers?.forEach( l => {
-      debugger;
-      const id = l.id ?? l ;
-      const layer = this._mediator(l, mediatorTypes.pop)
-      this._mediator(l.id, mediatorTypes.delete); 
-      this._children.push(layer);
-    });
+    const layers = this._json.layers;
+    if (layers.length > 0)
+    {
+      const layerWidth = this._width / layers.length ;
+      const layerHeight = this._height ;
+      layers?.forEach( l => {
+        const id = l.id ?? l ;
+        const layer = this._reducer(l, reducerTypes.pop)
+        this._reducer(l.id, reducerTypes.delete); 
+        layer.width = layerWidth ;
+        layer.height = layerHeight ;
+        this._layers.push(layer);
+      });
+    }
   }
 
   render() {
-    const geometry = ThreeDFactory.createBoxGeometry(this.json.val);
+    const group = new THREE.Group();
+
+    const width = this._json.scale.width ;
+    const height = this._json.scale.height ;
+    const geometry = ThreeDFactory.createBoxGeometry(width, height);
+    const layers = [];
 
     const material = MaterialFactory.createMeshLambertMaterial({
-        color: this.json.color,
-        polygonOffsetFactor: this.json.polygonOffsetFactor
+        color: this._json.color,
+        polygonOffsetFactor: this.polygonOffsetFactor
     });
 
-    this._cache = this._render(geometry, material, this._position);
+    const parent = this._render(geometry, material, this._position);
+    group.add(parent);
+
+    this._layers.forEach(layer =>{
+      const renderedLayer = layer.render();
+      layers.push(renderedLayer);
+      group.add(layers);
+    });
+
+    this._cache = group ;
+    
     return this._cache ;
   }
 

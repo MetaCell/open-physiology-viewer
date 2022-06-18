@@ -1,6 +1,6 @@
 import { objectTypes } from "./objectTypes"
 import objectFactory from "./objects/factory"
-import { Mediator, mediatorTypes } from "./mediator";
+import { Reducer, reducerTypes } from "./reducer";
 
 export class modelHandler
 {
@@ -21,11 +21,10 @@ export class modelHandler
   createdObjects()
   {
     return this._createdObjects;
-  }
+   }
 
   mediate(objectId, type, ...params)
   {
-    debugger;
     const targetIndex = this._createdObjects.findIndex(o => o._json.id == objectId);
     let target ;
     if (targetIndex > -1)
@@ -33,27 +32,27 @@ export class modelHandler
       target = this._createdObjects[targetIndex];
       switch(type)
       {
-        case mediatorTypes.height:
+        case reducerTypes.height:
         {
-          Mediator.changeHeight(target, ...params);
+          Reducer.changeHeight(target, ...params);
           break;
         }
-        case mediatorTypes.width:
+        case reducerTypes.width:
         {
-          Mediator.changeWidth(target, ...params);
+          Reducer.changeWidth(target, ...params);
           break;
         }
-        case mediatorTypes.position:
+        case reducerTypes.position:
         {
-          Mediator.changePosition(target, ...params);
+          Reducer.changePosition(target, ...params);
           break;
         }
-        case mediatorTypes.transformation:
+        case reducerTypes.transformation:
         {
-          Mediator.changeTransformation(target, ...params);
+          Reducer.changeTransformation(target, ...params);
           break;
         }
-        case mediatorTypes.delete:
+        case reducerTypes.delete:
         {
 
           this._createdObjects = this._createdObjects.splice(targetIndex, 1);
@@ -87,6 +86,7 @@ export class modelHandler
 
   render()
   {
+    debugger;
     while (this._scene.children.length) { this._scene.remove(this._scene.children[0]) } // Clear the place
 
     //TODO handle THREEJS Groups
