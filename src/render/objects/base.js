@@ -1,5 +1,16 @@
 import { hightlight, unhighlight } from '../utils/highlight';
 
+const edgeStroke = Object.freeze({
+  DASHED: 'DASHED',
+  THICK: 'THICK',
+  LINK: 'LINK'
+})
+
+const edgeGeometry = Object.freeze({
+  GEOMETRY: 'GEOMETRY',
+  PATH: 'PATH'
+})
+
 export const renderConsts = Object.freeze({
   verticeRelSize   : 4 ,     // volume per val unit
   verticeResolution: 8 ,     // how many slice segments in the sphere's circumference
@@ -14,6 +25,8 @@ export const renderConsts = Object.freeze({
   defaultColor   : 0x000000,
   scaleFactor    : 10,
   isConnectivity : true,
+  EDGE_STROKE: edgeStroke,
+  EDGE_GEOMETRY: edgeGeometry
 });
 
 export class objectBase
