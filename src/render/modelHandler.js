@@ -23,7 +23,7 @@ export class modelHandler
     return this._createdObjects;
    }
 
-  mediate(objectId, type, ...params)
+  reducer(objectId, type, ...params)
   {
     const targetIndex = this._createdObjects.findIndex(o => o._json.id == objectId);
     let target ;
@@ -32,34 +32,57 @@ export class modelHandler
       target = this._createdObjects[targetIndex];
       switch(type)
       {
+        case reducerTypes.changeHeight:
+        {
+          target.height = params[0];
+          break;
+        }
+        case reducerTypes.changeWidth:
+        {
+          target.width = params[0];
+          break;
+        }
+        case reducerTypes.changePosition:
+        {
+          target.position = params[0];
+          break;
+        }
+        case reducerTypes.changeTransformation:
+        {
+          target.transformation = params[0];
+          break;
+        }
         case reducerTypes.height:
         {
-          Reducer.changeHeight(target, ...params);
+          return target.height ;
           break;
         }
         case reducerTypes.width:
         {
-          Reducer.changeWidth(target, ...params);
+          return target.width ;
           break;
         }
         case reducerTypes.position:
         {
-          Reducer.changePosition(target, ...params);
+          return target.position ;
           break;
         }
         case reducerTypes.transformation:
         {
-          Reducer.changeTransformation(target, ...params);
+          return target.transformation ;
+          break;
+        }
+        case reducerTypes.pop:
+        {
+          return target ;
           break;
         }
         case reducerTypes.delete:
         {
-
           this._createdObjects = this._createdObjects.splice(targetIndex, 1);
         }
       }
     }
-    return target ;
   }
 
   parse()
@@ -72,7 +95,7 @@ export class modelHandler
       {
         const children = this._json[objType];
         children.forEach((node)=>{
-          const createdObject = objectFactory.create(objType, node, this.mediate.bind(this));
+          const createdObject = objectFactory.create(objType, node, this.reducer.bind(this));
           this._createdObjects.push(createdObject);
         });
       }

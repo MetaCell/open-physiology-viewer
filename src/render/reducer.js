@@ -1,4 +1,8 @@
 export const reducerTypes = {
+  changeWidth: 'changeWidth',
+  changeHeight: 'changeHeight',
+  changePosition: 'changePosition',
+  changeTransformation: 'changeTransformation',
   width: 'width',
   height: 'height',
   position: 'position',

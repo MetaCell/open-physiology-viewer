@@ -2,6 +2,7 @@ import { objectBase } from './base';
 import { objectTypes } from '../objectTypes';
 import { MaterialFactory } from '../materialFactory'
 import { renderConsts } from './base';
+import { reducerTypes } from "../reducer";
 
 const EDGE_STROKE = renderConsts.EDGE_STROKE ;
 const EDGE_GEOMETRY = renderConsts.EDGE_GEOMETRY ;
@@ -16,10 +17,10 @@ export class Link extends objectBase
   constructor(json, reducer)
   {
     super(json, objectTypes.links, reducer);
-    const start = this._reducer(this._json.source);
-    const end = this._reducer(this._json.target);
-    this._points.push(start.position);
-    this._points.push(end.position);
+    const startPosition = this._reducer(this._json.source, reducerTypes.position);
+    const endPosition = this._reducer(this._json.target, reducerTypes.position);
+    this._points.push(startPosition);
+    this._points.push(endPosition);
   }
 
   render() {
