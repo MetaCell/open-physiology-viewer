@@ -6,7 +6,6 @@ import { MaterialFactory } from '../materialFactory';
 
 export class Lyph extends objectBase
 {
-  _polygonOffsetFactor = 0;
   _layers = [];
 
   constructor(json, reducer)

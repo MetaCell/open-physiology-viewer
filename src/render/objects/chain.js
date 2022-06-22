@@ -3,9 +3,9 @@ import { objectTypes } from '../objectTypes';
 
 export class Chain extends objectBase
 {
-  constructor(json, mediate)
+  constructor(json, reducer)
   {
-    super(json, objectTypes.chains, mediate)
+    super(json, objectTypes.chains, reducer)
   }
 
   render = function() {

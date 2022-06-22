@@ -6,8 +6,6 @@ import { MaterialFactory } from '../materialFactory';
 
 export class Layer extends objectBase
 {
-  _polygonOffsetFactor = 0;
-
   constructor(json, reducer)
   {
     super(json, objectTypes.lyphs, reducer);

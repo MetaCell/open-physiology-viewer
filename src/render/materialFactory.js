@@ -31,8 +31,7 @@ export class MaterialFactory {
         return new THREE.LineMaterial(p);
     }
 
-    static createLineBasicMaterial(params = {}) {
-        let p       = defaultParams::clone()::merge(params);
+    static createLineBasicMaterial(p) {
         p.color     = colorStr2Hex(p.color);
         return new THREE.LineBasicMaterial(p);
     }

@@ -4,9 +4,7 @@
   "description": "Basal Ganglia as in basalGanglia.json but without explicitly declared nodes - generated from the tree template node ID's are used to position lyphs on borders",
   "nodes": [
     { "id": "a", "layout": {"x": -100, "y": 100, "z": 0 }, "skipLabel": true},
-    { "id": "b", "layout": { "x": 100, "y": 100, "z": 0 }, "skipLabel": true},
-    { "id": "n1" },
-    { "id": "n2" }
+    { "id": "b", "layout": { "x": 100, "y": 100, "z": 0 }, "skipLabel": true}
   ],
   "links": [
     {
@@ -15,11 +13,6 @@
       "target"  : "b",
       "length"  : 100,
       "geometry": "invisible"
-    },
-    {
-      "id"      : "hl-lnk",
-      "source"  : "n1",
-      "target"  : "n2"
     }
   ]
 }

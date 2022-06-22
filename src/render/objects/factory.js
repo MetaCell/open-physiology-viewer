@@ -5,7 +5,7 @@ import { objectTypes } from '../objectTypes';
 import { Lyph } from './lyph';
 export default class factory
 {
-  static create(type, json, mediate) {
+  static create(type, json, reducer) {
     let threeObj;
 
     if (type === objectTypes.chains) {

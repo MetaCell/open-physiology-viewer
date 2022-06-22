@@ -50,6 +50,7 @@ export class objectBase
   _radius = 0 ;
   _children = [];
   _groupped = false ;
+  _polygonOffsetFactor = 0;
 
   _reducer = undefined ;
 
@@ -81,6 +82,8 @@ export class objectBase
   set width(w) { this._width = w }
   set transformation(t) {  }
   set radius(r) { this._radius = r }
+
+  get position() { return this._position }
 
   highlight() {
     this._isHighlighted = true ;

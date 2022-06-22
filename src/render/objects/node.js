@@ -5,10 +5,9 @@ import { MaterialFactory } from '../materialFactory';
 
 export class Node extends objectBase
 {
-  _polygonOffsetFactor = 0;
-  constructor(json, mediate)
+  constructor(json, reducer)
   {
-    super(json, objectTypes.nodes, mediate);
+    super(json, objectTypes.nodes, reducer);
     this._color = json.color || this._color;
     this._val = json.val || this._val;
     if (this._json.layout)
