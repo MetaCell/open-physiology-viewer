@@ -45,9 +45,9 @@ export class objectBase
   _color = renderConsts.defaultColor ;
   _val = 1.0 ;
   _position = new THREE.Vector3();
-  _width = 0 ;
-  _height = 0 ;
-  _radius = 0 ;
+  _width = 100 ;
+  _height = 100 ;
+  _radius = 100 ;
   _children = [];
   _groupped = false ;
   _polygonOffsetFactor = 0;
@@ -78,8 +78,9 @@ export class objectBase
     this._transformedCache = clone ;
   }
 
-  set height(h) { this._height = h }
-  set width(w) { this._width = w }
+  set height(h) { if(h) this._height = h }
+  set width(w) { if(w) this._width = w }
+  set color(c) { if(c) this._color = c }
   set transformation(t) {  }
   set radius(r) { this._radius = r }
 

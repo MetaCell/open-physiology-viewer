@@ -11,12 +11,15 @@ export class Lyph extends objectBase
   constructor(json, reducer)
   {
     super(json, objectTypes.lyphs, reducer);
+    this.width = this._json.scale?.width ;
+    this.height = this._json.scale?.height ;
+    this.color = this._json.color ;
     this._groupped = true ;
   }
 
   merge() {
     const layers = this._json.layers;
-    if (layers.length > 0)
+    if (layers?.length > 0)
     {
       const layerWidth = this._width / layers.length ;
       const layerHeight = this._height ;
@@ -32,28 +35,26 @@ export class Lyph extends objectBase
   }
 
   render() {
-    const group = new THREE.Group();
+    //const group = new THREE.Group();
 
-    const width = this._json.scale.width ;
-    const height = this._json.scale.height ;
-    const geometry = ThreeDFactory.createBoxGeometry(width, height);
+    const geometry = ThreeDFactory.createBoxGeometry(this._width, this._height);
     const layers = [];
 
     const material = MaterialFactory.createMeshLambertMaterial({
-        color: this._json.color,
+        color: this.color,
         polygonOffsetFactor: this.polygonOffsetFactor
     });
 
     const parent = this._render(geometry, material, this._position);
-    group.add(parent);
+    //group.add(parent);
 
     this._layers.forEach(layer =>{
       const renderedLayer = layer.render();
       layers.push(renderedLayer);
-      group.add(layers);
+      //group.add(layers);
     });
 
-    this._cache = group ;
+    this._cache = parent ;
     
     return this._cache ;
   }

@@ -1,0 +1,9 @@
+{"id": "simple-chain",
+ "name": "simple chain test",
+ "lyphs": [{"id": "housing-lyph-1",
+            "name": "housing 1",
+            "topology": "TUBE"}],
+ "chains": [{"id": "chain-fas-1",
+             "name": "chain fas 1",
+             "housingLayers": [0],
+             "housingLyphs": ["housing-lyph-1"]}]}
