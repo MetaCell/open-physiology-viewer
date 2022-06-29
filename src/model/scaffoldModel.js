@@ -34,6 +34,46 @@ import * as XLSX from "xlsx";
  */
 export class Scaffold extends Component {
 
+<<<<<<< HEAD
+=======
+    static processScaffoldWaitingList(res, entitiesByID, namespace, added, modelClasses, castingMethod) {
+        let standalone = entitiesByID === undefined;
+
+        (entitiesByID.waitingList)::entries().forEach(([id, refs]) => {
+            let [obj, key] = refs[0];
+            if (obj && obj.class) {
+                //Only create missing scaffold resources
+                if (![$SchemaClass.Component, $SchemaClass.Region, $SchemaClass.Wire, $SchemaClass.Anchor].includes(obj.class)){
+                    return;
+                }
+                let clsName = schemaClassModels[obj.class].relClassNames[key];
+                if (clsName && !schemaClassModels[clsName].schema.abstract) {
+                    let e = Resource.createResource(id, clsName, res, modelClasses, entitiesByID, namespace, castingMethod);
+                    added.push(e.fullID);
+                }
+            }
+        });
+
+        if (added.length > 0) {
+            added.forEach(id => delete entitiesByID.waitingList[id]);
+            let resources = added.filter(id => entitiesByID[id].class !== $SchemaClass.External);
+            if (resources.length > 0) {
+                logger.warn($LogMsg.AUTO_GEN, resources);
+            }
+        }
+
+        if (standalone && entitiesByID.waitingList::keys().length > 0) {
+            logger.error($LogMsg.REF_UNDEFINED, "scaffold", entitiesByID.waitingList::keys());
+        }
+
+        res.syncRelationships(modelClasses, entitiesByID);
+
+        res.entitiesByID = entitiesByID;
+        delete res.waitingList;
+    }
+
+
+>>>>>>> origin/master
     /**
      * Create expanded Graph model from the given JSON input model
      * @param json - input model
@@ -51,7 +91,6 @@ export class Scaffold extends Component {
         let inputModel = json::cloneDeep()::defaults({id: "mainScaffold"});
         inputModel.class = inputModel.class || $SchemaClass.Scaffold;
 
-        let standalone = entitiesByID === undefined;
         //Copy existing entities to a map to enable nested model instantiation
         /**
          * @property waitingList
@@ -74,6 +113,7 @@ export class Scaffold extends Component {
 
         //Auto-create missing definitions for used references
         let added = [];
+<<<<<<< HEAD
         (entitiesByID.waitingList)::entries().forEach(([id, refs]) => {
             let [obj, key] = refs[0];
             if (obj && obj.class) {
@@ -105,6 +145,9 @@ export class Scaffold extends Component {
 
         res.entitiesByID = entitiesByID;
         delete res.waitingList;
+=======
+        Scaffold.processScaffoldWaitingList(res, entitiesByID, namespace, added, modelClasses, undefined);
+>>>>>>> origin/master
 
         (res.components||[]).forEach(component => component.includeRelated && component.includeRelated());
         res.generated = true;
