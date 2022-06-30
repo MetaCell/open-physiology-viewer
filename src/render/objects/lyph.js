@@ -10,9 +10,6 @@ const LYPH_TOPOLOGY = Object.freeze({
   BAG2: 'LINK'
 })
 
-LYPH_TOPOLOGY['BAG-'] = 'BAG-';
-LYPH_TOPOLOGY['BAG+'] = 'BAG+';
-
 export class Lyph extends objectBase
 {
   _layers = [];
@@ -25,9 +22,9 @@ export class Lyph extends objectBase
     this.height = this._json.scale?.height ;
     this.radius = this.height / 8 ;
     this.color = this._json.color ;
-    this._topology = this._json.topology;
+    this._topology = LYPH_TOPOLOGY.BAG || this._json.topology;
     this._groupped = true ;
-    initRadialTypes();
+    this.initRadialTypes();
   }
 
   initRadialTypes() {
@@ -60,26 +57,20 @@ export class Lyph extends objectBase
   render() {
     const params = { color: this._color, polygonOffsetFactor: this._polygonOffsetFactor} ;
     //thickness, height, radius, top, bottom
-    const lyph = lyphShape([this._width, this._height, this._radius, ...this._radialTypes]) ;
+    const lyph = ThreeDFactory.lyphShape([this._width, this._height, this._radius, ...this._radialTypes]) ;
+    
     let geometry = ThreeDFactory.createMeshWithBorder(lyph, params);
 
-    const layers = [];
-
-    const material = MaterialFactory.createMeshLambertMaterial({
-        color: this.color,
-        polygonOffsetFactor: this.polygonOffsetFactor
-    });
-
-    const parent = this._render(geometry, material, this._position);
+    //const parent = this._render(geometry, material, this._position);
     //group.add(parent);
 
-    this._layers.forEach(layer =>{
-      const renderedLayer = layer.render();
-      layers.push(renderedLayer);
-      //group.add(layers);
-    });
+    // this._layers.forEach(layer =>{
+    //   const renderedLayer = layer.render();
+    //   layers.push(renderedLayer);
+    //   //group.add(layers);
+    // });
 
-    this._cache = parent ;
+    this._cache = geometry ;
     
     return this._cache ;
   }

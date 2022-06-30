@@ -1,4 +1,6 @@
 import { renderConsts } from './objects/base';
+import { MaterialFactory } from './materialFactory';
+import tinycolor from 'tinycolor2';
 
 export class ThreeDFactory {
   static createSphereGeometry(radius){

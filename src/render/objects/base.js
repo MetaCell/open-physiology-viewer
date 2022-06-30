@@ -84,6 +84,12 @@ export class objectBase
   set transformation(t) {  }
   set radius(r) { this._radius = r }
 
+  get height() { return this._height }
+  get width() { return this._width }
+  get color() { return this._color }
+  get transformation() {  }
+  get radius() { return this._radius }
+
   get position() { return this._position }
 
   highlight() {
