@@ -1,8 +1,9 @@
 import { objectBase } from './base';
-import { objectTypes } from '../objectTypes';
-import { MaterialFactory } from '../materialFactory'
+import { objectTypes } from './types';
+import { MaterialFactory } from '../3D/materialFactory'
 import { renderConsts } from './base';
-import { reducerTypes } from "../reducer";
+import { reducerTypes } from "../query/reducer";
+import { getPointInBetweenByPerc } from '../autoLayout/objects'
 
 const EDGE_STROKE = renderConsts.EDGE_STROKE ;
 const EDGE_GEOMETRY = renderConsts.EDGE_GEOMETRY ;
@@ -21,6 +22,9 @@ export class Link extends objectBase
     const endPosition = this._reducer(this._json.target, reducerTypes.position);
     this._points.push(startPosition);
     this._points.push(endPosition);
+    //model position would be mid point between inner / outter 
+    const modelPosition = getPointInBetweenByPerc(startPosition, endPosition, 0.5); 
+    this.position  = modelPosition ;
   }
 
   render() {
@@ -55,17 +59,5 @@ export class Link extends objectBase
     this._pointLength = (!this.geometry || this.geometry === EDGE_GEOMETRY.LINK)? 2 : (this.geometry === EDGE_GEOMETRY.PATH)? 67 : state.edgeResolution;
 
     return obj ;
-  }
-
-  highlight() {
-    super.highlight();
-  }
-
-  hide() {
-    super.hide();
-  }
-
-  delete() {
-    super.delete();
   }
 }

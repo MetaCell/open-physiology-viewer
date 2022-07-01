@@ -32,6 +32,7 @@ export const renderConsts = Object.freeze({
 export class objectBase
 {
   _json ;
+  _id ;
   _type ;
   _hidden = false ;
   _cache = null ;
@@ -57,6 +58,7 @@ export class objectBase
   constructor(json, type, reducer)
   {
     this._json = json ;
+    this._id = json.id ;
     this._type = type ;
     this._reducer = reducer
   }
@@ -82,8 +84,10 @@ export class objectBase
   set width(w) { if(w) this._width = w }
   set color(c) { if(c) this._color = c }
   set transformation(t) {  }
-  set radius(r) { this._radius = r }
+  set radius(r) { if(r) this._radius = r }
+  set position(p) { if(p) this._position = p }
 
+  get id() { return this._id }
   get height() { return this._height }
   get width() { return this._width }
   get color() { return this._color }

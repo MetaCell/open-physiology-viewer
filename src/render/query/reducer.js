@@ -11,6 +11,11 @@ export const reducerTypes = {
   pop: 'pop'
 }
 
+export const selectorTypes = {
+  id: 'id',
+  conveyingLyph: 'conveyingLyph'
+}
+
 export class Reducer {
   static changeWidth(o, width) {
     o.width = width ;

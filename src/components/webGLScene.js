@@ -4,7 +4,7 @@ import {NgModule, Component, ViewChild, ElementRef, Input, Output, EventEmitter,
 import FileSaver  from 'file-saver';
 import {keys, values, defaults, isObject, cloneDeep, isArray } from 'lodash-bound';
 import * as THREE from 'three';
-import ThreeForceGraph from '../render/threeForceGraph';
+import ThreeForceGraph from '../render/3D/threeForceGraph';
 import {forceX, forceY, forceZ} from 'd3-force-3d';
 
 import {OrbitControls} from "three/examples/jsm/controls/OrbitControls";

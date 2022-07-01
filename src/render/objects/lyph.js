@@ -1,8 +1,7 @@
 import { objectBase } from './base';
-import { objectTypes } from '../objectTypes';
-import { reducerTypes } from '../reducer';
-import { ThreeDFactory } from '../threeDFactory'; 
-import { MaterialFactory } from '../materialFactory';
+import { objectTypes } from './types';
+import { reducerTypes, selectorTypes } from '../query/reducer';
+import { ThreeDFactory } from '../3D/threeDFactory'; 
 
 const LYPH_TOPOLOGY = Object.freeze({
   CYST: 'DASHED',
@@ -25,6 +24,11 @@ export class Lyph extends objectBase
     this._topology = LYPH_TOPOLOGY.BAG || this._json.topology;
     this._groupped = true ;
     this.initRadialTypes();
+    //link based positioning and sizing
+    const linkWidth = reducer(this.id, reducerTypes.width, selectorTypes.conveyingLyph ); //get the conveying lyph link width
+    this.width = linkWidth ;
+    const linkPosition = reducer(this.id, reducerTypes.position, selectorTypes.conveyingLyph ); //get the conveying lyph link position
+    this.position = linkPosition ;
   }
 
   initRadialTypes() {
@@ -57,33 +61,13 @@ export class Lyph extends objectBase
   render() {
     const params = { color: this._color, polygonOffsetFactor: this._polygonOffsetFactor} ;
     //thickness, height, radius, top, bottom
-    const lyph = ThreeDFactory.lyphShape([this._width, this._height, this._radius, ...this._radialTypes]) ;
+    const geometry = ThreeDFactory.lyphShape([this._width, this._height, this._radius, ...this._radialTypes]) ;
     
-    let geometry = ThreeDFactory.createMeshWithBorder(lyph, params);
+    let mesh = ThreeDFactory.createMeshWithBorder(geometry, params);
+    mesh.position.set(this.position);
 
-    //const parent = this._render(geometry, material, this._position);
-    //group.add(parent);
-
-    // this._layers.forEach(layer =>{
-    //   const renderedLayer = layer.render();
-    //   layers.push(renderedLayer);
-    //   //group.add(layers);
-    // });
-
-    this._cache = geometry ;
+    this._cache = mesh ;
     
     return this._cache ;
-  }
-
-  highlight() {
-    super.highlight();
-  }
-
-  hide() {
-    super.hide();
-  }
-
-  delete() {
-    super.delete();
   }
 }

@@ -1,5 +1,5 @@
 import { objectBase } from './base';
-import { objectTypes } from '../objectTypes';
+import { objectTypes } from './types';
 
 export class Chain extends objectBase
 {
@@ -18,17 +18,5 @@ export class Chain extends objectBase
   
     // this._cache = new THREE.Mesh(geometry, material);
     return null; 
-  }
-
-  highlight() {
-    super.highlight();
-  }
-
-  hide() {
-    super.hide();
-  }
-
-  delete() {
-    super.delete();
   }
 }

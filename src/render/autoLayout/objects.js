@@ -10,6 +10,14 @@ export function getSceneObjectByModelClass(all, className) {
   return all.filter(c => c.userData.class === className);
 }
 
+export function getPointInBetweenByPerc(pointA, pointB, percentage) {
+
+  var dir = pointB.clone().sub(pointA);
+  var len = dir.length();
+  dir = dir.normalize().multiplyScalar(len*percentage);
+  return pointA.clone().add(dir);
+
+}
 
 export function getBoundingBox(obj)
 {
@@ -128,15 +136,6 @@ export function computeGroupCenter(group)
   let position = new THREE.Vector3();
   box.getCenter(position);
   return position;
-}
-
-export function getPointInBetweenByPerc(pointA, pointB, percentage) {
-    
-  var dir = pointB?.clone().sub(pointA);
-  var len = dir?.length();
-  dir = dir?.normalize().multiplyScalar(len*percentage);
-  return pointA?.clone().add(dir);
-     
 }
 
 export function getWorldPosition(host){

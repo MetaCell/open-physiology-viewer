@@ -7,7 +7,7 @@ import {
 } from 'd3-force-3d';
 import {select as d3Select } from 'd3-selection';
 import {drag as d3Drag } from 'd3-drag';
-import { modelHandler } from "../render/modelHandler"
+import { modelHandler } from "../modelHandler"
 
 import Kapsule from 'kapsule';
 //import {modelClasses} from '../model/index';

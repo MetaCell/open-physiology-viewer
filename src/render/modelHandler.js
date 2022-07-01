@@ -1,6 +1,6 @@
-import { objectTypes } from "./objectTypes"
+import { objectTypes } from "./objects/types"
 import objectFactory from "./objects/factory"
-import { Reducer, reducerTypes } from "./reducer";
+import { reducerTypes, selectorTypes } from "./query/reducer";
 
 export class modelHandler
 {
@@ -21,11 +21,16 @@ export class modelHandler
   createdObjects()
   {
     return this._createdObjects;
-   }
+  }
 
-  reducer(objectId, type, ...params)
+  reducer(objectId, type, selectType = selectorTypes.id, ...params)
   {
-    const targetIndex = this._createdObjects.findIndex(o => o._json.id == objectId);
+    let targetIndex =  -1 ;
+    if (selectType == selectorTypes.id)
+      targetIndex = this._createdObjects.findIndex(o => o._json.id == objectId);
+    else if (selectType == selectorTypes.conveyingLyph)
+      targetIndex = this._createdObjects.findIndex(o => o._json.conveyingLyph == objectId);
+
     let target ;
     if (targetIndex > -1)
     {

@@ -1,7 +1,7 @@
 import { Node } from './node';
 import { Chain } from './chain';
 import { Link } from './link';
-import { objectTypes } from '../objectTypes';
+import { objectTypes } from './types';
 import { Lyph } from './lyph';
 export default class factory
 {

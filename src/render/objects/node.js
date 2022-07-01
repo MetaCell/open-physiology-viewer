@@ -1,7 +1,7 @@
 import { objectBase } from './base';
-import { objectTypes } from '../objectTypes';
-import { ThreeDFactory } from '../threeDFactory'; 
-import { MaterialFactory } from '../materialFactory';
+import { objectTypes } from './types';
+import { ThreeDFactory } from '../3D/threeDFactory'; 
+import { MaterialFactory } from '../3D/materialFactory';
 
 export class Node extends objectBase
 {
@@ -23,21 +23,5 @@ export class Node extends objectBase
     });
   
     return this._render(geometry, material, this._position);
-  }
-
-  highlight() {
-    super.highlight();
-  }
-
-  hide() {
-    super.hide();
-  }
-
-  delete() {
-    super.delete();
-  }
-
-  accept(renderObjectVisitor){
-    renderObjectVisitor.visit(this);
   }
 }
