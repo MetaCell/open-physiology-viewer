@@ -1,4 +1,4 @@
-import { renderConsts } from '../objects/base';
+import { renderConsts } from '../model/base';
 import { MaterialFactory } from './materialFactory';
 import tinycolor from 'tinycolor2';
 

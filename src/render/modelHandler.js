@@ -1,5 +1,5 @@
-import { objectTypes } from "./objects/types"
-import objectFactory from "./objects/factory"
+import { objectTypes } from "./model/types"
+import objectFactory from "./model/factory"
 import { reducerTypes, selectorTypes } from "./query/reducer";
 
 export class modelHandler
