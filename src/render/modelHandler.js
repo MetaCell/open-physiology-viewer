@@ -1,6 +1,6 @@
 import { objectTypes } from "./model/types"
 import objectFactory from "./model/factory"
-import { reducerTypes, selectorTypes } from "./query/reducer";
+import { reducerTypes, queryTypes } from "./query/reducer";
 
 export class modelHandler
 {
@@ -23,12 +23,12 @@ export class modelHandler
     return this._createdObjects;
   }
 
-  reducer(objectId, type, selectType = selectorTypes.id, ...params)
+  reducer(objectId, type, selectType = queryTypes.id, ...params)
   {
     let targetIndex =  -1 ;
-    if (selectType == selectorTypes.id)
-      targetIndex = this._createdObjects.findIndex(o => o._json.id == objectId);
-    else if (selectType == selectorTypes.conveyingLyph)
+    if (selectType == queryTypes.id)
+      targetIndex = this._createdObjects.findIndex(o => o._json.id == objectId );
+    else if (selectType == queryTypes.conveyingLyph)
       targetIndex = this._createdObjects.findIndex(o => o._json.conveyingLyph == objectId);
 
     let target ;
@@ -84,7 +84,7 @@ export class modelHandler
         }
         case reducerTypes.delete:
         {
-          this._createdObjects = this._createdObjects.splice(targetIndex, 1);
+          //this._createdObjects = this._createdObjects.filter(o => o._json.id == objectId );
         }
       }
     }

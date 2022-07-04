@@ -11,7 +11,7 @@ export const reducerTypes = {
   pop: 'pop'
 }
 
-export const selectorTypes = {
+export const queryTypes = {
   id: 'id',
   conveyingLyph: 'conveyingLyph'
 }

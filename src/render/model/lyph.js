@@ -1,6 +1,6 @@
 import { objectBase } from './base';
 import { objectTypes } from './types';
-import { reducerTypes, selectorTypes } from '../query/reducer';
+import { reducerTypes, queryTypes } from '../query/reducer';
 import { ThreeDFactory } from '../3D/threeDFactory'; 
 
 const LYPH_TOPOLOGY = Object.freeze({
@@ -14,9 +14,9 @@ export class Lyph extends objectBase
   _layers = [];
   _topology ;
   _radialTypes = [false, false];
-  constructor(json, reducer)
+  constructor(json, query)
   {
-    super(json, objectTypes.lyphs, reducer);
+    super(json, objectTypes.lyphs, query);
     this.width = this._json.scale?.width ;
     this.height = this._json.scale?.height ;
     this.radius = this.height / 8 ;
@@ -25,10 +25,12 @@ export class Lyph extends objectBase
     this._groupped = true ;
     this.initRadialTypes();
     //link based positioning and sizing
-    const linkWidth = reducer(this.id, reducerTypes.width, selectorTypes.conveyingLyph ); //get the conveying lyph link width
-    this.width = linkWidth ;
-    const linkPosition = reducer(this.id, reducerTypes.position, selectorTypes.conveyingLyph ); //get the conveying lyph link position
-    this.position = linkPosition ;
+    const link = query(this.id, reducerTypes.pop, queryTypes.conveyingLyph ); //get the conveying lyph link width
+    if (link)
+    {
+      this.width = link.width * 0.5 ;
+      this.position = link.position ;
+    }
   }
 
   initRadialTypes() {
@@ -49,10 +51,10 @@ export class Lyph extends objectBase
       const layerHeight = this._height ;
       layers?.forEach( l => {
         const id = l.id ?? l ;
-        const layer = this._reducer(l, reducerTypes.pop)
-        this._reducer(l.id, reducerTypes.delete); 
-        layer.width = layerWidth ;
-        layer.height = layerHeight ;
+        const layer = this._reducer(l, reducerTypes.pop, queryTypes.id)
+        this._reducer(id, reducerTypes.delete, queryTypes.id); 
+        // layer.width = layerWidth ;
+        // layer.height = layerHeight ;
         this._layers.push(layer);
       });
     }
@@ -62,10 +64,8 @@ export class Lyph extends objectBase
     const params = { color: this._color, polygonOffsetFactor: this._polygonOffsetFactor} ;
     //thickness, height, radius, top, bottom
     const geometry = ThreeDFactory.lyphShape([this._width, this._height, this._radius, ...this._radialTypes]) ;
-    
     let mesh = ThreeDFactory.createMeshWithBorder(geometry, params);
-    mesh.position.set(this.position);
-
+    mesh.position.set(this.position.x, this.position.y, 0);
     this._cache = mesh ;
     
     return this._cache ;

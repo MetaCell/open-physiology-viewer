@@ -71,26 +71,22 @@
     {
       "id": "1",
       "topology": "TUBE",
-      "supertype": "4",
-      "create3d": true
+      "supertype": "4"
     },
     {
       "id": "2a",
       "topology": "BAG",
-      "supertype": "4",
-      "create3d": true
+      "supertype": "4"
     },
     {
       "id": "2b",
       "topology": "BAG2",
-      "supertype": "4",
-      "create3d": true
+      "supertype": "4"
     },
     {
       "id": "3",
       "topology": "CYST",
-      "supertype": "4",
-      "create3d": true
+      "supertype": "4"
     },
     {
       "id": "4",
