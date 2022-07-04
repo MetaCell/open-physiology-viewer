@@ -47,26 +47,44 @@ export class Lyph extends objectBase
     const layers = this._json.layers;
     if (layers?.length > 0)
     {
-      const layerWidth = this._width / layers.length ;
-      const layerHeight = this._height ;
-      layers?.forEach( l => {
+      const layerWidth = this._width  ;
+      const layerHeight = this._height / layers.length;
+
+      const starty = -1 * this._height * 0.5 ;
+
+      layers?.forEach( (l, i) => {
         const id = l.id ?? l ;
-        const layer = this._reducer(l, reducerTypes.pop, queryTypes.id)
+        const layer = this._reducer(id, reducerTypes.pop, queryTypes.id)
+        layer.width = layerWidth ;
+        layer.height = layerHeight ;
+        layer.position.y = starty + (i * layerHeight); ;
+        layer.position.z = 10 ; //avoid z-fighting
         this._reducer(id, reducerTypes.delete, queryTypes.id); 
-        // layer.width = layerWidth ;
-        // layer.height = layerHeight ;
         this._layers.push(layer);
       });
     }
   }
 
   render() {
+    const group = new THREE.Group();
+    const hasLayers = this._layers.length > 0 ;
+
     const params = { color: this._color, polygonOffsetFactor: this._polygonOffsetFactor} ;
     //thickness, height, radius, top, bottom
     const geometry = ThreeDFactory.lyphShape([this._width, this._height, this._radius, ...this._radialTypes]) ;
     let mesh = ThreeDFactory.createMeshWithBorder(geometry, params);
     mesh.position.set(this.position.x, this.position.y, 0);
-    this._cache = mesh ;
+    group.add(mesh);
+
+    if (hasLayers)
+    {      
+      this._layers.forEach( l => {
+        const renderedLayer = l.render();
+        group.add(renderedLayer);
+      })
+    }
+
+    this._cache = group ;
     
     return this._cache ;
   }

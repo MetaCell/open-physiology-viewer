@@ -28,16 +28,4 @@ export class Layer extends objectBase
     this._cache = this._render(geometry, material, this._position);
     return this._cache ;
   }
-
-  highlight() {
-    super.highlight();
-  }
-
-  hide() {
-    super.hide();
-  }
-
-  delete() {
-    super.delete();
-  }
 }

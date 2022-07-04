@@ -1,0 +1,26 @@
+{
+  "id"  : "lyphTypes",
+  "name": "Lyph topology types: TUBE, CYST, BAG",
+  "description": "Demo model to show 2d and 3d visualization of lyph topology types",
+  "author": "Natallia Kokash",
+  "lyphs": [
+    {
+      "id": "4",
+      "isTemplate": true,
+      "color": "#ccc",
+      "layers": ["5", "6", "7"]
+    },
+    {
+      "id": "5",
+      "isTemplate": true
+    },
+    {
+      "id": "6",
+      "isTemplate": true
+    },
+    {
+      "id": "7",
+      "isTemplate": true
+    }
+  ]
+}

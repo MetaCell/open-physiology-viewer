@@ -68,7 +68,7 @@ export class objectBase
   }
 
   _render(geometry, material, position) {
-    geometry.translate(position.x, position.y, 0);
+    geometry.translate(position.x, position.y, position.z);
     const mesh = new THREE.Mesh(geometry, material);
     return mesh ;
   }
