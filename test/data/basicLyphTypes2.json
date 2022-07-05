@@ -6,24 +6,20 @@
   "lyphs": [
     {
       "id": "4",
-      "isTemplate": true,
       "color": "#ccc",
       "layers": ["5", "6", "7"]
     },
     {
       "id": "5",
-      "color": "#ff0000",
-      "isTemplate": true
+      "color": "#ff0000"
     },
     {
       "id": "6",
-      "color": "#00ff00",
-      "isTemplate": true
+      "color": "#00ff00"
     },
     {
       "id": "7",
-      "color": "#0000ff",
-      "isTemplate": true
+      "color": "#0000ff"
     }
   ]
 }

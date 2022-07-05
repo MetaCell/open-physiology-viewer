@@ -3,12 +3,16 @@ import { objectTypes } from '../objectTypes';
 import { reducerTypes } from '../reducer';
 import { ThreeDFactory } from '../threeDFactory'; 
 import { MaterialFactory } from '../materialFactory';
-
+import { _cloneDeep } from 'lodash-bound';
 export class Layer extends objectBase
 {
   constructor(json, reducer)
   {
     super(json, objectTypes.lyphs, reducer);
+  }
+
+  clone() {
+    return _cloneDeep(this);
   }
 
   merge() {

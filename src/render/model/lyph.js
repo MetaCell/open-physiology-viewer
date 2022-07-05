@@ -2,6 +2,7 @@ import { objectBase } from './base';
 import { objectTypes } from './types';
 import { reducerTypes, queryTypes } from '../query/reducer';
 import { ThreeDFactory } from '../3D/threeDFactory'; 
+import { _clone, _cloneDeep } from 'lodash-bound';
 
 const LYPH_TOPOLOGY = Object.freeze({
   CYST: 'DASHED',
@@ -41,18 +42,30 @@ export class Lyph extends objectBase
   get layers() { return this._layers ; }
 
   initRadialTypes() {
-      switch (this._topology) {
-          case LYPH_TOPOLOGY.CYST   : this._radialTypes [true, true]; break;
-          case LYPH_TOPOLOGY.BAG    : this._radialTypes[0] = true; break;
-          case LYPH_TOPOLOGY.BAG2   : this._radialTypes[1] = true; break;
-          case LYPH_TOPOLOGY["BAG-"]: this._radialTypes[0] = true; break;
-          case LYPH_TOPOLOGY["BAG+"]: this._radialTypes[1] = true; break;
-      }
+    switch (this._topology) {
+      case LYPH_TOPOLOGY.CYST   : this._radialTypes [true, true]; break;
+      case LYPH_TOPOLOGY.BAG    : this._radialTypes[0] = true; break;
+      case LYPH_TOPOLOGY.BAG2   : this._radialTypes[1] = true; break;
+      case LYPH_TOPOLOGY["BAG-"]: this._radialTypes[0] = true; break;
+      case LYPH_TOPOLOGY["BAG+"]: this._radialTypes[1] = true; break;
+    }
+  }
+
+  clone() {
+    const cloned = new Lyph(this._json, this._reducer);
+    cloned._layers = this._layers ;
+    cloned._isTemplate = false ;
+    return cloned ;
   }
 
   _mergeSuperTypeProps(superType)
   {
-    this._layers = superType.layers ;
+    const clonedLayers = [];
+    superType.layers.forEach(l => {
+      const clonedLayer = l.clone();
+      clonedLayers.push(clonedLayer);
+    })
+    this._layers =  clonedLayers;
   }
 
   mergeSuperTypes()
