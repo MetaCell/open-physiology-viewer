@@ -122,6 +122,10 @@ export class objectBase
 
   }
 
+  mergeSuperTypes() {
+
+  }
+
   accept(renderObjectVisitor){
 
   }

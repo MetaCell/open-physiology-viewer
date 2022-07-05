@@ -110,6 +110,9 @@ export class modelHandler
   merge()
   {
     this._createdObjects.forEach(o =>{ o.merge() });
+    this._createdObjects.forEach(o =>{ 
+      o.mergeSuperTypes() 
+    });
   }
 
   render()

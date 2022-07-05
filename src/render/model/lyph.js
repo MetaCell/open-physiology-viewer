@@ -14,6 +14,9 @@ export class Lyph extends objectBase
   _layers = [];
   _topology ;
   _radialTypes = [false, false];
+  _isTemplate = false ;
+  _superType = undefined ;
+
   constructor(json, query)
   {
     super(json, objectTypes.lyphs, query);
@@ -22,6 +25,9 @@ export class Lyph extends objectBase
     this.radius = this.height / 8 ;
     this._topology = LYPH_TOPOLOGY.BAG || this._json.topology;
     this._groupped = true ;
+    this._isTemplate = this._json.isTemplate ;
+    this._superType = this._json.supertype ;
+
     this.initRadialTypes();
     //link based positioning and sizing
     const link = query(this.id, reducerTypes.pop, queryTypes.conveyingLyph ); //get the conveying lyph link width
@@ -31,6 +37,8 @@ export class Lyph extends objectBase
       this.position = link.position ;
     }
   }
+
+  get layers() { return this._layers ; }
 
   initRadialTypes() {
       switch (this._topology) {
@@ -42,7 +50,23 @@ export class Lyph extends objectBase
       }
   }
 
-  merge() {
+  _mergeSuperTypeProps(superType)
+  {
+    this._layers = superType.layers ;
+  }
+
+  mergeSuperTypes()
+  {
+    if (this._superType)
+    {
+      const superType = this._reducer(this._superType, reducerTypes.pop, queryTypes.id);
+      this._mergeSuperTypeProps(superType);
+      return ;
+    }
+  }
+
+  merge() 
+  {
     const layers = this._json.layers;
     if (layers?.length > 0)
     {
@@ -62,9 +86,14 @@ export class Lyph extends objectBase
         this._layers.push(layer);
       });
     }
+    return ;
   }
 
   render() {
+    //don't render templates
+    if (this._isTemplate)
+      return null ;
+
     const group = new THREE.Group();
     const hasLayers = this._layers.length > 0 ;
 
