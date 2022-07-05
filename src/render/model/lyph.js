@@ -20,7 +20,6 @@ export class Lyph extends objectBase
     this.width = this._json.scale?.width ;
     this.height = this._json.scale?.height ;
     this.radius = this.height / 8 ;
-    this.color = this._json.color ;
     this._topology = LYPH_TOPOLOGY.BAG || this._json.topology;
     this._groupped = true ;
     this.initRadialTypes();
@@ -50,7 +49,7 @@ export class Lyph extends objectBase
       const layerWidth = this._width  ;
       const layerHeight = this._height / layers.length;
 
-      const starty = -1 * this._height * 0.5 ;
+      const starty = ( -1 * this._height * 0.5 ) + layerHeight * 0.5;
 
       layers?.forEach( (l, i) => {
         const id = l.id ?? l ;
@@ -58,7 +57,7 @@ export class Lyph extends objectBase
         layer.width = layerWidth ;
         layer.height = layerHeight ;
         layer.position.y = starty + (i * layerHeight); ;
-        layer.position.z = 10 ; //avoid z-fighting
+        layer.position.z = 0.1 ; //avoid z-fighting
         this._reducer(id, reducerTypes.delete, queryTypes.id); 
         this._layers.push(layer);
       });
@@ -73,7 +72,7 @@ export class Lyph extends objectBase
     //thickness, height, radius, top, bottom
     const geometry = ThreeDFactory.lyphShape([this._width, this._height, this._radius, ...this._radialTypes]) ;
     let mesh = ThreeDFactory.createMeshWithBorder(geometry, params);
-    mesh.position.set(this.position.x, this.position.y, 0);
+    mesh.position.set(this.position.x, this.position.y, this.position.z);
     group.add(mesh);
 
     if (hasLayers)

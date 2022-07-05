@@ -1,4 +1,5 @@
 import { hightlight, unhighlight } from '../utils/highlight';
+import { stringToColor } from '../utils/color';
 
 const edgeStroke = Object.freeze({
   DASHED: 'DASHED',
@@ -59,6 +60,7 @@ export class objectBase
   {
     this._json = json ;
     this._id = json.id ;
+    this._color = json.color ;
     this._type = type ;
     this._reducer = reducer
   }
@@ -82,7 +84,9 @@ export class objectBase
 
   set height(h) { if(h) this._height = h }
   set width(w) { if(w) this._width = w }
-  set color(c) { if(c) this._color = c }
+  set color(c) { 
+    this._color = c ? c : stringToColor(this._id); //hash id to color for constistent rendering
+  }
   set transformation(t) {  }
   set radius(r) { if(r) this._radius = r }
   set position(p) { if(p) this._position = p }
