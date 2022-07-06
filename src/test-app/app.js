@@ -29,7 +29,7 @@ import {GlobalErrorHandler} from '../services/errorHandler';
 
 import 'hammerjs';
 //import initModel from '../data/graph.json';
-import initModel from '../../test/data/basicLyphTypes3.json'
+import initModel from '../../test/data/basicLyphTypes2.json'
 import 'font-awesome/css/font-awesome.css';
 import 'jsoneditor/dist/jsoneditor.min.css';
 import "@angular/material/prebuilt-themes/deeppurple-amber.css";

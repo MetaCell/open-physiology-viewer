@@ -15,11 +15,11 @@ export class Link extends objectBase
   _pointLength = 5;
   _points = [];
 
-  constructor(json, reducer)
+  constructor(json, query)
   {
     super(json, objectTypes.links, reducer);
-    const startPosition = this._reducer(this._json.source, reducerTypes.position);
-    const endPosition = this._reducer(this._json.target, reducerTypes.position);
+    const startPosition = query(this._json.source, reducerTypes.position);
+    const endPosition = query(this._json.target, reducerTypes.position);
     this._points.push(startPosition);
     this._points.push(endPosition);
     //model position would be mid point between inner / outter 
