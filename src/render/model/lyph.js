@@ -91,7 +91,6 @@ export class Lyph extends objectBase
   {
     if (this._superType)
     {
-      debugger;
       const superType = this._reducer(this._superType, reducerTypes.pop, queryTypes.id);
       this._mergeSuperTypeProps(superType);
       return ;
