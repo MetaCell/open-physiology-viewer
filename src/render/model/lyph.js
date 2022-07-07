@@ -58,6 +58,24 @@ export class Lyph extends objectBase
     return cloned ;
   }
 
+  _autoArrangeLayers()
+  {
+    const totalLayers = this._layers.length ; 
+    if( totalLayers > 0)
+    {
+      this._layers.forEach((layer, i)=>{
+        const layerWidth = this._width  ;
+        const layerHeight = this._height / totalLayers;
+        const starty = this.position.y + ( -1 * this._height * 0.5 ) + layerHeight * 0.5;
+        layer.width = layerWidth ;
+        layer.height = layerHeight ;
+        layer.position.y = starty + (i * layerHeight); ;
+        layer.position.x = this.position.x ;
+        layer.position.z = 0.1 ; //avoid z-fighting
+      })
+    }
+  }
+
   _mergeSuperTypeProps(superType)
   {
     const clonedLayers = [];
@@ -66,12 +84,14 @@ export class Lyph extends objectBase
       clonedLayers.push(clonedLayer);
     })
     this._layers =  clonedLayers;
+    this._autoArrangeLayers();
   }
 
   mergeSuperTypes()
   {
     if (this._superType)
     {
+      debugger;
       const superType = this._reducer(this._superType, reducerTypes.pop, queryTypes.id);
       this._mergeSuperTypeProps(superType);
       return ;
@@ -83,21 +103,13 @@ export class Lyph extends objectBase
     const layers = this._json.layers;
     if (layers?.length > 0)
     {
-      const layerWidth = this._width  ;
-      const layerHeight = this._height / layers.length;
-
-      const starty = ( -1 * this._height * 0.5 ) + layerHeight * 0.5;
-
       layers?.forEach( (l, i) => {
         const id = l.id ?? l ;
         const layer = this._reducer(id, reducerTypes.pop, queryTypes.id)
-        layer.width = layerWidth ;
-        layer.height = layerHeight ;
-        layer.position.y = starty + (i * layerHeight); ;
-        layer.position.z = 0.1 ; //avoid z-fighting
         this._reducer(id, reducerTypes.delete, queryTypes.id); 
         this._layers.push(layer);
       });
+      this._autoArrangeLayers();
     }
     return ;
   }

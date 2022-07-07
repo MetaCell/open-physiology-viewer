@@ -10,8 +10,6 @@ export class Node extends objectBase
     super(json, objectTypes.nodes, reducer);
     this._color = json.color || this._color;
     this._val = json.val || this._val;
-    if (this._json.layout)
-      this._position = new THREE.Vector3(this._json.layout.x, this._json.layout.y, 0);
   }
 
   render() {

@@ -62,7 +62,9 @@ export class objectBase
     this._id = json.id ;
     this._color = json.color ;
     this._type = type ;
-    this._reducer = reducer
+    this._reducer = reducer;
+    if (this._json.layout)
+    this._position = new THREE.Vector3(this._json.layout.x, this._json.layout.y, 0);
   }
 
   fromJSON(json, modelClasses = {}, entitiesByID, namespace) {

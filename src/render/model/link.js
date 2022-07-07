@@ -17,7 +17,7 @@ export class Link extends objectBase
 
   constructor(json, query)
   {
-    super(json, objectTypes.links, reducer);
+    super(json, objectTypes.links, query);
     const startPosition = query(this._json.source, reducerTypes.position);
     const endPosition = query(this._json.target, reducerTypes.position);
     this._points.push(startPosition);
