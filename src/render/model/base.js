@@ -45,7 +45,7 @@ export class objectBase
   _mesh = null ;
   //render props
   _color = renderConsts.defaultColor ;
-  _val = 1.0 ;
+  _val = 0.25 ;
   _position = new THREE.Vector3();
   _width = 100 ;
   _height = 100 ;

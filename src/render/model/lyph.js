@@ -34,7 +34,8 @@ export class Lyph extends objectBase
     const link = query(this.id, reducerTypes.pop, queryTypes.conveyingLyph ); //get the conveying lyph link width
     if (link)
     {
-      this.width = link.width * 0.5 ;
+      this.height = link.width * 0.25 ;
+      this.width = this.height * 0.5 ;      
       this.position = link.position ;
     }
   }
@@ -69,6 +70,7 @@ export class Lyph extends objectBase
         const starty = this.position.y + ( -1 * this._height * 0.5 ) + layerHeight * 0.5;
         layer.width = layerWidth ;
         layer.height = layerHeight ;
+        layer.radius = layerHeight / 8 ;
         layer.position.y = starty + (i * layerHeight); ;
         layer.position.x = this.position.x ;
         layer.position.z = 0.1 ; //avoid z-fighting
