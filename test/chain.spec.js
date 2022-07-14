@@ -8,9 +8,14 @@ import {
 import keastSpinalTest from './data/keastSpinalTest';
 import keastSpinal from './data/keastSpinal';
 import m1 from './data/M1-model';
+import wbkgSpleen from './data/wbkgSpleen.json';
+import wbkgStomach from './data/wbkgStomach.json';
+import wbkgSynapseTest from './data/wbkgSynapseTest.json';
 import wiredChain from './data/basicChainWireConflict.json';
 import {modelClasses} from '../src/model/index';
 import {Logger} from "../src/model/logger";
+import {values} from 'lodash-bound';
+import {getRefID} from "../src/model/utils";
 
 describe("Generate groups from chain templates (Keast Spinal Test)", () => {
     let graphData;
@@ -30,7 +35,8 @@ describe("Generate groups from chain templates (Keast Spinal Test)", () => {
         expect(ch1.levels.length).to.be.equal(16);
         for (let i = 0; i < 16; i++){
             expect(ch1.levels[i]).to.have.property("levelIn");
-            expect(ch1.levels[i].levelIn).to.have.property("id").that.equals(ch1.id);
+            expect(ch1.levels[i].levelIn).to.be.an('array').that.has.length(1);
+            expect(ch1.levels[i].levelIn[0]).to.have.property("id").that.equals(ch1.id);
         }
 
         expect(graphData).to.have.property("nodes");
@@ -81,7 +87,8 @@ describe("Generate groups from chain templates (Keast Spinal Test)", () => {
         expect(t1).to.have.property("levels").that.is.an('array');
         for (let i = 0; i < 7; i++){
             expect(t1.levels[i]).to.have.property("levelIn");
-            expect(t1.levels[i].levelIn).to.have.property("id").that.equals(t1.id);
+            expect(t1.levels[i].levelIn).to.be.an('array').that.has.length(1);
+            expect(t1.levels[i].levelIn[0]).to.have.property("id").that.equals(t1.id);
         }
         expect(t1.levels.length).to.be.equal(7);
         expect(graphData).to.have.property("lyphs");
@@ -101,7 +108,7 @@ describe("Generate groups from chain templates (Keast Spinal Test)", () => {
         expect(lyphs[0].inheritedExternal).to.be.an('array');
         expect(lyphs[0].inheritedExternal).to.have.length(1);
         expect(lyphs[0].inheritedExternal[0]).to.be.instanceOf(modelClasses.External);
-        expect(lyphs[0].inheritedExternal[0]).to.have.property("id").that.equal("UBERON:0005844");
+        expect(lyphs[0].inheritedExternal[0]).to.have.property("fullID").that.equal("UBERON:0005844");
     });
 
     it("Lyphs retain own annotations", () => {
@@ -109,7 +116,7 @@ describe("Generate groups from chain templates (Keast Spinal Test)", () => {
         expect(c1).to.have.property("external");
         expect(c1.external).to.be.an('array').that.has.length(1);
         expect(c1.external[0]).to.be.instanceOf(modelClasses.External);
-        expect(c1.external[0]).to.have.property("id").that.equal("UBERON:0006469");
+        expect(c1.external[0]).to.have.property("fullID").that.equal("UBERON:0006469");
     });
 
     it("Internal lyphs are rebased into generated layers", () => {
@@ -206,11 +213,13 @@ describe("Link joint chains (Keast Spinal)", () => {
         expect(chain2).has.property('levels').that.has.length.of(10);
         for (let i = 0; i < 7; i++){
             expect(chain1.levels[i]).to.have.property("levelIn");
-            expect(chain1.levels[i].levelIn).to.have.property("id").that.equals(chain1.id);
+            expect(chain1.levels[i].levelIn).to.be.an('array').that.has.length(1);
+            expect(chain1.levels[i].levelIn[0]).to.have.property("id").that.equals(chain1.id);
         }
         for (let i = 0; i < 10; i++){
             expect(chain2.levels[i]).to.have.property("levelIn");
-            expect(chain2.levels[i].levelIn).to.have.property("id").that.equals(chain2.id);
+            expect(chain2.levels[i].levelIn).to.be.an('array').that.has.length(1);
+            expect(chain2.levels[i].levelIn[0]).to.have.property("id").that.equals(chain2.id);
         }
         expect(collapsibleLinks).has.length.of(17);
     });
@@ -297,6 +306,13 @@ describe("Validate chain wiring", () => {
         expect(end.layout).to.have.property("x").that.equals(50);
         expect(start.layout).to.have.property("y").that.equals(50);
         expect(end.layout).to.have.property("y").that.equals(50);
+
+        //Group inclusion rules - lnk1 and its ends are in the "ungrouped"
+        expect(graphData).to.have.property("groups").that.has.length(8);
+        const ungrouped = graphData.groups.find(g => g.name === "Ungrouped");
+        expect(ungrouped).not.to.be.an("undefined");
+        expect(ungrouped).to.have.property("links").that.has.length(1);
+        expect(ungrouped).to.have.property("nodes").that.has.length(2);
     });
 
     it("Conflicts in chains t2 and t3 are detected", () => {
@@ -324,6 +340,127 @@ describe("Validate chain wiring", () => {
         let {start, end} = t4.getScaffoldChainEnds();
         expect(start).to.be.an("object").that.has.property("id").that.equals("a1");
         expect(end).to.be.an("object").that.has.property("id").that.equals("a2");
+    });
+
+    it("Chain t6 has a hidden group with all hidden resources", () => {
+        const t6 = graphData.chains[5];
+        expect(t6).to.be.an('object');
+        expect(t6).to.have.property("id").that.equal("t6");
+        expect(t6.root).to.have.property("id").that.equals("n5");
+        expect(t6.leaf).to.have.property("id").that.equals("n6");
+        expect(t6.group).to.have.property("nodes").that.has.length(8);
+        let root = t6.group.nodes[0];
+        expect(root).to.be.an("object").that.has.property("id").that.equals("n5");
+        expect(root).to.have.property("hidden").that.equals(true);
+        let leaf = t6.group.nodes[7];
+        expect(leaf).to.be.an("object").that.has.property("id").that.equals("n6");
+        expect(leaf).to.have.property("hidden").that.equals(true);
+    });
+
+    after(() => {
+        graphData.logger.clear();
+    });
+});
+
+describe("Process model with multiple namespaces (Spleen)", () => {
+    let graphData;
+    before(() => {
+        graphData = modelClasses.Graph.fromJSON(wbkgSpleen, modelClasses);
+    });
+
+    it("Resources generated without duplicates (Spleen)", () => {
+        let duplicates = [];
+        let noFullID = [];
+        graphData.entitiesByID::values().forEach(r => {
+            if (r.generated) {
+                let fullID1 = "wbkg:" + getRefID(r.id);
+                let fullID2 = "spleen:" + getRefID(r.id);
+                if (graphData.entitiesByID[fullID1] && graphData.entitiesByID[fullID2]) {
+                    duplicates.push(getRefID(r.id));
+                }
+                if (!r.fullID){
+                    noFullID.push(r.id);
+                }
+            }
+        })
+        duplicates = [... new Set(duplicates)];
+        //Note: duplicates are layers and their borders for 2 copies of lyph-medulla
+        if (duplicates.length !== 14) {
+            console.log(duplicates);
+        }
+        expect(duplicates).to.have.length(14);
+        expect(noFullID).to.have.length(0);
+    });
+
+    after(() => {
+        graphData.logger.clear();
+    });
+});
+
+describe("Process model with multiple namespaces (Stomach)", () => {
+    let graphData;
+    before(() => {
+        graphData = modelClasses.Graph.fromJSON(wbkgStomach, modelClasses);
+    });
+
+    it("Resources generated without duplicates (Stomach)", () => {
+        let duplicates = [];
+        let noFullID = [];
+        graphData.entitiesByID::values().forEach(r => {
+            if (r.generated) {
+                let fullID1 = "wbkg:" + getRefID(r.id);
+                let fullID2 = "stomach:" + getRefID(r.id);
+                if (graphData.entitiesByID[fullID1] && graphData.entitiesByID[fullID2]) {
+                    duplicates.push(getRefID(r.id));
+                }
+                if (!r.fullID){
+                    noFullID.push(r.id);
+                }
+            }
+        })
+        duplicates = [... new Set(duplicates)];
+        //Note: duplicates are layers and their borders for 2 copies of lyph-medulla
+        if (duplicates.length !== 0) {
+            console.log(duplicates);
+        }
+        expect(duplicates).to.have.length(0);
+        expect(noFullID).to.have.length(0);
+    });
+
+    after(() => {
+        graphData.logger.clear();
+    });
+});
+
+
+describe("Process a model with lyph, chain and channel templates from a different namespace", () => {
+    let graphData;
+    before(() => {
+        graphData = modelClasses.Graph.fromJSON(wbkgSynapseTest, modelClasses);
+    });
+
+    it("Resources generated without duplicates", () => {
+        let duplicates = [];
+        let noFullID = [];
+        graphData.entitiesByID::values().forEach(r => {
+            if (r.generated) {
+                let fullID1 = "wbkg:" + getRefID(r.id);
+                let fullID2 = "syntest:" + getRefID(r.id);
+                if (graphData.entitiesByID[fullID1] && graphData.entitiesByID[fullID2]) {
+                    duplicates.push(getRefID(r.id));
+                }
+                if (!r.fullID){
+                    noFullID.push(r.id);
+                }
+            }
+        })
+        duplicates = [... new Set(duplicates)];
+        //Note: duplicates are layers and their borders for 2 copies of lyph-medulla
+        if (duplicates.length !== 0) {
+            console.log(duplicates);
+        }
+        expect(duplicates).to.have.length(0);
+        expect(noFullID).to.have.length(0);
     });
 
     after(() => {

@@ -4,16 +4,20 @@ import {Node} from "./verticeModel";
 import {Link} from "./edgeModel";
 import {Coalescence} from "./coalescenceModel";
 import {
-    mergeGenResource,
-    mergeGenResources,
-    findResourceByID,
-    getGenID,
-    addBorderNode,
     $Field,
     $Color,
-    $Prefix, $SchemaClass
+    $Prefix,
+    $SchemaClass,
+    mergeGenResource,
+    mergeGenResources,
+    getGenID,
+    addBorderNode,
+    refToResource,
+    getNewID,
+    genResource
 } from "./utils";
 import {logger, $LogMsg} from './logger';
+import {isObject, values} from "lodash-bound";
 
 /**
  * Channel model
@@ -22,112 +26,127 @@ import {logger, $LogMsg} from './logger';
  */
 export class Channel extends GroupTemplate {
 
-     static fromJSON(json, modelClasses = {}, entitiesByID, namespace) {
-          json.class = json.class || $SchemaClass.Channel;
-          return super.fromJSON(json, modelClasses, entitiesByID, namespace);
-     }
+    static fromJSON(json, modelClasses = {}, entitiesByID, namespace) {
+        json.class = json.class || $SchemaClass.Channel;
+        return super.fromJSON(json, modelClasses, entitiesByID, namespace);
+    }
+
+    static validateTemplate(channel) {
+        if (!channel) {
+            logger.warn($LogMsg.CHANNEL_UNDEFINED);
+            return false;
+        }
+        if (!channel.id) {
+            logger.warn($LogMsg.CHANNEL_NO_ID);
+            return false;
+        }
+        return true;
+    }
+
+    static defineChannelLyphTemplates(parentGroup){
+        //If there are channels in the model, add predefined channel lyph templates
+        let channels = parentGroup.channelsByID? parentGroup.channelsByID::values(): [];
+        if (channels.length > 0) {
+            //Important: do not change the order of lyphs in this array
+            let mcLyphs = [
+                {
+                    [$Field.id]: "mcInternal",
+                    [$Field.name]: "Internal",
+                    [$Field.supertype]: "mcTemplate",
+                    [$Field.topology]: Lyph.LYPH_TOPOLOGY.TUBE,
+                },
+                {
+                    [$Field.id]: "mcMembranous",
+                    [$Field.name]: "Membranous",
+                    [$Field.supertype]: "mcTemplate",
+                    [$Field.topology]: Lyph.LYPH_TOPOLOGY.TUBE
+                },
+                {
+                    [$Field.id]: "mcExternal",
+                    [$Field.name]: "External",
+                    [$Field.supertype]: "mcTemplate",
+                    [$Field.topology]: Lyph.LYPH_TOPOLOGY.TUBE
+                },
+                {
+                    [$Field.id]: "mcTemplate",
+                    [$Field.layers]: ["mcContent", "mcWall", "mcOuter"]
+                },
+                {
+                    [$Field.id]: "mcContent",
+                    [$Field.name]: "Content",
+                },
+                {
+                    [$Field.id]: "mcWall",
+                    [$Field.name]: "Wall",
+                },
+                {
+                    [$Field.id]: "mcOuter",
+                    [$Field.name]: "Outer",
+                }
+            ];
+            parentGroup.lyphs = parentGroup.lyphs || [];
+            parentGroup.lyphsByID = parentGroup.lyphsByID || {};
+            mcLyphs.forEach(lyph => {
+                lyph.isTemplate = true;
+                lyph = genResource(lyph, "channelModel.defineChannelLyphTemplates (Lyph)");
+                parentGroup.lyphs.push(lyph);
+                parentGroup.lyphsByID[lyph.id] = lyph;
+            });
+            parentGroup._mcLyphs = mcLyphs;
+            channels.forEach(channel => {
+                 if (channel::isObject()) {
+                     this.expandTemplate(parentGroup, channel, mcLyphs);
+                 }
+            })
+        }
+    }
 
     /**
      * Create membrane channel group
      * @param parentGroup - model resources that may be referred from the template
      * @param channel - channel template in JSON
+     * @param mcLyphs - channel lph templates
      */
-    static expandTemplate(parentGroup, channel) {
-        if (!channel){
-            logger.warn($LogMsg.CHANNEL_UNDEFINED);
+    static expandTemplate(parentGroup, channel, mcLyphs) {
+        if (!this.validateTemplate(channel)) {
             return;
         }
-
-        if (!channel.id) {
-            logger.warn($LogMsg.CHANNEL_NO_ID);
-            return;
-        }
-
+        channel.id = channel.id || getGenID($Prefix.channel, getNewID());
         channel.group = this.createTemplateGroup(channel, parentGroup);
-
-        //Important: do not change the order of lyphs in this array
-        let mcLyphs = [
-            {
-                [$Field.id]        : "mcInternal",
-                [$Field.name]      : "Internal",
-                [$Field.supertype] : "mcTemplate",
-                [$Field.topology]  : Lyph.LYPH_TOPOLOGY.TUBE,
-            },
-            {
-                [$Field.id]        : "mcMembranous",
-                [$Field.name]      : "Membranous",
-                [$Field.supertype] : "mcTemplate",
-                [$Field.topology]  : Lyph.LYPH_TOPOLOGY.TUBE
-            },
-            {
-                [$Field.id]        : "mcExternal",
-                [$Field.name]      : "External",
-                [$Field.supertype] : "mcTemplate",
-                [$Field.topology]  : Lyph.LYPH_TOPOLOGY.TUBE
-            },
-            {
-                [$Field.id]     : "mcTemplate",
-                [$Field.layers] : ["mcContent", "mcWall", "mcOuter"]
-            },
-            {
-                [$Field.id]        : "mcContent",
-                [$Field.name]      : "Content",
-            },
-            {
-                [$Field.id]        : "mcWall",
-                [$Field.name]      : "Wall",
-            },
-            {
-                [$Field.id]        : "mcOuter",
-                [$Field.name]      : "Outer",
-            }
-        ];
-        mcLyphs.forEach(lyph => {
-            lyph.isTemplate = true;
-            lyph.generated = true;
-
-            //for the first channel, add templates to the parent group
-            parentGroup.lyphs = parentGroup.lyphs || [];
-            if (!parentGroup.lyphs.find(x => x.id === lyph.id)) {
-                parentGroup.lyphs.push(lyph);
-            }
-        });
 
         let CHANNEL_LENGTH = 3;
 
         for (let i = 0; i < CHANNEL_LENGTH + 1; i++) {
-            let node = {
+            let node = genResource({
                 [$Field.id]       : getGenID(channel.id, $Prefix.node, i),
                 [$Field.color]    : $Color.InternalNode,
                 [$Field.val]      : 1,
-                [$Field.skipLabel]: true,
-                [$Field.generated]: true
-            };
+                [$Field.skipLabel]: true
+            }, "channelModel.expandTemplate (Node)");
             mergeGenResource(channel.group, parentGroup, node, $Field.nodes);
         }
         for (let i = 0; i < CHANNEL_LENGTH; i++) {
-            let lyph = {
+            let lyph = genResource({
                 [$Field.id]       : getGenID(channel.id, $Prefix.lyph, mcLyphs[i].id),
                 [$Field.supertype]: mcLyphs[i].id,
-                [$Field.skipLabel]: true,
-                [$Field.generated]: true
-            };
+                [$Field.skipLabel]: true
+            }, "channelModel.expandTemplate (Lyph)");
 
             //Each of the three MC segments will convey a Diffusive edge
             //Associate each Diffusive Edge with the material payload
 
-            let link = {
-                [$Field.id]           : getGenID(channel.id, $Prefix.link, i + 1),
-                [$Field.source]       : channel.group.nodes[i],
-                [$Field.target]       : channel.group.nodes[i + 1],
-                [$Field.conveyingLyph]: lyph.id,
-                [$Field.conveyingType]: channel.conveyingType || Link.PROCESS_TYPE.DIFFUSIVE,
+            let link = genResource({
+                [$Field.id]                : getGenID(channel.id, $Prefix.link, i + 1),
+                [$Field.source]            : channel.group.nodes[i],
+                [$Field.target]            : channel.group.nodes[i + 1],
+                [$Field.conveyingLyph]     : lyph.id,
+                [$Field.conveyingType]     : channel.conveyingType || Link.PROCESS_TYPE.DIFFUSIVE,
                 [$Field.conveyingMaterials]: channel.materials,
-                [$Field.color]        : $Color.Link,
-                [$Field.skipLabel]    : true,
-                [$Field.generated]    : true
-            };
-            if (channel.length){
+                [$Field.color]             : $Color.Link,
+                [$Field.skipLabel]         : true
+            }, "channelModel.expandTemplate.1 (Link)");
+
+            if (channel.length) {
                 link.length = channel.length / CHANNEL_LENGTH;
             }
             mergeGenResource(channel.group, parentGroup, lyph, $Field.lyphs);
@@ -138,7 +157,7 @@ export class Channel extends GroupTemplate {
 
         //This is needed to merge Channel.housighLyphs into Lyph.channels for correct template derivation (lyph templates will pass channels to subtypes)
         channel.housingLyphs.forEach(lyphRef => {
-            let lyph = findResourceByID(parentGroup.lyphs, lyphRef);
+            let lyph = refToResource(lyphRef, parentGroup, $Field.lyphs);
             if (!lyph) {
                 logger.warn($LogMsg.CHANNEL_NO_HOUSING_LYPH, lyphRef, channel.id);
                 return;
@@ -163,22 +182,22 @@ export class Channel extends GroupTemplate {
         }
 
         //This is needed to merge Lyph.channels for generated lyphs back to Channel.housingLyph
-        (parentGroup.lyphs||[]).forEach(lyph => {
+        (parentGroup.lyphs || []).forEach(lyph => {
             if (lyph.channels && lyph.channels.includes(channel.id) && !channel.housingLyphs.includes(lyph.id)) {
                 channel.housingLyphs.push(lyph.id);
             }
         });
 
-        (channel.housingLyphs||[]).forEach(lyphRef => {
-            let lyph = findResourceByID(parentGroup.lyphs, lyphRef);
+        (channel.housingLyphs || []).forEach(lyphRef => {
+            let lyph = refToResource(lyphRef, parentGroup, $Field.lyphs);
             if (!lyph) {
                 logger.warn($LogMsg.CHANNEL_NO_HOUSING_LYPH, lyphRef, channel.id);
                 return;
             }
 
-            if ((lyph.layers||[]).length !== (channel.group.links||[]).length) {
+            if ((lyph.layers || []).length !== (channel.group.links || []).length) {
                 logger.warn($LogMsg.CHANNEL_WRONG_NUM_LAYERS,
-                    lyph, (lyph.layers||[]).length, (channel.group.links||[]).length);
+                    lyph, (lyph.layers || []).length, (channel.group.links || []).length);
                 return;
             }
 
@@ -199,50 +218,49 @@ export class Channel extends GroupTemplate {
          * @returns Group
          */
         function createInstance(parentLyph) {
-            let instance = {
+            let instance = genResource({
                 [$Field.id]        : getGenID(channel.id, $Prefix.instance, parentLyph),
-                [$Field.skipLabel] : true,
-                [$Field.generated] : true
-            };
+                [$Field.skipLabel] : true
+            }, "channelMode.createInstance (Group)");
             [$Field.links, $Field.nodes, $Field.lyphs].forEach(prop => {
                 instance[prop] = instance[prop] || [];
             });
 
             //Clone first node
-            let prev_id = channel.group.nodes[0];
-            let baseSrc = findResourceByID(parentGroup.nodes, prev_id);
+            let prevID = channel.group.nodes[0];
+            let baseSrc = refToResource(prevID, parentGroup, $Field.nodes);
             if (!baseSrc) {
-                logger.error($LogMsg.CHANNEL_NO_NODE, prev_id);
+                logger.error($LogMsg.CHANNEL_NO_NODE, prevID);
                 return instance;
             }
-            let src = {
+            let src = genResource({
                 [$Field.id]: getGenID(baseSrc.id, parentLyph),
-                [$Field.skipLabel]: true,
-                [$Field.generated]: true
-            };
+                [$Field.skipLabel]: true
+            }, "channelMode.createInstance (Node)");
             Node.clone(baseSrc, src);
             mergeGenResource(instance, parentGroup, src, $Field.nodes);
 
             //Clone the rest of the chain resources: link, target node, conveying lyph
-            prev_id = src.id;
+            prevID = src.id;
             parentGroup.links.forEach(baseLnk => {
-                let baseTrg = findResourceByID(parentGroup.nodes, baseLnk.target);
-                let baseLyph = findResourceByID(parentGroup.lyphs, baseLnk.conveyingLyph);
-                let [lnk, trg, lyph] = [baseLnk, baseTrg, baseLyph].map(r => (r ? {
-                    [$Field.id]: getGenID(r.id, parentLyph),
-                    [$Field.skipLabel]: true,
-                    [$Field.generated]: true
-                } : r));
-                lnk.source = prev_id;
+                let baseTrg = refToResource(baseLnk.target, parentGroup, $Field.nodes);
+                let baseLyph = refToResource(baseLnk.conveyingLyph, parentGroup, $Field.lyphs);
+                let [lnk, trg, lyph] = [baseLnk, baseTrg, baseLyph].map(r => (
+                    r ? genResource({
+                            [$Field.id]: getGenID(r.id, parentLyph),
+                            [$Field.skipLabel]: true
+                        }, "channelModel.createInstance (Link, Node, Lyph")
+                      : r));
+                lnk.source = prevID;
                 lnk.target = trg.id;
                 lnk.conveyingLyph = lyph ? lyph.id : null;
 
                 Node.clone(baseTrg, trg);
                 Link.clone(baseLnk, lnk);
-                Lyph.clone(parentGroup.lyphs, baseLyph, lyph);
+                Lyph.clone(parentGroup, baseLyph, lyph);
 
                 mergeGenResources(instance, parentGroup, [lnk, trg, lyph]);
-                prev_id = lnk.target;
+                prevID = lnk.target;
             });
 
             return instance;
@@ -255,12 +273,11 @@ export class Channel extends GroupTemplate {
          */
         function embedToHousingLyph(lyph, instance) {
             //Embed channel to the housing lyph
-
-            let layers = (lyph.layers || []).filter(e => !!e);
+            let layers = (lyph.layers || []).filter(e => e);
             parentGroup.coalescences = parentGroup.coalescences || [];
 
             for (let i = 0; i < layers.length; i++) {
-                let layer = findResourceByID(parentGroup.lyphs, lyph.layers[i]);
+                let layer = refToResource(lyph.layers[i], parentGroup, $Field.lyphs);
                 if (!layer) {
                     logger.warn($LogMsg.CHANNEL_NO_HOUSING_LAYER, lyph, layers[i]);
                     return;
@@ -275,39 +292,38 @@ export class Channel extends GroupTemplate {
                     }
                 }
 
-                let layerCoalescence = {
+                let layerCoalescence = genResource({
                     [$Field.id]       : getGenID(layer.id, $Prefix.channel, instance.lyphs[i]),
-                    [$Field.generated]: true,
                     [$Field.topology] : Coalescence.COALESCENCE_TOPOLOGY.EMBEDDING,
                     [$Field.lyphs]    : [layer.id, instance.lyphs[i]]
-                };
+                }, "channelModel.embedToHousingLyph (Coalescence)");
 
                 parentGroup.coalescences.push(layerCoalescence);
             }
         }
     }
 
-    validate(parentGroup){
+    validate(parentGroup) {
         const MEMBRANE_ANNOTATION = "GO:0016020";
-        const findMembrane = (array) => (array||[]).find(e => (e.external || []).find(x => (x.id? x.id: x) === MEMBRANE_ANNOTATION));
-
-        let membraneLyph     = findMembrane(parentGroup.lyphs);
-        let membraneMaterial = findMembrane(parentGroup.materials);
-        if (membraneLyph || membraneMaterial) {
-            (this.housingLyphs||[]).forEach(lyph => {
-                if ((lyph.layers||[]).length > 1) {
-                    let isOk = membraneLyph && lyph.layers[1].isSubtypeOf(membraneLyph.id);
+        const membrane = parentGroup.entitiesByID[MEMBRANE_ANNOTATION];
+        if (membrane) {
+            let membraneMaterials = (membrane.annotates || []).filter(r => r.class === $SchemaClass.Material);
+            let membraneLyphs = (membrane.annotates || []).filter(r => r.class === $SchemaClass.Lyph);
+            (this.housingLyphs || []).forEach(lyph => {
+                if ((lyph.layers || []).length > 1) {
+                    let isOk = (membraneLyphs || []).find(membraneLyph => lyph.layers[1].isSubtypeOf(membraneLyph.id));
                     if (!isOk) {
-                        isOk = membraneMaterial && lyph.layers[1].containsMaterial(membraneMaterial.id);
-                        if (!isOk) {
-                            logger.warn($LogMsg.CHANNEL_WRONG_LAYER, membraneLyph? membraneLyph.id: membraneMaterial.id, lyph.layers[1]);
-                        }
+                        isOk = (membraneMaterials || []).find(membraneMaterial => lyph.layers[1].containsMaterial(membraneMaterial.id))
                     }
-                    return isOk;
+                    if (!isOk){
+                        logger.warn($LogMsg.CHANNEL_WRONG_LAYER, lyph.layers[1]);
+                    }
+                } else {
+                    logger.warn($LogMsg.CHANNEL_VALIDATION_SKIPPED);
                 }
             })
         } else {
-            logger.warn($LogMsg.CHANNEL_VALIDATION_SKIPPED);
+            logger.warn($LogMsg.CHANNEL_VALIDATION_SKIPPED, "No membrane (GO:0016020) definition!");
         }
     }
 }

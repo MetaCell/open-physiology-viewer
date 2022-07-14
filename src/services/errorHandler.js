@@ -1,5 +1,6 @@
 import {ErrorHandler, Injectable} from '@angular/core';
 import { MatSnackBar, MatSnackBarConfig} from '@angular/material/snack-bar';
+import {logger} from '../model/logger';
 
 @Injectable()
 export class GlobalErrorHandler implements ErrorHandler {

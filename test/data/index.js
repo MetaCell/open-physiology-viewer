@@ -2,11 +2,9 @@ import basicLyphTypes from './basicLyphTypes.json'
 import keastSpinalTest from './keastSpinalTest.json'
 import basalGanglia from './basalGanglia.json'                      
 import basicLyphWithNoAxis from './basicLyphWithNoAxis.json'               
-import keastSpinalTestScaffold from './keastSpinalTestScaffold.json'
 import basalGangliaAuto from './basalGangliaAuto.json'                  
 import basicSharedNodes from './basicSharedNodes.json'                  
 import neuron from './neuron.json'
-import basalGangliaInternal from './basalGangliaInternal.json'              
 import basicVillus from './basicVillus.json'                       
 import neuronTemplate from './neuronTemplate.json'
 import basic from './basic.json'                             
@@ -39,12 +37,10 @@ export const test_data = {
   keastSpinalTest,
   basalGanglia,                      
   basicLyphWithNoAxis,               
-  keastSpinalTestScaffold,
   basalGangliaAuto,   
   basicVillus, 
   basicSharedNodes,               
   neuron,
-  basalGangliaInternal,                  
   neuronTemplate,
   basic,             
   bolserLewis,              
