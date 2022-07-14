@@ -27,7 +27,7 @@ import { tagCollidingObjects } from './autoLayout/collission.js'
 
 const LYPH_H_PERCENT_MARGIN = 0.10;
 const LYPH_V_PERCENT_MARGIN = 0.10;
-const MAX_LYPH_WIDTH = 100;
+const MAX_LYPH_WIDTH = 50;
 const LYPH_LINK_SIZE_PROPORTION = 0.75;
 const DENDRYTE = "dend";
 const AXON = "axon";
@@ -326,11 +326,14 @@ export function removeDisconnectedObjects(model, joinModel) {
 
   const wiredTo = (joinModel.chains||[]).map((c) => c.wiredTo);
   const hostedBy = (joinModel.chains||[]).map((c) => c.hostedBy);
+  const housingLyph = (joinModel.chains||[]).map((c) => c.housingLyph);
 
   const connected = wiredTo
                   .concat((model.anchors||[])
                   .map((c) => c.hostedBy))
                   .concat(hostedBy)
+                  .map((c) => c.housingLyph)
+                  .concat(housingLyph)
                   .filter((c) => c !== undefined);
 
   // All cardinal nodes
