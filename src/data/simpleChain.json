@@ -1,0 +1,63 @@
+{
+  "nodes": [
+  ],
+  "links": [],
+  "id": "WBKG1",
+  "name": "TOO-map-linked reference connectivity model",
+  "scaffolds": [
+      {
+      "anchors": [
+          {
+              "id": "F",
+              "name": "Facade",
+              "layout": {
+                  "x": 0,
+                  "y": 0
+              },
+              "color": "#FFA500"
+          },
+          {
+              "id": "B",
+              "name": "BUCCAL",
+              "color": "#FF0000",
+              "hostedBy": "w-F",
+              "offset": 0
+          },
+          {
+              "id": "O",
+              "name": "junction of ampulla of Vater with duodenum",
+              "color": "#FF0000",
+              "hostedBy": "w-F",
+              "offset": 0.25
+          }
+      ],
+      "wires": [
+        {
+            "id": "w-F",
+            "geometry": "ellipse",
+            "arcCenter": "F",
+            "radius": {
+                "x": 100,
+                "y": 80
+            },
+            "stroke": "dashed"
+        },
+        {
+            "id": "w-B-O",
+            "source": "B",
+            "target": "O",
+            "geometry": "arc",
+            "arcCenter": "F",
+            "color": "#006400",
+            "stroke": "thick",
+            "hidden": true
+        }
+      ],
+      "id": "too-map",
+      "name": "TOO map",
+      "author": "B. de Bono, N. Kokash, T. Gillespie",
+      "namespace": "too",
+      "description": "this model has female topology"
+  }
+  ]
+}
