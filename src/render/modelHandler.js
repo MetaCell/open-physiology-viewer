@@ -1,6 +1,6 @@
 import { objectTypes } from "./model/types"
 import objectFactory from "./model/factory"
-import { reducerTypes, queryTypes } from "./query/reducer";
+import { queryTypes } from "./query/reducer";
 
 export class modelHandler
 {
@@ -23,71 +23,15 @@ export class modelHandler
     return this._createdObjects;
   }
 
-  reducer(objectId, type, selectType = queryTypes.id, ...params)
+  query(objectId, type, selectType = queryTypes.id, ...params)
   {
     let targetIndex =  -1 ;
     if (selectType == queryTypes.id)
       targetIndex = this._createdObjects.findIndex(o => o._json.id == objectId );
     else if (selectType == queryTypes.conveyingLyph)
       targetIndex = this._createdObjects.findIndex(o => o._json.conveyingLyph == objectId);
-
-    let target ;
-    if (targetIndex > -1)
-    {
-      target = this._createdObjects[targetIndex];
-      switch(type)
-      {
-        case reducerTypes.changeHeight:
-        {
-          target.height = params[0];
-          break;
-        }
-        case reducerTypes.changeWidth:
-        {
-          target.width = params[0];
-          break;
-        }
-        case reducerTypes.changePosition:
-        {
-          target.position = params[0];
-          break;
-        }
-        case reducerTypes.changeTransformation:
-        {
-          target.transformation = params[0];
-          break;
-        }
-        case reducerTypes.height:
-        {
-          return target.height ;
-          break;
-        }
-        case reducerTypes.width:
-        {
-          return target.width ;
-          break;
-        }
-        case reducerTypes.position:
-        {
-          return target.position ;
-          break;
-        }
-        case reducerTypes.transformation:
-        {
-          return target.transformation ;
-          break;
-        }
-        case reducerTypes.pop:
-        {
-          return target ;
-          break;
-        }
-        case reducerTypes.delete:
-        {
-          //this._createdObjects = this._createdObjects.filter(o => o._json.id == objectId );
-        }
-      }
-    }
+    const target = targetIndex >-1 ? this._createdObjects[targetIndex] : undefined ;
+    return target ;
   }
 
   parse()
@@ -100,7 +44,7 @@ export class modelHandler
       {
         const children = this._json[objType];
         children.forEach((node)=>{
-          const createdObject = objectFactory.create(objType, node, this.reducer.bind(this));
+          const createdObject = objectFactory.create(objType, node, this.query.bind(this));
           this._createdObjects.push(createdObject);
         });
       }

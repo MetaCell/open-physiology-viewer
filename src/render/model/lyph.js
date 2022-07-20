@@ -31,7 +31,7 @@ export class Lyph extends objectBase
 
     this.initRadialTypes();
     //link based positioning and sizing
-    const link = query(this.id, reducerTypes.pop, queryTypes.conveyingLyph ); //get the conveying lyph link width
+    const link = query(this.id, queryTypes.conveyingLyph ); //get the conveying lyph link width
     if (link)
     {
       this.height = link.width * 0.25 ;
