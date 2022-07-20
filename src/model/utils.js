@@ -4,14 +4,15 @@ import {
     fromPairs,
     isObject,
     isString,
+    isNumber,
+    isEmpty,
     merge,
     keys,
-    isPlainObject,
-    flatten, isArray, unionBy, mergeWith, isNumber
+    flatten, isArray, unionBy, mergeWith, values
 } from "lodash-bound";
 import * as colorSchemes from 'd3-scale-chromatic';
 import {definitions} from "./graphScheme";
-import * as XLSX from "xlsx";
+import {$LogMsg, logger} from "./logger";
 
 const colors = [...colorSchemes.schemePaired, ...colorSchemes.schemeDark2];
 
@@ -22,7 +23,14 @@ export const $SchemaType = {
     NUMBER : "number",
     BOOLEAN: "boolean"
 };
+
+export const ModelType = {
+    GRAPH  : "Graph",
+    SCAFFOLD : "Scaffold",
+};
+
 /**
+ * @property IdentifierScheme
  * @property IdentifierScheme
  * @property RGBColorScheme
  * @property InterpolateColorScheme
@@ -102,7 +110,6 @@ export const $Prefix = {
     join        : "join",   //joint node
     anchor      : "p",      //anchor point
     wire        : "wire",   //wire
-    //TODO create a separate object with generated resource ids and names
     query       : "query",  //dynamic query
     default     : "default", //default group ID
     force       : "force"
@@ -111,16 +118,40 @@ export const $Prefix = {
 export const getNewID = entitiesByID => "new-" +
     (entitiesByID? entitiesByID::keys().length : Math.random().toString(36).replace(/[^a-z]+/g, '').substr(0, 5));
 
-export const getGenID = (...args) => args.filter(arg => arg !== null).join("_");
 
-export const getFullID = (namespace, id) => {
-    if (!id) return "";
-    if (id::isString() && id.indexOf("#") > -1) {
-        //TODO log references to other namespaces for testing
+export const getRefID = (ref) => {
+    let id = getID(ref);
+    if (!id || !id::isString()) return "";
+    return id.substr(id.lastIndexOf(":") + 1);
+}
+
+export const isDefined = value => value && value::isArray() && value.length > 0;
+
+//Exclude namespace from local arguments which are often given IDs that could be defined with namespace
+export const getGenID = (...args) => args.filter(arg => arg !== null).map(arg => arg::isNumber()? arg: getRefID(arg)).join("_");
+
+export const getFullID = (namespace, ref) => {
+    if (!ref){ return ref; }
+    let id = getID(ref);
+    if (id && id::isString() && id.indexOf(":") > -1) {
         return id;
     }
-    return (namespace? namespace + "#" : "") + id;
+    const nm = (ref::isObject() && ref.namespace)? ref.namespace: namespace;
+    return (nm? nm + ":" : "") + id;
 };
+
+export const getRefNamespace = (ref, namespace= undefined) => {
+    if (ref::isObject() && ref.namespace){
+        return ref.namespace;
+    }
+    let id = getID(ref);
+    if (!id) return namespace;
+    let idx = id.lastIndexOf(":");
+    if (idx > -1) {
+        return id.substr(0, idx);
+    }
+    return namespace;
+}
 
 export const getGenName = (...args) => args.join(" ");
 
@@ -145,6 +176,7 @@ export const compareResources  = (e1, e2) => getID(e1) === getID(e2);
  * @param b - second resource or resource list
  * @returns {Resource} merged resource or a union of resource lists where resources with the same id have been merged
  */
+//FIXME Merge only resources from the same namespace???
 export function mergeResources(a, b) {
     if (a::isArray()){
         if (b::isArray()) {
@@ -159,6 +191,30 @@ export function mergeResources(a, b) {
         } else {
             return a;
         }
+    }
+}
+
+export function mergeWithModel(e, clsName, model){
+    const clsToProp = {
+        [$SchemaClass.Lyph]       : $Field.lyphs,
+        [$SchemaClass.Material]   : $Field.materials,
+        [$SchemaClass.Link]       : $Field.links,
+        [$SchemaClass.Node]       : $Field.nodes,
+        [$SchemaClass.Chain]      : $Field.chains,
+        [$SchemaClass.Tree]       : $Field.trees,
+        [$SchemaClass.Channel]    : $Field.channels,
+        [$SchemaClass.Coalescence]: $Field.coalescences,
+        [$SchemaClass.Group]      : $Field.groups,
+        [$SchemaClass.Scaffold]   : $Field.scaffolds,
+        [$SchemaClass.Anchor]     : $Field.anchors,
+        [$SchemaClass.Region]     : $Field.regions,
+        [$SchemaClass.Wire]       : $Field.wires,
+        [$SchemaClass.Component]  : $Field.components
+    }
+    let prop = clsToProp[clsName];
+    if (prop){
+        model[prop] = model[prop] || [];
+        model[prop].push(e);
     }
 }
 
@@ -179,7 +235,7 @@ export const addColor = (resources, defaultColor) => (resources||[]).filter(e =>
  * @param spec - schema definition
  */
 export const getClassName = (spec) => {
-    let ref = null;
+    let ref;
     if (spec::isString()) {
         ref = spec;
     } else {
@@ -198,39 +254,70 @@ export const getSchemaClass = (spec) => definitions[getClassName(spec)];
 /**
  * Places a given node on a given border
  * @param border
- * @param node
+ * @param nodeID
  */
-export const addBorderNode = (border, node) => {
+export const addBorderNode = (border, nodeID) => {
+    if (!border){ return; }
     border.hostedNodes = border.hostedNodes || [];
-    border.hostedNodes.push(node);
+    if (!border.hostedNodes.find(n => n === nodeID || (n && n.id === nodeID))) {
+        border.hostedNodes.push(nodeID);
+    }
 };
 
 /**
- * Find or create node with given identifier
- * @param nodes - node array
- * @param nodeID - node identifier
- */
-export function getOrCreateNode(nodes, nodeID){
-    let node  = (nodes||[]).find(e => e.id === nodeID);
-    if (!node){
-        node = {
-            [$Field.id]: nodeID,
-            [$Field.skipLabel]: true,
-            [$Field.generated]: true
-        };
-        if (!nodes){ nodes = []; }
-        nodes.push(node);
-    }
-    return node;
-}
-
-/**
- * Finds a resource object in the parent group given an object or an ID
- * @param eArray
- * @param e
+ * Finds resource object in the parent group given an object or an ID
+ * @param eArray - list of available resources
+ * @param objOrID - resource or resource identifier to look for
+ * @param namespace - namespace
  * @returns {*|void}
  */
-export const findResourceByID = (eArray, e) => e::isPlainObject()? e: (eArray||[]).find(x => !!e && x.id === e);
+export const findResourceByID = (eArray, objOrID, namespace = undefined) =>
+    objOrID::isObject()? objOrID: (eArray||[]).find(x => objOrID && x.id === objOrID && (!namespace || x.namespace === namespace));
+
+export const isIncluded = (eArray, id, namespace = undefined) =>
+    eArray.find(x => getFullID(namespace, x) === getFullID(namespace, id));
+
+
+/**
+ * Find resource object given its reference (identifier)
+ * @param ref - reference to resource (objet, identifier or full identifier)
+ * @param parentGroup
+ * @param prop
+ * @param generate
+ * @returns {undefined|*}
+ */
+export const refToResource = (ref, parentGroup, prop, generate = false) => {
+    if (!ref) return undefined;
+    if (ref::isObject()){
+        return ref;
+    }
+    let res;
+    if (parentGroup[prop + "ByID"]) {
+        res = parentGroup[prop + "ByID"][getFullID(parentGroup.namespace, ref)];
+    }
+    if (parentGroup.entitiesByID){
+        res = res || parentGroup.entitiesByID[getFullID(parentGroup.namespace, ref)];
+    }
+    //Look for generated resources in the parent group
+    res = res || findResourceByID(parentGroup[prop], ref, getRefNamespace(ref, parentGroup.namespace));
+    if (res) {
+        res.namespace = res.namespace || getRefNamespace(ref, parentGroup.namespace);
+    }
+    if (!res && generate) {
+        res = genResource({
+            [$Field.id]: getID(ref),
+            [$Field.namespace]: getRefNamespace(ref, parentGroup.namespace)
+        }, "utils.refToResource");
+        res.fullID = getFullID(res.namespace, res.id);
+        parentGroup[prop] = parentGroup[prop] || [];
+        parentGroup[prop].push(res);
+    }
+    return res;
+}
+
+export const refsToResources = (eArray, parentGroup, prop, generate = false) => {
+    return (eArray||[]).map(e => refToResource(e, parentGroup, prop, generate));
+}
 
 /**
  * Returns a list of references in the schema type specification
@@ -253,6 +340,15 @@ const getClassRefs = (spec) => {
  */
 export const isClassAbstract = (clsName) => definitions[clsName].abstract;
 
+export const genResource = (json, caller) => {
+    // Uncomment to trace who created a certain resource
+    // if (json.id === ID) {
+    //     console.error(caller, JSON.stringify(json));
+    // }
+    json.generated = true;
+    return json;
+}
+
 /**
  * Add a given resource to a given group and a parent group if it does not exist
  * @param group - a group to add resources to
@@ -262,25 +358,33 @@ export const isClassAbstract = (clsName) => definitions[clsName].abstract;
  */
 export const mergeGenResource = (group, parentGroup, resource, prop) => {
     if (!resource) { return; }
+
     if (group){
         group[prop] = group[prop] || [];
         if (resource::isObject()){
             if (resource.id){
-                if (!group[prop].find(x => x === resource.id || x.id === resource.id)){
-                    group[prop].push(resource.id);
+                resource.namespace = resource.namespace || getRefNamespace(resource, parentGroup.namespace);
+                resource.fullID = resource.fullID || getFullID(parentGroup.namespace, resource.id);
+                if (!isIncluded(group[prop], resource.id, parentGroup.namespace)){
+                    group[prop].push(resource.fullID);
                 }
             }
             resource.hidden = group.hidden;
         } else {
-            if (!group[prop].includes(resource)){
-                group[prop].push(resource);
+            if (!isIncluded(group[prop], resource, parentGroup.namespace)){
+                group[prop].push(getFullID(parentGroup.namespace, resource));
             }
         }
     }
     if (parentGroup && resource.id){
+        resource.namespace = resource.namespace || getRefNamespace(resource, parentGroup.namespace);
+        resource.fullID = resource.fullID || getFullID(parentGroup.namespace, resource.id);
         parentGroup[prop] = parentGroup[prop] || [];
         if (!parentGroup[prop].find(x => x === resource.id || x.id === resource.id)){
             parentGroup[prop].push(resource);
+            if (parentGroup[prop + "ByID"]) {
+                parentGroup[prop + "ByID"][resource.fullID] = resource;
+            }
         }
     }
 };
@@ -387,6 +491,35 @@ export const prepareForExport = (inputModel, prop, propNames, sheetNames) => {
     })
 }
 
+export function collectNestedResources(json, relFieldNames = [], groupProp){
+    relFieldNames.forEach(prop => {
+        let mapProp = [prop + "ByID"];
+        if (!json[mapProp]){
+            json[mapProp] = {};
+        }
+        if (json[prop]::isArray()){
+            (json[prop]||[]).forEach( r => {
+                if (r::isObject()) {
+                    r.id = r.id || getNewID();
+                    r.namespace = r.namespace || getRefNamespace(r.id, json.namespace);
+                    r.fullID = r.fullID || getFullID(r.namespace, r.id);
+                    if (!json[mapProp][r.fullID]) {
+                        json[mapProp][r.fullID] = r;
+                    } else {
+                        logger.error($LogMsg.RESOURCE_DUPLICATE, r.fullID, r.id);
+                    }
+                }
+            })
+        }
+        (json[groupProp]||[]).forEach(g => {
+            if ( g::isObject()) {
+                g[mapProp] = json[mapProp];
+            }
+        });
+    });
+    (json[groupProp]||[]).forEach(g => g::isObject() && collectNestedResources(g, relFieldNames, groupProp));
+}
+
 /**
  * Determines if at least one of the given schema references extend a certain class
  * @param {Array<string>} refs  - schema references
@@ -415,19 +548,13 @@ const extendsClass = (refs, value) => {
  * @param {string} className
  */
 const getFieldDefaultValues = (className) => {
-    const getDefault = (specObj) => specObj.type ?
-        specObj.type === $SchemaType.STRING ? "" :
-            specObj.type === $SchemaType.BOOLEAN ? false :
-                specObj.type === $SchemaType.NUMBER ? 0 : undefined
-            : undefined;
     const initValue = (specObj) => {
         return specObj.default?
             (specObj.default::isObject()
                 ? specObj.default::cloneDeep()
                 : specObj.default )
-            : undefined; //getDefault(specObj);
+            : undefined;
     };
-
     return definitions[className].properties::entries().map(([key, value]) => ({[key]: initValue(value)}));
 };
 
@@ -486,7 +613,7 @@ export class SchemaClass {
             recurseSchema(this.schemaClsName, (currName) => res2::merge(definitions[currName].properties));
             this.fields = res2::entries();
 
-            this.relationships = this.fields.filter(([key, spec]) => extendsClass(getClassRefs(spec), $SchemaClass.Resource));
+            this.relationships = this.fields.filter(([, spec]) => extendsClass(getClassRefs(spec), $SchemaClass.Resource));
             this.properties = this.fields.filter(([key,]) => !this.relationships.find(([key2,]) => key2 === key));
             this.fieldMap = this.fields::fromPairs();
             this.propertyMap = this.properties::fromPairs();
@@ -496,9 +623,9 @@ export class SchemaClass {
             this.relationshipNames = this.relationships.map(([key,]) => key);
             this.relClassNames = this.relationships.map(([key, spec]) => [key, getClassName(spec)])::fromPairs();
 
-            this.cudFields = this.fields.filter(([key, spec]) => !spec.readOnly);
-            this.cudProperties = this.properties.filter(([key, spec]) => !spec.readOnly);
-            this.cudRelationships = this.relationships.filter(([key, spec]) => !spec.readOnly);
+            this.cudFields = this.fields.filter(([, spec]) => !spec.readOnly);
+            this.cudProperties = this.properties.filter(([, spec]) => !spec.readOnly);
+            this.cudRelationships = this.relationships.filter(([, spec]) => !spec.readOnly);
         }
     }
 
@@ -516,8 +643,8 @@ export class SchemaClass {
      * @param clsNames - resource class names
      * @returns {any[]}
      */
-    filteredRelNames(clsNames){
-        return (this.relationships||[]).filter(([key, spec]) => !clsNames.includes(getClassName(spec))).map(([key, ]) => key);
+    filteredRelNames(clsNames = []){
+        return (this.relationships||[]).filter(([, spec]) => !clsNames.includes(getClassName(spec))).map(([key, ]) => key);
     }
 
     /**
@@ -526,7 +653,7 @@ export class SchemaClass {
      * @returns {any[]}
      */
     selectedRelNames(clsName){
-        return (this.relClassNames::entries()||[]).filter(([key, cls]) => cls === clsName).map(([key, ]) => key);
+        return (this.relClassNames::entries()||[]).filter(([, cls]) => cls === clsName).map(([key, ]) => key);
     }
 }
 
@@ -534,3 +661,139 @@ export class SchemaClass {
  * Definition of all schema-based resource classes
  */
 export const schemaClassModels = definitions::keys().map(schemaClsName => [schemaClsName, new SchemaClass(schemaClsName)])::fromPairs();
+
+
+export const assignEntityById = (res, entitiesByID, namespace, modelClasses) => {
+    if (entitiesByID){
+        if (!res.id) { res.id = getNewID(entitiesByID); }
+        if (res.id::isNumber()){
+            res.id = res.id.toString();
+            logger.warn($LogMsg.RESOURCE_NUM_ID_TO_STR, res.id);
+        }
+
+        if (entitiesByID[res.fullID]){
+            if (entitiesByID[res.fullID] !== res) {
+                logger.warn($LogMsg.RESOURCE_NOT_UNIQUE, entitiesByID[res.fullID], res);
+            }
+        } else {
+            entitiesByID[res.fullID] = res;
+            reviseWaitingList(entitiesByID.waitingList, res);
+            replaceIDs(modelClasses, entitiesByID, namespace, res);
+        }
+    }
+};
+
+
+/**
+ * Waiting list keeps objects that refer to unresolved model resources.
+ * When a new resource definition is found or created, all resources that referenced this resource by ID get the
+ * corresponding object reference instead
+ * @param {Map<string, Array<Resource>>} waitingList - associative array that maps unresolved IDs to the list of resource definitions that refer to it
+ */
+export const reviseWaitingList = (waitingList, context) => {
+    let res = context;
+    (waitingList[res.fullID]||[]).forEach(([obj, key, clsName]) => {
+        if (obj[key]::isArray()) {
+            obj[key].forEach((e, i) => {
+                if (e === res.id || e === res.fullID){
+                    if (!schemaClassModels[res.class].extendsClass(clsName)){
+                        logger.error($LogMsg.RESOURCE_TYPE_MISMATCH, obj.id, key, res.id, clsName, res.class);
+                    }
+                    obj[key][i] = res;
+                }
+            });
+        } else {
+            if (obj[key] === res.id || obj[key] === res.fullID){
+                if (!schemaClassModels[res.class].extendsClass(clsName)){
+                    logger.error($LogMsg.RESOURCE_TYPE_MISMATCH, obj.id, key, res.id, clsName, res.class);
+                }
+                obj[key] = res;
+            }
+        }
+    });
+    delete waitingList[res.fullID];
+};
+
+
+/**
+ * Replace IDs with object references
+ * @param {Object} modelClasses - map of class names vs implementation of ApiNATOMY resources
+ * @param {Map<string, Resource>} entitiesByID - map of resources in the global model
+ */
+export const replaceIDs = (modelClasses, entitiesByID, namespace, res) => {
+    const skip = value => !value || value::isObject() && value::isEmpty() || value.class && (value instanceof modelClasses[value.class]);
+
+    const createObj = (res, key, value, spec) => {
+        if (skip(value)) { return value; }
+
+        if (value::isNumber()) {
+            value = value.toString();
+            logger.warn($LogMsg.RESOURCE_NUM_VAL_TO_STR, value, res.fullID, key);
+        }
+
+        let clsName = getClassName(spec);
+        if (!clsName){
+            logger.warn($LogMsg.RESOURCE_NO_CLASS,
+                spec, value);
+            return value;
+        }
+
+        if (value && value::isString()) {
+            let fullValueID = getFullID(namespace, value);
+            if (!entitiesByID[fullValueID]) {
+                //put to a waiting list instead
+                entitiesByID.waitingList[fullValueID] = entitiesByID.waitingList[fullValueID] || [];
+                entitiesByID.waitingList[fullValueID].push([res, key, clsName]);
+                return value;
+            } else {
+                return entitiesByID[fullValueID];
+            }
+        }
+
+        if (value.id) {
+            value.fullID = value.fullID || getFullID(res.namespace, value.id);
+            if (entitiesByID[value.fullID]) {
+                if (value !== entitiesByID[value.fullID]) {
+                    //FIXME the condition hides warning for generated resources as it is often erroneously triggered by node clones in multi-namespace models
+                    if (!value.generated || !entitiesByID[value.fullID].generated) {
+                        logger.warn($LogMsg.RESOURCE_DUPLICATE, res.fullID, key, value, entitiesByID[value.fullID]);
+                    }
+                }
+                return entitiesByID[value.fullID];
+            }
+        }
+
+        //value is an object and it is not in the map
+        if (isClassAbstract(clsName)){
+            if (value.class) {
+                clsName = value.class;
+                if (!modelClasses[clsName]){
+                    logger.error($LogMsg.RESOURCE_NO_CLASS_DEF, value.class, value);
+                }
+            } else {
+                logger.error($LogMsg.RESOURCE_NO_ABSTRACT_CLASS, value);
+                return null;
+            }
+        }
+        return modelClasses[clsName].fromJSON(value, modelClasses, entitiesByID, res.namespace);
+    };
+
+    if (!modelClasses[res.class]){
+        logger.error($LogMsg.RESOURCE_NO_CLASS_DEF, modelClasses, this.class);
+        return;
+    }
+
+    let refFields = schemaClassModels[res.class].relationships;
+    // let res = this;
+    refFields.forEach(([key, spec]) => {
+        if (skip(res[key])) { return; }
+        if (res[key]::isArray()){
+            res[key] = res[key].map(value => createObj(res, key, value, spec));
+        } else {
+            res[key] = createObj(res, key, res[key], spec);
+            if (spec.type === $SchemaType.ARRAY){ //The spec expects multiple values, replace an object with an array of objects
+                res[key] = [res[key]];
+            }
+        }
+    });
+};

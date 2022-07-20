@@ -120,7 +120,7 @@
       "properties": {
         "namespace": {
           "description": "Model namespace",
-          "type": "string"
+          "$ref": "#/definitions/IdentifierScheme"
         },
         "schemaVersion": {
           "description": "ApiNATOMY JSON Schema version used for model generation",
@@ -276,7 +276,6 @@
               }
             ]
           },
-          "relatedTo": "inChain",
           "default": []
         },
         "lyphTemplate": {
@@ -323,8 +322,7 @@
               }
             ]
           },
-          "relatedTo": "bundlesChains",
-          "default": []
+          "relatedTo": "bundlesChains"
         },
         "housingChain": {
           "description": "A chain that houses the chain",
@@ -848,6 +846,32 @@
           "advanced": true,
           "relatedTo": "seedIn"
         },
+        "hostedBy": {
+          "description": "ID or reference of a region on which lyphs from the group must be projected to",
+          "anyOf": [
+            {
+              "$ref": "#/definitions/IdentifierScheme"
+            },
+            {
+              "$ref": "#/definitions/Region"
+            }
+          ],
+          "advanced": true,
+          "relatedTo": "hostedGroup"
+        },
+        "generatedFrom": {
+          "description": "Group template which was used to generate the current lyph",
+          "anyOf": [
+            {
+              "$ref": "#/definitions/IdentifierScheme"
+            },
+            {
+              "$ref": "#/definitions/GroupTemplate"
+            }
+          ],
+          "readOnly": true
+        },
+
         "nodes": {
           "description": "Nodes connect separate links into semantically meaningful groups that reflect the organizational composition of body parts and/or flow in physiological processes.",
           "type": "array",
@@ -980,31 +1004,6 @@
           "advanced": true,
           "default": []
         },
-        "generatedFrom": {
-          "description": "Group template which was used to generate the current lyph",
-          "anyOf": [
-            {
-              "$ref": "#/definitions/IdentifierScheme"
-            },
-            {
-              "$ref": "#/definitions/GroupTemplate"
-            }
-          ],
-          "readOnly": true
-        },
-        "hostedBy": {
-          "description": "ID or reference of a region on which lyphs from the group must be projected to",
-          "anyOf": [
-            {
-              "$ref": "#/definitions/IdentifierScheme"
-            },
-            {
-              "$ref": "#/definitions/Region"
-            }
-          ],
-          "advanced": true,
-          "relatedTo": "hostedGroup"
-        },
         "scaffolds": {
           "description": "Layout scaffolds that define connectivity graph layout",
           "type": "array",
@@ -1097,9 +1096,9 @@
       }
     },
     "IdentifierScheme": {
-      "description": "Resource identifier",
+      "description": "Resource reference: optional namespace with identifier",
       "type": "string",
-      "pattern": "^[a-zA-Z0-9:_./@?\\-=']{1,100}$"
+      "pattern": "^[a-zA-Z0-9:_./@?#\\-=']{1,200}$"
     },
     "JSONPathScheme": {
       "description": "JSONPath query to select resources",
@@ -1185,14 +1184,17 @@
         },
         "levelIn": {
           "description": "A chain that contains the link",
-          "anyOf": [
-            {
-              "$ref": "#/definitions/IdentifierScheme"
-            },
-            {
-              "$ref": "#/definitions/Chain"
-            }
-          ],
+          "type": "array",
+          "items": {
+            "anyOf": [
+              {
+                "$ref": "#/definitions/IdentifierScheme"
+              },
+              {
+                "$ref": "#/definitions/Chain"
+              }
+            ]
+          },
           "relatedTo": "levels",
           "advanced": true,
           "readOnly": true
@@ -1249,17 +1251,14 @@
           },
           "default": [
             "id",
+            "namespace",
             "name",
             "class",
             "source",
             "target",
             "conveyingLyph",
             "fasciculatesIn",
-            "endsIn",
-            "nextChainStartLevels",
-            "prevChainEndLevels",
-            "generated",
-            "length"
+            "endsIn"
           ]
         },
         "directed": {
@@ -1505,6 +1504,12 @@
           "relatedTo": "internalLyphs",
           "advanced": true
         },
+        "internalInLayer": {
+          "description": "Layer number of the lyph that contains the given lyph as its part",
+          "type": "number",
+          "minimum": 0,
+          "advanced": true
+        },
         "internalLyphs": {
           "description": "Lyphs that are internal parts of the given lyph",
           "type": "array",
@@ -1648,20 +1653,6 @@
           "advanced": true,
           "readOnly": true
         },
-        "inChain": {
-          "description": "Chains in which the given lyph is a housing lyph",
-          "anyOf": [
-            {
-              "$ref": "#/definitions/IdentifierScheme"
-            },
-            {
-              "$ref": "#/definitions/Chain"
-            }
-          ],
-          "advanced": true,
-          "readOnly": true,
-          "relatedTo": "lyphs"
-        },
         "seedIn": {
           "description": "Dynamic group in which the given lyph is a seed",
           "anyOf": [
@@ -1733,6 +1724,7 @@
           },
           "default": [
             "id",
+            "namespace",
             "name",
             "class",
             "topology",
@@ -1740,11 +1732,7 @@
             "conveys",
             "internalIn",
             "bundles",
-            "supertype",
-            "cloneOf",
-            "generated",
-            "width",
-            "height"
+            "supertype"
           ],
           "advanced": true
         },
@@ -1864,6 +1852,7 @@
           },
           "default": [
             "id",
+            "namespace",
             "name",
             "class",
             "sourceOf",
@@ -1871,9 +1860,7 @@
             "rootOf",
             "leafOf",
             "internalIn",
-            "clones",
-            "cloneOf",
-            "generated"
+            "cloneOf"
           ]
         },
         "hostedBy": {
@@ -1899,6 +1886,12 @@
             }
           ],
           "relatedTo": "internalNodes"
+        },
+        "internalInLayer": {
+          "description": "Layer number of the lyph that the given done must be projected to",
+          "type": "number",
+          "minimum": 0,
+          "advanced": true
         },
         "controlNodes": {
           "description": "A set of nodes that define the position of the current node as their center of mass",
@@ -2233,6 +2226,18 @@
           "description": "Unique resource identifier",
           "$ref": "#/definitions/IdentifierScheme"
         },
+        "fullID": {
+          "description": "Unique resource identifier with namespace",
+          "$ref": "#/definitions/IdentifierScheme",
+          "readOnly": true,
+          "advanced": true
+        },
+        "namespace": {
+          "description": "Resource namespace",
+          "$ref": "#/definitions/IdentifierScheme",
+          "advanced": true,
+          "readOnly": true
+        },
         "name": {
           "description": "Resource name",
           "type": "string"
@@ -2247,52 +2252,7 @@
           "type": "string",
           "advanced": true
         },
-        "external": {
-          "description": "Identifier of a resource in an external ontology (i.e., ID of an FMA term) ",
-          "type": "array",
-          "items": {
-            "anyOf": [
-              {
-                "$ref": "#/definitions/IdentifierScheme"
-              },
-              {
-                "$ref": "#/definitions/External"
-              }
-            ]
-          },
-          "relatedTo": "annotates"
-        },
-        "references": {
-          "description": "Identifier of an evidence source in an external library",
-          "type": "array",
-          "items": {
-            "anyOf": [
-              {
-                "$ref": "#/definitions/IdentifierScheme"
-              },
-              {
-                "$ref": "#/definitions/Reference"
-              }
-            ]
-          },
-          "relatedTo": "documents"
-        },
-        "ontologyTerms": {
-          "description": "External ontology term",
-          "type": "array",
-          "items": {
-            "anyOf": [
-              {
-                "$ref": "#/definitions/IdentifierScheme"
-              },
-              {
-                "$ref": "#/definitions/OntologyTerm"
-              }
-            ]
-          },
-          "relatedTo": "annotates"
-        },
-        "generated": {
+                "generated": {
           "description": "A boolean flag to mark automatically generated resources",
           "type": "boolean",
           "readOnly": true
@@ -2345,13 +2305,15 @@
           },
           "default": [
             "id",
+            "namespace",
             "name",
             "class"
           ],
           "advanced": true
         },
-        "inGroups": {
-          "description": "Specify groups to which this resource should be included",
+
+        "external": {
+          "description": "Identifier of a resource in an external ontology (i.e., ID of an FMA term) ",
           "type": "array",
           "items": {
             "anyOf": [
@@ -2359,11 +2321,41 @@
                 "$ref": "#/definitions/IdentifierScheme"
               },
               {
-                "$ref": "#/definitions/Group"
+                "$ref": "#/definitions/External"
               }
             ]
           },
-          "advanced": true
+          "relatedTo": "annotates"
+        },
+        "references": {
+          "description": "Identifier of an evidence source in an external library",
+          "type": "array",
+          "items": {
+            "anyOf": [
+              {
+                "$ref": "#/definitions/IdentifierScheme"
+              },
+              {
+                "$ref": "#/definitions/Reference"
+              }
+            ]
+          },
+          "relatedTo": "documents"
+        },
+        "ontologyTerms": {
+          "description": "External ontology term",
+          "type": "array",
+          "items": {
+            "anyOf": [
+              {
+                "$ref": "#/definitions/IdentifierScheme"
+              },
+              {
+                "$ref": "#/definitions/OntologyTerm"
+              }
+            ]
+          },
+          "relatedTo": "annotates"
         }
       }
     },
@@ -2642,8 +2634,7 @@
         },
         "radius": {
           "description": "Provides parameters a and b for elliptic wire",
-          "$ref": "#/definitions/Point2Scheme",
-          "default": {"x": 100, "y": 80}
+          "$ref": "#/definitions/Point2Scheme"
         },
         "infoFields": {
           "description": "Resource properties shown in the info panel when the resource is active, i.e., highlighted or selected",
@@ -2738,6 +2729,9 @@
       "allOf": [
         {
           "$ref": "#/definitions/Resource"
+        },
+        {
+          "$ref": "#/definitions/ScaffoldStateSchema"
         }
       ],
       "properties": {
@@ -2768,6 +2762,47 @@
               "$ref": "#/definitions/Point3Scheme"
             }
           }
+        },
+        "layout": {
+          "description": "ApiNATOMY viewer layout  parameters",
+          "type": "object",
+          "properties": {
+            "showLyphs": {
+              "description": "Show lyphs",
+              "type": "boolean",
+              "default": true
+            },
+            "showLayers": {
+              "description": "Show layers",
+              "type": "boolean",
+              "default": true
+            },
+            "showLyphs3d": {
+              "description": "Show 3d lyphs (if created, see property 'create3d')",
+              "type": "boolean",
+              "default": true
+            },
+            "showCoalescences": {
+              "description": "render graph with coalescence constraints",
+              "type": "boolean",
+              "default": true
+            },
+            "numDimensions": {
+              "description": "Number of dimensions for graph layout: 2 vs 3",
+              "type": "integer",
+              "minimum": 2,
+              "maximum": 3,
+              "default": 3
+            }
+          }
+        },
+        "showLabels": {
+          "description": "Visibility of labels for resource classes",
+          "type": "object"
+        },
+        "labelContent": {
+          "description": "Label types (id vs name) for resource classes",
+          "type": "object"
         }
       }
     },

@@ -8,7 +8,7 @@ import {
     PROCESS_TYPE,
     WIRE_GEOMETRY,
     LINK_GEOMETRY,
-    LYPH_TOPOLOGY, $SchemaClass
+    LYPH_TOPOLOGY, $SchemaClass, genResource
 } from "./utils";
 import {merge, pick} from "lodash-bound";
 import {$LogMsg, logger} from "./logger";
@@ -60,10 +60,6 @@ export class Wire extends Edge {
 
     static fromJSON(json, modelClasses = {}, entitiesByID, namespace) {
         json.id = json.id || getNewID(entitiesByID);
-        if (json.geometry !== WIRE_GEOMETRY.ELLIPSE) {
-            json.source = json.source || getGenID($Prefix.source, json.id);
-            json.target = json.target || getGenID($Prefix.target, json.id);
-        }
         json.class = json.class || $SchemaClass.Wire;
         const res = super.fromJSON(json, modelClasses, entitiesByID, namespace);
         //Wires are not in the force-field, so we set their length from end points
@@ -145,7 +141,9 @@ export class Link extends Edge {
 
     static fromJSON(json, modelClasses = {}, entitiesByID, namespace) {
         json.id = json.id || getNewID(entitiesByID);
+
         [$Field.source, $Field.target].forEach(prop => json[prop] = json[prop] || getGenID($Prefix[prop], json.id));
+
         json.class = json.class || $SchemaClass.Link;
         const res = super.fromJSON(json, modelClasses, entitiesByID, namespace);
         //If the end nodes are fixed, compute actual link's length
@@ -161,14 +159,14 @@ export class Link extends Edge {
 
     static clone(sourceLink, targetLink){
         if (!sourceLink || !targetLink) { return; }
-        targetLink.cloneOf = sourceLink.id;
+        targetLink.cloneOf = sourceLink.fullID || sourceLink.id;
         targetLink::merge(sourceLink::pick([$Field.conveyingType, $Field.conveyingMaterials, $Field.color]));
         targetLink.skipLabel = true;
         targetLink.generated = true;
     }
 
     static createCollapsibleLink(sourceID, targetID){
-        return {
+        return genResource({
             [$Field.id]         : getGenID($Prefix.link, sourceID, targetID),
             [$Field.source]     : sourceID,
             [$Field.target]     : targetID,
@@ -176,13 +174,12 @@ export class Link extends Edge {
             [$Field.length]     : 1,
             [$Field.strength]   : 1,
             [$Field.collapsible]: true,
-            [$Field.skipLabel]  : true,
-            [$Field.generated]  : true
-        };
+            [$Field.skipLabel]  : true
+        }, "edgeModel.createCollapsibleLink (Link)");
     }
 
     static createForceLink(sourceID, targetID){
-        return {
+        return genResource({
             [$Field.id]         : getGenID($Prefix.force, sourceID, targetID),
             [$Field.description]: "force",
             [$Field.source]     : sourceID,
@@ -193,9 +190,34 @@ export class Link extends Edge {
             // [$Field.color]      : "#FF0000",
             [$Field.length]     : 1,
             [$Field.strength]   : 1,
-            [$Field.skipLabel]  : true,
-            [$Field.generated]  : true
-        };
+            [$Field.skipLabel]  : true
+        },"edgeModel.createForceLink (Link)");
+    }
+
+    createForceNodes(){
+        let nodes = [null, null];
+        if (this.collapsible){
+            let housingLyphs = [null, null];
+            [$Field.source, $Field.target].forEach((prop, i) => {
+                let border = this[prop] && this[prop].hostedBy;
+                if (border) {
+                    housingLyphs[i] = border.onBorder && border.onBorder.host;
+                } else {
+                    housingLyphs[i] = this[prop] && this[prop].internalIn;
+                }
+                while (housingLyphs[i] && (housingLyphs[i].container || housingLyphs[i].host)) {
+                   housingLyphs[i] = housingLyphs[i].container || housingLyphs[i].host;
+                }
+            });
+            [$Field.source, $Field.target].forEach((prop, i) => {
+                nodes[i] = housingLyphs[i] && housingLyphs[i].conveys && housingLyphs[i].conveys[prop];
+                if (!nodes[i]){
+                    //Create a tension link between lyph end and free floating end of collapsible link
+                    nodes[i] = this[prop];
+                }
+            });
+        }
+        return nodes;
     }
 
     get isVisible(){

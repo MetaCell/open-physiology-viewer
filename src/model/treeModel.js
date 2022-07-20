@@ -6,10 +6,10 @@ import {Link} from "./edgeModel";
 import {
     mergeGenResource,
     mergeGenResources,
-    findResourceByID,
+    refToResource,
     getGenID,
     $Field,
-    $Prefix, $SchemaClass
+    $Prefix, $SchemaClass, genResource
 } from "./utils";
 import {logger, $LogMsg} from './logger';
 
@@ -36,7 +36,7 @@ export class Tree extends GroupTemplate {
             return;
         }
 
-        let chain = findResourceByID(parentGroup.chains, tree.chain);
+        let chain = refToResource(tree.chain, parentGroup, $Field.chains);
         if (!chain || !chain.group || !chain.levels){
             logger.warn($LogMsg.TREE_NO_CHAIN, tree.id, tree.chain);
             return;
@@ -57,15 +57,14 @@ export class Tree extends GroupTemplate {
         function createInstance(instanceIndex){
             tree.id = tree.id || getGenID(chain.id, $Prefix.tree);
 
-            let instance = {
-                [$Field.id]        : getGenID(tree.id, instanceIndex),
-                [$Field.generated] : true
-            };
+            let instance = genResource({
+                [$Field.id]: getGenID(tree.id, instanceIndex)
+            }, "treeModel.createInstance (Group)");
             [$Field.links, $Field.nodes, $Field.lyphs].forEach(prop => {
                 instance[prop] = instance[prop] || [];
             });
 
-            let root  = findResourceByID(parentGroup.nodes, chain.root);
+            let root = refToResource(chain.root, parentGroup, $Field.nodes);
             mergeGenResource(instance, parentGroup, root, $Field.nodes);
 
             let levels = chain.levels || [];
@@ -73,25 +72,23 @@ export class Tree extends GroupTemplate {
             let levelResources = {};
 
             for (let i = 0; i < levels.length; i++) {
-                let lnk  = findResourceByID(parentGroup.links, levels[i]);
-                let trg  = findResourceByID(parentGroup.nodes, lnk.target);
-                let lyph = findResourceByID(parentGroup.lyphs, lnk.conveyingLyph);
+                let lnk  = refToResource(levels[i], parentGroup, $Field.links);
+                let trg  = refToResource(lnk.target, parentGroup, $Field.nodes)
+                let lyph = refToResource(lnk.conveyingLyph, parentGroup, $Field.lyphs)
 
                 if (!lnk) {
                     logger.info($LogMsg.TREE_NO_LEVEL_LINK, tree.id, levels[i], i);
-                    lnk = {
+                    lnk = genResource({
                         [$Field.id]: levels[i],
-                        [$Field.skipLabel]: true,
-                        [$Field.generated]: true
-                    };
+                        [$Field.skipLabel]: true
+                    }, "treeModel.createInstance (Link)");
                 }
                 if (!trg){
                     logger.info($LogMsg.TREE_NO_LEVEL_TARGET, tree.id, lnk.id, lnk.target);
-                    trg = {
+                    trg = genResource({
                         [$Field.id]: lnk.target,
-                        [$Field.skipLabel]: true,
-                        [$Field.generated]: true
-                    };
+                        [$Field.skipLabel]: true
+                    }, "treeModel.createInstance (Node)");
                 }
 
                 if (lyph){ lyph.create3d = true; }
@@ -112,17 +109,16 @@ export class Tree extends GroupTemplate {
                         let prev_id = base[0].source;
                         for (let j = i; j < levels.length; j++) {
                             let baseResources = levelResources[j][0];
-                            let [lnk, trg, lyph] = baseResources.map(r => (r ? {
+                            let [lnk, trg, lyph] = baseResources.map(r => (r ? genResource({
                                 [$Field.id] : getGenID(r.id, i+1, m+1, k, instanceIndex),
-                                [$Field.skipLabel]: true,
-                                [$Field.generated]: true
-                            }: r));
+                                [$Field.skipLabel]: true
+                            }, "treeModel.createInstance (Link, Node, Lyph)"): r));
                             lnk.target = trg.id;
                             lnk.conveyingLyph = lyph ? lyph.id : null;
                             lnk.source = prev_id;
                             Link.clone(baseResources[0], lnk);
                             Node.clone(baseResources[1], trg);
-                            Lyph.clone(parentGroup.lyphs, baseResources[2], lyph);
+                            Lyph.clone(parentGroup, baseResources[2], lyph);
                             lyph.topology = baseResources[2].topology;
                             mergeGenResources(instance, parentGroup, [lnk, trg, lyph]);
                             levelResources[j].push([lnk, trg, lyph]);

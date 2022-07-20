@@ -8,11 +8,12 @@ import {
 
 import basalGanglia from './data/basalGanglia';
 import basalGangliaAuto from './data/basalGangliaAuto';
-import basalGangliaInternal from './data/basalGangliaInternal';
 import basic from './data/basic';
 import basicChainsInGroup from './data/basicChainsInGroup';
+import basicChainsInternalInLayer from './data/basicChainsInternalInLayer';
 import basicHostedNode from './data/basicHostedNode';
 import basicLyphOnBorder from './data/basicLyphOnBorder';
+import basicLinkWithChainsAsEnds from './data/basicLinkWithChainsAsEnds';
 import basicLyphTypes from './data/basicLyphTypes';
 import basicHousedTree from './data/basicHousedTree';
 import basicJointTrees from './data/basicJointTrees';
@@ -29,22 +30,15 @@ import neuronTreeWithLevels from './data/neuronTreeWithLevels';
 import respiratory from './data/respiratory';
 import respiratoryInternalLyphsInLayers from './data/respiratoryInternalLyphsInLayers';
 import uot from './data/uot';
+import wbkg from './data/wkbg.json';
+
 import {expectNoWarnings} from "./test.helper";
-import {modelClasses, fromJSON} from '../src/model/index';
+import {modelClasses, fromJSON, joinModels} from '../src/model/index';
 import {$LogMsg, Logger} from "../src/model/logger";
 
 describe("BasalGanglia", () => {
     let graphData;
     before(() => graphData = modelClasses.Graph.fromJSON(basalGanglia, modelClasses));
-    it("Model generated without warnings", () => expectNoWarnings(graphData));
-    after(() => {
-        graphData.logger.clear();
-    });
-});
-
-describe("BasalGangliaInternal", () => {
-    let graphData;
-    before(() => graphData = modelClasses.Graph.fromJSON(basalGangliaInternal, modelClasses));
     it("Model generated without warnings", () => expectNoWarnings(graphData));
     after(() => {
         graphData.logger.clear();
@@ -70,11 +64,40 @@ describe("Basic", () => {
 });
 
 describe("BasicChainsInGroup", () => {
-    let graphData;
-    before(() => graphData = modelClasses.Graph.fromJSON(basicChainsInGroup, modelClasses));
+    let graphData, graphData2;
+    before(() => {
+        graphData = modelClasses.Graph.fromJSON(basicChainsInGroup, modelClasses);
+        graphData2 = modelClasses.Graph.fromJSON(basicChainsInternalInLayer, modelClasses)
+    });
     it("Model generated without warnings", () => expectNoWarnings(graphData));
+    it("Model2 generated without warnings", () => expectNoWarnings(graphData2));
+
+    it("Model reassigned internal lyphs to layers", () => {
+        expect(graphData).to.have.property("lyphs");
+        expect(graphData.lyphs).to.be.an('array');
+        const snl28 = graphData.lyphs.find(e => e.id === "snl28");
+        expect(snl28).to.be.an('object');
+        expect(snl28).to.have.property("internalIn");
+        expect(snl28.internalIn).to.have.property("id").that.equal("ref_mat_K_83_K_129_6_K23_7");
+        const host = graphData.lyphs.find(e => e.id === "ref_mat_K_83_K_129_6_K23_7");
+        expect(host).to.be.an('object');
+        expect(host).to.have.property("internalLyphs").that.has.length(3);
+    });
+    it("Model2 reassigned internal lyphs to layers", () => {
+        expect(graphData2).to.have.property("lyphs");
+        expect(graphData2.lyphs).to.be.an('array');
+        const snl28 = graphData2.lyphs.find(e => e.id === "snl28");
+        expect(snl28).to.be.an('object');
+        expect(snl28).to.have.property("internalIn");
+        expect(snl28.internalIn).to.have.property("id").that.equal("ref_mat_K_83_K_129_6_K23_7");
+        const host = graphData2.lyphs.find(e => e.id === "ref_mat_K_83_K_129_6_K23_7");
+        expect(host).to.be.an('object');
+        expect(host).to.have.property("internalLyphs").that.has.length(3);
+    });
+
     after(() => {
         graphData.logger.clear();
+        graphData2.logger.clear();
     });
 });
 
@@ -101,6 +124,24 @@ describe("BasicLyphTypes", () => {
     before(() => graphData = modelClasses.Graph.fromJSON(basicLyphTypes, modelClasses));
     it("Model generated without warnings", () => expectNoWarnings(graphData));
     after(() => {
+        graphData.logger.clear();
+    });
+});
+
+describe("BasicLinkWithChainsAsEnds", () => {
+    let graphData;
+    before(() => graphData = modelClasses.Graph.fromJSON(basicLinkWithChainsAsEnds, modelClasses));
+    it("Validator detects type mismatch error", () => {
+        expect(graphData).to.have.property("logger");
+        expect(graphData.logger).to.have.property("entries");
+        expect(graphData.logger.entries).to.be.an('array').that.has.length.above(0);
+        expect(graphData.logger).to.have.property("status");
+        let logEvents = graphData.logger.entries;
+        let errors    = logEvents.filter(logEvent => logEvent.level === Logger.LEVEL.ERROR);
+        expect(errors).to.have.length(2);
+        expect(errors[0].msg === $LogMsg.RESOURCE_TYPE_MISMATCH);
+    });
+     after(() => {
         graphData.logger.clear();
     });
 });
@@ -162,7 +203,13 @@ describe("FullBody", () => {
 describe("KeastSpinal", () => {
     let graphData;
     before(() => graphData = modelClasses.Graph.fromJSON(keastSpinal, modelClasses));
-    it("Model generated without warnings", () => expectNoWarnings(graphData));
+    it("Model detects absent IDs", () => {
+        expect (graphData.logger.status).to.be.equal(Logger.STATUS.WARNING);
+        let logEvents = graphData.logger.entries;
+        let warnings = logEvents.filter(logEvent => logEvent.level === Logger.LEVEL.WARN);
+        expect(warnings).to.have.length(2);
+        expect(warnings[0].msg).to.be.equal($LogMsg.RESOURCE_NO_ID);
+    });
     after(() => {
         graphData.logger.clear();
     });
@@ -246,10 +293,20 @@ describe("Uot", () => {
     });
 });
 
-//TODO fix warning about no axis for coalescing lyphs
-// describe("UotWithChannels", () => {
-//     let graphData;
-//     before(() => graphData = modelClasses.Graph.fromJSON(uotWithChannels, modelClasses));
-//     it("Model generated without errors", () => expectNoWarnings(graphData));
-//     after(() => {});
-// });
+describe("Basic+wbkg", () => {
+    let jointModel, graphData;
+    before(() => {
+       jointModel = joinModels(basic, wbkg, false);
+       graphData = fromJSON(jointModel, modelClasses)
+    });
+
+    it("Joint model accumulates imports from both models", () => {
+        expect(graphData).to.have.property("imports");
+        //3 + 2 - 1 as the TOO-map is in both models
+        expect(graphData.imports).to.be.an('array').that.has.length(4);
+    });
+
+    after(() => {
+        graphData.logger.clear();
+    });
+})

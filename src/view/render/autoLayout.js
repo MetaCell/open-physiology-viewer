@@ -5,16 +5,13 @@ import {
  getDefaultControlPoint
 } from "../utils";
 
-import { clearByObjectType
-  , getSceneObjectByModelClass
+import { getSceneObjectByModelClass
   , getHostParentForLyph
   , getBoundingBoxSize
   , getNumberOfHorizontalLyphs
-  , getCenterPoint
   , getBoundingBox
   , getMeshBoundingBoxSize
   , getWorldPosition
-  , removeEntity
   , setMeshPos } from "./autoLayout/objects";
 
 import { trasverseHostedBy
@@ -28,11 +25,9 @@ import { rotateAroundCenter
 
 import { tagCollidingObjects } from './autoLayout/collission.js'
 
-const {Edge} = modelClasses;
-
 const LYPH_H_PERCENT_MARGIN = 0.10;
 const LYPH_V_PERCENT_MARGIN = 0.10;
-const MAX_LYPH_WIDTH = 100;
+const MAX_LYPH_WIDTH = 50;
 const LYPH_LINK_SIZE_PROPORTION = 0.75;
 const DENDRYTE = "dend";
 const AXON = "axon";
@@ -58,8 +53,8 @@ function preventZFighting(scene)
 }
 
 function fitToTargetRegion(target, source, lyphInLyph) {
-  let targetSize =  getBoundingBoxSize(target);;
-  let sourceSize =  getBoundingBoxSize(source);;
+  let targetSize =  getBoundingBoxSize(target);
+  let sourceSize =  getBoundingBoxSize(source);
 
   let sx = 1, sy = 1, sz = 1;
 
@@ -134,8 +129,11 @@ function autoSizeLyph(lyph) {
     let lyphWidth = lyphSize.max.x - lyphSize.min.x ;
     let f = 1.0 ;
     //check chain link proportion
-    const link = lyph.userData?.inChain?.levels[0] ;
-    if (link)//any link should be good enough as they are of the same size
+    //NK I removed inChain from properties as I am working on a refactoring that allows one lyph to be shared by several chains
+    //A link that the lyph conveys is shared by all chains, so this should work for you too
+    const link = lyph.userData?.conveys;
+    const layerIn = lyph?.userData?.layerIn;
+    if (link && !layerIn)//any link should be good enough as they are of the same size
     {
       const linkWidth = link.length * LYPH_LINK_SIZE_PROPORTION * 0.5;
       if (lyphWidth < linkWidth && lyphWidth < MAX_LYPH_WIDTH)
@@ -148,7 +146,7 @@ function autoSizeLyph(lyph) {
       lyphWidth = linkWidth ;
     }
     //prevent max size
-    if (lyphWidth > MAX_LYPH_WIDTH)
+    if (lyphWidth > MAX_LYPH_WIDTH && !layerIn)
     {
       f = MAX_LYPH_WIDTH / lyphWidth ;
       lyph.scale.setX(f);
@@ -326,55 +324,58 @@ function layoutChains(scene, hostChainDic, links)
 
 export function removeDisconnectedObjects(model, joinModel) {
 
-  const wiredTo = joinModel.chains.map((c) => c.wiredTo);
-  const hostedBy = joinModel.chains.map((c) => c.hostedBy);
+  const wiredTo = (joinModel.chains||[]).map((c) => c.wiredTo);
+  const hostedBy = (joinModel.chains||[]).map((c) => c.hostedBy);
+  const housingLyph = (joinModel.chains||[]).map((c) => c.housingLyph);
 
   const connected = wiredTo
-                  .concat(model.anchors
+                  .concat((model.anchors||[])
                   .map((c) => c.hostedBy))
                   .concat(hostedBy)
+                  .map((c) => c.housingLyph)
+                  .concat(housingLyph)
                   .filter((c) => c !== undefined);
-
 
   // All cardinal nodes
   const anchorsUsed = [];
-  model.anchors.forEach( anchor => { 
+  (model.anchors||[]).forEach( anchor => {
       anchor.cardinalNode ? anchorsUsed.push(anchor.id) : null
   });
   
-  // Wires of F and D, the outer layers of the TOO map
-  const outerWires = model.components.find( wire => wire.id === "wires-f");
-  outerWires.wires.concat(model.components.find( wire => wire.id === "wires-d")).wires;
-  outerWires.wires = outerWires.wires.filter( wireId => {
-      const foundWire = model.wires.find( w => w.id === wireId );
+  //Wires of F and D, the outer layers of the TOO map
+  //NK: FIXME We cannot rely on model fixed IDs in code
+  const outerWireComponent = (model.components||[]).find( c => c.id === "wires-f");
+  if (outerWireComponent){
+    outerWireComponent.wires.concat((model.components || []).find(wire => wire.id === "wires-d")).wires;
+    outerWireComponent.wires = outerWireComponent.wires.filter(wireId => {
+      const foundWire = model.wires.find(w => w.id === wireId);
       return anchorsUsed.indexOf(foundWire?.source) > -1 && anchorsUsed.indexOf(foundWire?.target) > -1
-  });
+    });
+  }
 
   const connectedWires = wiredTo.concat(hostedBy);
   // Other anchors used by the connectivity model lyphs and chains
   connectedWires.forEach( wireId => {
      if ( wireId !== undefined ){
-      const wire = model.wires.find( wire => wireId === wire.id );
+      const wire = (model.wires||[]).find( wire => wireId === wire.id );
       if ( wire ) {
-        if ( anchorsUsed.indexOf(wire.source) == -1 ){
+        if ( anchorsUsed.indexOf(wire.source) === -1 ){
             anchorsUsed.push(wire.source);
         }
-        if ( anchorsUsed.indexOf(wire.target) == -1 ){
+        if ( anchorsUsed.indexOf(wire.target) === -1 ){
             anchorsUsed.push(wire.target);
         }
       }
     }
   });
 
-  const updatedModel = Object.assign(model, 
+  return Object.assign(model,
       { 
-          regions: model.regions.filter((r) => connected.indexOf(r.id) > -1 ),
-          wires:  model.wires.filter((r) => connected.indexOf(r.id) > -1 || outerWires.wires.indexOf(r.id) > -1),
-          anchors : model.anchors.filter((r) => (anchorsUsed.indexOf(r.id) > -1 ))
+          regions: (model.regions||[]).filter((r) => connected.indexOf(r.id) > -1 ),
+          wires  : (model.wires||[]).filter((r) => connected.indexOf(r.id) > -1 || (outerWireComponent && (outerWireComponent.wires||[]).indexOf(r.id) > -1)),
+          anchors: (model.anchors||[]).filter((r) => (anchorsUsed.indexOf(r.id) > -1 ))
       }
   );
-
-  return updatedModel;
 }
 
 function autoLayoutChains(scene, graphData, links){
