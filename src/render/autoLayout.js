@@ -3,7 +3,7 @@ import { Vector2, Vector3 } from "three";
 import {$Field, modelClasses} from "../model";
 import {
  getDefaultControlPoint
-} from "./utils";
+} from "./utils/geometry";
 
 import { clearByObjectType
   , getSceneObjectByModelClass
