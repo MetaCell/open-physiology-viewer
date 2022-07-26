@@ -34,7 +34,7 @@ import {
 } from '../model/index';
 
 import 'hammerjs';
-import initModel from '../data/graph.json';
+import initModel from '../../test/data/basicLyphTypes.json'
 
 import 'font-awesome/css/font-awesome.css';
 import 'jsoneditor/dist/jsoneditor.min.css';
@@ -48,7 +48,7 @@ import {ImportDialog} from "../components/gui/importDialog";
 import {WebGLSceneModule} from '../components/webGLScene';
 import {enableProdMode} from '@angular/core';
 
-import { removeDisconnectedObjects } from '../../src/view/render/autoLayout'
+import { removeDisconnectedObjects } from '../../src/render/autoLayout'
 
 import { test_data } from '../../test/data'
 

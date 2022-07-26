@@ -1,9 +1,9 @@
 import { over } from "lodash";
 import { Vector2, Vector3 } from "three";
-import {$Field, modelClasses} from "../../model";
+import {$Field, modelClasses} from "../model";
 import {
  getDefaultControlPoint
-} from "../utils";
+} from "./utils";
 
 import { clearByObjectType
   , getSceneObjectByModelClass

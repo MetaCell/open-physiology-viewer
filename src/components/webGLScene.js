@@ -7,7 +7,7 @@ import {MatDialog, MatDialogModule} from '@angular/material/dialog';
 import FileSaver  from 'file-saver';
 import {keys, values, defaults, isObject, cloneDeep, isArray } from 'lodash-bound';
 import * as THREE from 'three';
-import ThreeForceGraph from '../view/threeForceGraph';
+import ThreeForceGraph from '../render/3D/threeForceGraph';
 import {forceX, forceY, forceZ} from 'd3-force-3d';
 
 import {LogInfoModule, LogInfoDialog} from "./gui/logInfoDialog";
@@ -17,13 +17,10 @@ import {OrbitControls} from "three/examples/jsm/controls/OrbitControls";
 import {$Field, $SchemaClass} from "../model";
 import {QuerySelectModule, QuerySelectDialog} from "./gui/querySelectDialog";
 import {HotkeyModule, HotkeysService, Hotkey, HotkeysCheatsheetComponent} from 'angular2-hotkeys';
-import { highlight, unhighlight } from '../view/render/autoLayout/objects';
+import { highlight, unhighlight } from '../render/utils/highlight';
 import {$LogMsg} from "../model/logger";
 
 const WindowResize = require('three-window-resize');
-
-import { autoLayout, layoutLabelCollide } from '../view/render/autoLayout'
-
 
 /**
  * @ignore
