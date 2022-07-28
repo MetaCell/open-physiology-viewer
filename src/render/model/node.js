@@ -14,7 +14,7 @@ export class Node extends objectBase
     const geometry = ThreeDFactory.createSphereGeometry(this._val);
     
     const material = MaterialFactory.createMeshLambertMaterial({
-        color: this._color,
+        color: this.color,
         polygonOffsetFactor: this._polygonOffsetFactor
     });
   

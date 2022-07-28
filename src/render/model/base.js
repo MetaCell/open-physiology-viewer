@@ -59,12 +59,12 @@ export class objectBase
   constructor(model, type, reducer)
   {
     this._generatedModel = model ;
-    this._id = json.id ;
-    this._color = json.color ;
+    this._id = model.id ;
+    this._color = model.color ;
     this._type = type ;
     this._reducer = reducer;
-    if (this._json.layout)
-    this._position = new THREE.Vector3(this._json.layout.x, this._json.layout.y, 0);
+    if (this.model.layout)
+      this._position = new THREE.Vector3(this.model.layout.x, this.model.layout.y, 0);
   }
 
   fromJSON(json, modelClasses = {}, entitiesByID, namespace) {

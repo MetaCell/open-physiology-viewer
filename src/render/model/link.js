@@ -2,11 +2,14 @@ import { objectBase } from './base';
 import { objectTypes } from './types';
 import { MaterialFactory } from '../3D/materialFactory'
 import { renderConsts } from './base';
-import { reducerTypes } from "../query/reducer";
-import { getPointInBetweenByPerc } from '../autoLayout/objects'
 
 const EDGE_STROKE = renderConsts.EDGE_STROKE ;
 const EDGE_GEOMETRY = renderConsts.EDGE_GEOMETRY ;
+
+function layoutToVecto3(layout)
+{
+  return new THREE.Vector3(layout.x, layout.y, layout.z)
+}
 
 export class Link extends objectBase
 {
@@ -18,30 +21,35 @@ export class Link extends objectBase
   constructor(model, query)
   {
     super(model, objectTypes.links, query);
+    if(!model._points)
+      this._points = [layoutToVecto3(model.source.layout), layoutToVecto3(model.target.layout)]
   }
 
   render() {
     let material;
-    if (this._stroke === EDGE_STROKE.DASHED) {
-      material = MaterialFactory.createLineDashedMaterial({color: this.color});
+    const stroke    = this.model.stroke ;
+    const color     = this.model.color ;
+    const linewidth = this.model.lineWidth ;
+    if (stroke === EDGE_STROKE.DASHED) {
+      material = MaterialFactory.createLineDashedMaterial({color: color});
     } else {
       //Thick lines
-      if (this._stroke === EDGE_STROKE.THICK) {
+      if (stroke=== EDGE_STROKE.THICK) {
         // Line 2 method: draws thick lines
         material = MaterialFactory.createLine2Material({
-          color: this.color,
-          lineWidth: this.lineWidth,
-          polygonOffsetFactor: this.polygonOffsetFactor
+          color: color,
+          lineWidth: linewidth,
+          polygonOffsetFactor: this._polygonOffsetFactor
         });
       } else {
         //Normal lines
         material = MaterialFactory.createLineBasicMaterial({
-          color: this._color
+          color: color
         });
       }
     }
     let geometry, obj;
-    if (this._stroke === EDGE_STROKE.THICK) {
+    if (stroke === EDGE_STROKE.THICK) {
       geometry = new THREE.LineGeometry();
       obj = new THREE.Line2(geometry, material);
     } else {
