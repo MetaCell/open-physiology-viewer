@@ -32,7 +32,7 @@ export const renderConsts = Object.freeze({
 
 export class objectBase
 {
-  _json ;
+  _generatedModel ;
   _id ;
   _type ;
   _hidden = false ;
@@ -56,9 +56,9 @@ export class objectBase
 
   _reducer = undefined ;
 
-  constructor(json, type, reducer)
+  constructor(model, type, reducer)
   {
-    this._json = json ;
+    this._generatedModel = model ;
     this._id = json.id ;
     this._color = json.color ;
     this._type = type ;
@@ -99,6 +99,8 @@ export class objectBase
   get color() { return this._color }
   get transformation() {  }
   get radius() { return this._radius }
+
+  get model() { return this._generatedModel }
 
   get position() { return this._position }
 

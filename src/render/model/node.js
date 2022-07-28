@@ -5,11 +5,9 @@ import { MaterialFactory } from '../3D/materialFactory';
 
 export class Node extends objectBase
 {
-  constructor(json, reducer)
+  constructor(model, reducer)
   {
-    super(json, objectTypes.nodes, reducer);
-    this._color = json.color || this._color;
-    this._val = json.val || this._val;
+    super(model, objectTypes.nodes, reducer);
   }
 
   render() {

@@ -4,13 +4,13 @@ import { queryTypes } from "./query/reducer";
 
 export class modelHandler
 {
-  _json ;
+  _model ;
   _createdObjects = [];
   _renderedObjects = [];
   _secene ;
 
-  constructor(json, scene) { 
-    this._json = json ;
+  constructor(model, scene) { 
+    this._model = model ;
     this._scene = scene ;
     this.parse();
     this.merge();
@@ -27,23 +27,23 @@ export class modelHandler
   {
     let targetIndex =  -1 ;
     if (selectType == queryTypes.id)
-      targetIndex = this._createdObjects.findIndex(o => o._json.id == objectId );
+      targetIndex = this._createdObjects.findIndex(o => o.id == objectId );
     else if (selectType == queryTypes.conveyingLyph)
-      targetIndex = this._createdObjects.findIndex(o => o._json.conveyingLyph == objectId);
+      targetIndex = this._createdObjects.findIndex(o => o.conveyingLyph == objectId);
     const target = targetIndex >-1 ? this._createdObjects[targetIndex] : undefined ;
     return target ;
   }
 
   parse()
   {
-    const props = Object.getOwnPropertyNames(this._json);
+    const props = Object.getOwnPropertyNames(this._model);
     const validObjNames = Object.getOwnPropertyNames(objectTypes);
 
     props.forEach((objType)=>{
       if (validObjNames.indexOf(objType) > -1)
       {
-        const children = this._json[objType];
-        children.forEach((node)=>{
+        const children = this._model[objType];
+        children?.forEach((node)=>{
           const createdObject = objectFactory.create(objType, node, this.query.bind(this));
           this._createdObjects.push(createdObject);
         });
@@ -53,10 +53,10 @@ export class modelHandler
 
   merge()
   {
-    this._createdObjects.forEach(o =>{ o.merge() });
-    this._createdObjects.forEach(o =>{ 
-      o.mergeSuperTypes() 
-    });
+    // this._createdObjects.forEach(o =>{ o.merge() });
+    // this._createdObjects.forEach(o =>{ 
+    //   o.mergeSuperTypes() 
+    // });
   }
 
   render()
@@ -64,7 +64,7 @@ export class modelHandler
     while (this._scene.children.length) { this._scene.remove(this._scene.children[0]) } // Clear the place
 
     //TODO handle THREEJS Groups
-    this._createdObjects.forEach(o =>{
+    this._createdObjects?.forEach(o =>{
       const renderedObject = o.render();
       if(renderedObject)
         this._renderedObjects.push(renderedObject);
