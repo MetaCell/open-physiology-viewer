@@ -13,7 +13,6 @@ export class modelHandler
     this._model = model ;
     this._scene = scene ;
     this.parse();
-    this.merge();
   }
 
   scene(scene) { this._scene = scene ; }
@@ -51,14 +50,6 @@ export class modelHandler
     })
   }
 
-  merge()
-  {
-    // this._createdObjects.forEach(o =>{ o.merge() });
-    // this._createdObjects.forEach(o =>{ 
-    //   o.mergeSuperTypes() 
-    // });
-  }
-
   render()
   {
     while (this._scene.children.length) { this._scene.remove(this._scene.children[0]) } // Clear the place
@@ -71,7 +62,6 @@ export class modelHandler
     });
 
     this._renderedObjects.forEach(o => this._scene.add(o));
-
   }
 
   clearCreatedObjects()
