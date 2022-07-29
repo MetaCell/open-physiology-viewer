@@ -18,16 +18,16 @@ export class Lyph extends objectBase
   _isTemplate = false ;
   _superType = undefined ;
 
-  constructor(json, query)
+  constructor(model, query)
   {
-    super(json, objectTypes.lyphs, query);
-    this.width = this._json.scale?.width ;
-    this.height = this._json.scale?.height ;
+    super(model, objectTypes.lyphs, query);
+    this.width = this.model.scale?.width ;
+    this.height = this.model.scale?.height ;
     this.radius = this.height / 8 ;
-    this._topology = LYPH_TOPOLOGY.BAG || this._json.topology;
+    this._topology = LYPH_TOPOLOGY.BAG || this.model.topology;
     this._groupped = true ;
-    this._isTemplate = this._json.isTemplate ;
-    this._superType = this._json.supertype ;
+    this._isTemplate = this.model.isTemplate ;
+    this._superType = this.model.supertype ;
 
     this.initRadialTypes();
     //link based positioning and sizing
