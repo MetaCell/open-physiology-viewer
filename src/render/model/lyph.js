@@ -25,23 +25,29 @@ export class Lyph extends objectBase
     super(model, objectTypes.lyphs, query);
     this.width       = model.scale?.width ;
     this.height      = model.scale?.height ;
-    this.radius      = this.height / 8 ;
+    this.radius      = model.radius || ( this.height / 8 ) ;
     this._topology   = LYPH_TOPOLOGY.BAG || this.model.topology;
     this._groupped   = true ;
     this._isTemplate = model.isTemplate ;
     this._superType  = model.supertype ;
 
     this.initRadialTypes();
-    //link based positioning and sizing
-    const link = model.conveys ;
-    if (link)
-    {
-      this.width = link.length * 0.5 ;      
-      this.position = getPointInBetweenByPerc(
-          layoutToVector3(link.source.layout)
-        , layoutToVector3(link.target.layout)
-        , 0.5) ;
+    //layout based positioning and sizing
+    if(model.layout)
+      this.position = model.layout ;
+    else {
+      //link based positioning and sizing
+      const link = model.conveys ;
+      if (link)
+      {
+        this.width = link.length * 0.5 ;      
+        this.position = getPointInBetweenByPerc(
+            layoutToVector3(link.source.layout)
+          , layoutToVector3(link.target.layout)
+          , 0.5) ;
+      }
     }
+    this._autoArrangeLayers();
   }
 
   get layers() { return this._layers ; }
@@ -65,58 +71,23 @@ export class Lyph extends objectBase
 
   _autoArrangeLayers()
   {
-    const totalLayers = this._layers.length ; 
+    const totalLayers = this.model.layers?.length ; 
     if( totalLayers > 0)
     {
-      this._layers.forEach((layer, i)=>{
-        const layerWidth = this._width  ;
-        const layerHeight = this._height / totalLayers;
-        const starty = this.position.y + ( -1 * this._height * 0.5 ) + layerHeight * 0.5;
-        layer.width = layerWidth ;
-        layer.height = layerHeight ;
-        layer.radius = layerHeight / 8 ;
-        layer.position.y = starty + (i * layerHeight); ;
-        layer.position.x = this.position.x ;
-        layer.position.z = 0.1 ; //avoid z-fighting
+      this.model.layers.forEach((layer, i)=>{
+        const width = this._width  ;
+        const height = this._height / totalLayers;
+        const radius = height / 8 ;
+        const starty = this.position.y + ( -1 * this._height * 0.5 ) + height * 0.5;
+        const scale = { width, height, radius }
+        const x = this.position.x ;
+        const y = starty + (i * height);
+        const z = 0.1 ;
+        const layout = { x, y , z }
+        const innerLayer = new Lyph({ scale, layout})
+        this._layers.push(innerLayer);
       })
     }
-  }
-
-  _mergeSuperTypeProps(superType)
-  {
-    const clonedLayers = [];
-    superType.layers.forEach(l => {
-      const clonedLayer = l.clone();
-      clonedLayers.push(clonedLayer);
-    })
-    this._layers =  clonedLayers;
-    this._autoArrangeLayers();
-  }
-
-  mergeSuperTypes()
-  {
-    if (this._superType)
-    {
-      const superType = this._reducer(this._superType, reducerTypes.pop, queryTypes.id);
-      this._mergeSuperTypeProps(superType);
-      return ;
-    }
-  }
-
-  merge() 
-  {
-    const layers = this._json.layers;
-    if (layers?.length > 0)
-    {
-      layers?.forEach( (l, i) => {
-        const id = l.id ?? l ;
-        const layer = this._reducer(id, reducerTypes.pop, queryTypes.id)
-        this._reducer(id, reducerTypes.delete, queryTypes.id); 
-        this._layers.push(layer);
-      });
-      this._autoArrangeLayers();
-    }
-    return ;
   }
 
   render() {
