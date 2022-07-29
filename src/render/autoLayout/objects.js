@@ -2,6 +2,11 @@ export function getSceneObjectByModelId(scene, userDataId) {
   return scene.children.find(c => c.userData.id === userDataId);
 }
 
+export function layoutToVector3(layout)
+{
+  return new THREE.Vector3(layout.x, layout.y, layout.z)
+}
+
 export function getSceneObjectsByList(scene, ids) {
   return scene.children.find(c => ids.indexOf(c.userData.id) > -1);
 }

@@ -34,7 +34,7 @@ import {
 } from '../model/index';
 
 import 'hammerjs';
-import initModel from '../../test/data/basicLinkTypes.json'
+import initModel from '../../test/data/basicLyphTypes.json'
 
 import 'font-awesome/css/font-awesome.css';
 import 'jsoneditor/dist/jsoneditor.min.css';

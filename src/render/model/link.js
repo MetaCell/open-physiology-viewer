@@ -2,14 +2,10 @@ import { objectBase } from './base';
 import { objectTypes } from './types';
 import { MaterialFactory } from '../3D/materialFactory'
 import { renderConsts } from './base';
+import { layoutToVector3 } from '../autoLayout/objects';
 
 const EDGE_STROKE = renderConsts.EDGE_STROKE ;
 const EDGE_GEOMETRY = renderConsts.EDGE_GEOMETRY ;
-
-function layoutToVecto3(layout)
-{
-  return new THREE.Vector3(layout.x, layout.y, layout.z)
-}
 
 export class Link extends objectBase
 {
@@ -22,7 +18,7 @@ export class Link extends objectBase
   {
     super(model, objectTypes.links, query);
     if(!model._points)
-      this._points = [layoutToVecto3(model.source.layout), layoutToVecto3(model.target.layout)]
+      this._points = [layoutToVector3(model.source.layout), layoutToVector3(model.target.layout)]
   }
 
   render() {

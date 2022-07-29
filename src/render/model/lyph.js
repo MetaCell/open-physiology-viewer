@@ -3,6 +3,8 @@ import { objectTypes } from './types';
 import { reducerTypes, queryTypes } from '../query/reducer';
 import { ThreeDFactory } from '../3D/threeDFactory'; 
 import { _clone, _cloneDeep } from 'lodash-bound';
+import { getPointInBetweenByPerc } from '../autoLayout/objects';
+import { layoutToVector3 } from '../autoLayout/objects';
 
 const LYPH_TOPOLOGY = Object.freeze({
   CYST: 'DASHED',
@@ -21,22 +23,24 @@ export class Lyph extends objectBase
   constructor(model, query)
   {
     super(model, objectTypes.lyphs, query);
-    this.width = this.model.scale?.width ;
-    this.height = this.model.scale?.height ;
-    this.radius = this.height / 8 ;
-    this._topology = LYPH_TOPOLOGY.BAG || this.model.topology;
-    this._groupped = true ;
-    this._isTemplate = this.model.isTemplate ;
-    this._superType = this.model.supertype ;
+    this.width       = model.scale?.width ;
+    this.height      = model.scale?.height ;
+    this.radius      = this.height / 8 ;
+    this._topology   = LYPH_TOPOLOGY.BAG || this.model.topology;
+    this._groupped   = true ;
+    this._isTemplate = model.isTemplate ;
+    this._superType  = model.supertype ;
 
     this.initRadialTypes();
     //link based positioning and sizing
-    const link = query(this.id, queryTypes.conveyingLyph ); //get the conveying lyph link width
+    const link = model.conveys ;
     if (link)
     {
-      this.height = link.width * 0.25 ;
-      this.width = this.height * 0.5 ;      
-      this.position = link.position ;
+      this.width = link.length * 0.5 ;      
+      this.position = getPointInBetweenByPerc(
+          layoutToVector3(link.source.layout)
+        , layoutToVector3(link.target.layout)
+        , 0.5) ;
     }
   }
 
