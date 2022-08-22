@@ -4,10 +4,9 @@ import { toMatchImageSnapshot } from 'jest-image-snapshot'
 expect.extend({ toMatchImageSnapshot })
 import { ONE_SECOND, ONE_MINUTE, baseURL, scaffoldGroupName } from './utilConstants'
 import { wait4selector, click_, range, canvasSnapshot, fullpageSnapshot } from './puppeteer_helper';
+
 const path = require('path');
 var scriptName = path.basename(__filename, '.js');
-console.log(scriptName)
-
 
 //SNAPSHOT OPTIONS
 const SNAPSHOT_OPTIONS = {
@@ -232,7 +231,7 @@ describe('Scaffold Model Labels', () => {
             page.waitForFileChooser(),
             page.click(MERGE_MODEL_SELECTOR),
         ]);
-        await fileChooser.accept(["./open-physiology-viewer/test/dev-layout-conn-model.json"]); // not working - try to use [path]
+        await fileChooser.accept([__dirname + '/assets/dev-layout-conn-model.json']); 
 
         await page.waitForTimeout(2000);
         await click_(page, SHOW_SETTING_SELECTOR)
