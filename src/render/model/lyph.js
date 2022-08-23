@@ -1,6 +1,5 @@
 import { objectBase } from './base';
 import { objectTypes } from './types';
-import { reducerTypes, queryTypes } from '../query/reducer';
 import { ThreeDFactory } from '../3D/threeDFactory'; 
 import { _clone, _cloneDeep } from 'lodash-bound';
 import { getPointInBetweenByPerc } from '../autoLayout/objects';
@@ -17,12 +16,17 @@ export class Lyph extends objectBase
   _layers = [];
   _topology ;
   _radialTypes = [false, false];
-  _isTemplate = false ;
-  _superType = undefined ;
+  _isTemplate  = false ;
+  _superType   = undefined ;
 
-  constructor(model, query)
+  _query   = undefined
+  _reducer = undefined ;
+  static type    = objectTypes.lyphs; 
+
+  constructor(id, query, reducer, props)
   {
-    super(model, objectTypes.lyphs, query);
+    const model = props ? Object.assign(query(id, Lyph.type), props) : query(id, Lyph.type) ; 
+    super(model, objectTypes.lyphs, reducer);
     this.color       = model.color ;
     this.width       = model.scale?.width ;
     this.height      = model.scale?.height ;
@@ -31,6 +35,9 @@ export class Lyph extends objectBase
     this._groupped   = true ;
     this._isTemplate = model.isTemplate ;
     this._superType  = model.supertype ;
+
+    this._query = query ;
+    this._reducer = reducer ;
 
     this.initRadialTypes();
     //layout based positioning and sizing
@@ -64,7 +71,7 @@ export class Lyph extends objectBase
   }
 
   clone() {
-    const cloned = new Lyph(this._json, this._reducer);
+    const cloned = new Lyph(this._id, this._query, this._reducer, props);
     cloned._layers = this._layers ;
     cloned._isTemplate = false ;
     return cloned ;
@@ -87,7 +94,7 @@ export class Lyph extends objectBase
         const z = 0.1 ;
         const id = layer.id ;
         const layout = { x, y, z }
-        const innerLayer = new Lyph({ scale, layout, color, id})
+        const innerLayer = new Lyph(id, this._query, this._reducer, { scale, layout, color })
         this._layers.push(innerLayer);
       })
     }

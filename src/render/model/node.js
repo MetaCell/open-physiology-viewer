@@ -5,9 +5,12 @@ import { MaterialFactory } from '../3D/materialFactory';
 
 export class Node extends objectBase
 {
-  constructor(model, reducer)
+  static type = objectTypes.nodes ;
+
+  constructor(id, query, reducer)
   {
-    super(model, objectTypes.nodes, reducer);
+    const model = query(id, Node.type)
+    super(model, Node.type, reducer);
   }
 
   render() {

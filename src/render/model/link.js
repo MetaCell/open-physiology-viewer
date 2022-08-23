@@ -13,9 +13,11 @@ export class Link extends objectBase
   _lineWidth = 1;
   _pointLength = 5;
   _points = [];
+  static type = objectTypes.links ;
 
-  constructor(model, query)
+  constructor(id, query, reducer)
   {
+    const model = query(id, Link.type)
     super(model, objectTypes.links, query);
     if(!model._points)
       this._points = [layoutToVector3(model.source.layout), layoutToVector3(model.target.layout)]

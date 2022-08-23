@@ -5,19 +5,19 @@ import { objectTypes } from './types';
 import { Lyph } from './lyph';
 export default class factory
 {
-  static create(type, json, reducer) {
+  static create(id, type, query, reducer) {
     let threeObj;
 
     if (type === objectTypes.chains) {
-      threeObj = new Chain(json, reducer);
+      threeObj = new Chain(id, query, reducer);
     } else if (type === objectTypes.links) {
-      threeObj = new Link(json, reducer);
+      threeObj = new Link(id, query, reducer);
     } else if (type === objectTypes.nodes) {
-      threeObj = new Node(json, reducer);
+      threeObj = new Node(id, query, reducer);
     } else if (type === objectTypes.lyphs) {
-      threeObj = new Lyph(json, reducer);
+      threeObj = new Lyph(id, query, reducer);
     } else if (type === objectTypes.layers) {
-      threeObj = new Layer(json, reducer);
+      threeObj = new Layer(id, query, reducer);
     }
 
     return threeObj;
