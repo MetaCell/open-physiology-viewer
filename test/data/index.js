@@ -11,7 +11,6 @@ import basic from './basic.json'
 import bolserLewis from './bolserLewis.json'                       
 import neuronTemplateRegion from './neuronTemplateRegion.json'
 import basicChainHousedInOneLyph from './basicChainHousedInOneLyph.json'         
-import fullBody from './fullBody.json'                          
 import neuronTree from './neuronTree.json'
 import basicChainWireConflict from './basicChainWireConflict.json'                                        
 import neuronTreeWithLevels from './neuronTreeWithLevels.json'
@@ -46,7 +45,6 @@ export const test_data = {
   bolserLewis,              
   neuronTemplateRegion,
   basicChainHousedInOneLyph,        
-  fullBody,     
   neuronTree,
   basicChainWireConflict,                                       
   neuronTreeWithLevels,
