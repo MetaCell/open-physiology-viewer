@@ -26,6 +26,7 @@ import {
     genResource
 } from "./utils";
 import {logger, $LogMsg} from './logger';
+import { ngModuleJitUrl } from '@angular/compiler';
 
 /**
  * The class defining common methods for all resources
