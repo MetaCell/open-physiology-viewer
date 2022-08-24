@@ -8,10 +8,10 @@ import {
     isEmpty,
     merge,
     keys,
-    flatten, isArray, unionBy, mergeWith, values
+    flatten, isArray, unionBy, mergeWith, sample
 } from "lodash-bound";
 import * as colorSchemes from 'd3-scale-chromatic';
-import {definitions} from "./graphScheme";
+import schema from "./graphScheme";
 import {$LogMsg, logger} from "./logger";
 
 const colors = [...colorSchemes.schemePaired, ...colorSchemes.schemeDark2];
@@ -69,16 +69,16 @@ export const ModelType = {
  * @property Snapshot
  * @property Graph
  */
-export const $SchemaClass = definitions::keys().map(schemaClsName => [schemaClsName, schemaClsName])::fromPairs();
-export const $Field = $SchemaClass::keys().map(className => definitions[className].properties::keys().map(property => [property, property]))::flatten()::fromPairs();
+export const $SchemaClass = schema.definitions::keys().map(schemaClsName => [schemaClsName, schemaClsName])::fromPairs();
+export const $Field = $SchemaClass::keys().map(className => schema.definitions[className].properties::keys().map(property => [property, property]))::flatten()::fromPairs();
 
-export const EDGE_GEOMETRY        = definitions.EdgeGeometryScheme.enum.map(r => [r.toUpperCase(), r])::fromPairs();
-export const WIRE_GEOMETRY        = definitions[$SchemaClass.Wire].properties[$Field.geometry].anyOf[1].enum.map(r => [r.toUpperCase(), r])::fromPairs()::merge(EDGE_GEOMETRY);
-export const LINK_GEOMETRY        = definitions[$SchemaClass.Link].properties[$Field.geometry].anyOf[1].enum.map(r => [r.toUpperCase(), r])::fromPairs()::merge(EDGE_GEOMETRY);
-export const EDGE_STROKE          = definitions[$SchemaClass.Edge].properties[$Field.stroke].enum.map(r => [r.toUpperCase(), r])::fromPairs();
-export const PROCESS_TYPE         = definitions[$SchemaClass.ProcessTypeScheme].enum.map(r => [r.toUpperCase(), r])::fromPairs();
-export const LYPH_TOPOLOGY        = definitions[$SchemaClass.Lyph].properties[$Field.topology].enum.map(r => [r.toUpperCase(), r])::fromPairs();
-export const COALESCENCE_TOPOLOGY = definitions[$SchemaClass.Coalescence].properties[$Field.topology].enum.map(r => [r.toUpperCase(), r])::fromPairs();
+export const EDGE_GEOMETRY        = schema.definitions.EdgeGeometryScheme.enum.map(r => [r.toUpperCase(), r])::fromPairs();
+export const WIRE_GEOMETRY        = schema.definitions[$SchemaClass.Wire].properties[$Field.geometry].anyOf[1].enum.map(r => [r.toUpperCase(), r])::fromPairs()::merge(EDGE_GEOMETRY);
+export const LINK_GEOMETRY        = schema.definitions[$SchemaClass.Link].properties[$Field.geometry].anyOf[1].enum.map(r => [r.toUpperCase(), r])::fromPairs()::merge(EDGE_GEOMETRY);
+export const EDGE_STROKE          = schema.definitions[$SchemaClass.Edge].properties[$Field.stroke].enum.map(r => [r.toUpperCase(), r])::fromPairs();
+export const PROCESS_TYPE         = schema.definitions[$SchemaClass.ProcessTypeScheme].enum.map(r => [r.toUpperCase(), r])::fromPairs();
+export const LYPH_TOPOLOGY        = schema.definitions[$SchemaClass.Lyph].properties[$Field.topology].enum.map(r => [r.toUpperCase(), r])::fromPairs();
+export const COALESCENCE_TOPOLOGY = schema.definitions[$SchemaClass.Coalescence].properties[$Field.topology].enum.map(r => [r.toUpperCase(), r])::fromPairs();
 
 export const $Color = {
     Anchor       : "#ccc",
@@ -114,6 +114,10 @@ export const $Prefix = {
     default     : "default", //default group ID
     force       : "force"
 };
+
+export const $Default = {
+    EDGE_LENGTH: 10
+}
 
 export const getNewID = entitiesByID => "new-" +
     (entitiesByID? entitiesByID::keys().length : Math.random().toString(36).replace(/[^a-z]+/g, '').substr(0, 5));
@@ -171,7 +175,7 @@ export const getID  = (e) => e::isObject()? e.id : e;
 export const compareResources  = (e1, e2) => getID(e1) === getID(e2);
 
 /**
- * Merge resource definitions
+ * Merge resource schema.definitions
  * @param a - first resource or resource list
  * @param b - second resource or resource list
  * @returns {Resource} merged resource or a union of resource lists where resources with the same id have been merged
@@ -223,12 +227,16 @@ export function mergeWithModel(e, clsName, model){
  * @param resources - list of resources
  * @param defaultColor - optional default color
  */
-export const addColor = (resources, defaultColor) => (resources||[]).filter(e => e::isObject() && !e.color)
-    .forEach((e, i) => { e.color = e.supertype && e.supertype.color
-        ? e.supertype.color
-        : (e.cloneOf && e.cloneOf.color)
-            ? e.cloneOf.color
-            :(defaultColor || colors[i % colors.length]) });
+export const addColor = (resources, defaultColor) => (resources||[])
+    .forEach((e, i) => {
+        if (e::isObject() && !e.color){
+            e.color = e.supertype?.color || e.cloneOf?.color || defaultColor || colors[i % colors.length];
+        }
+    });
+
+export function pickColor(){
+  return colors::sample();
+}
 
 /**
  * Extracts class name from the schema definition
@@ -244,12 +252,12 @@ export const getClassName = (spec) => {
     }
     if (ref){
         let clsName = ref.substr(ref.lastIndexOf("/") + 1).trim();
-        if (!definitions[clsName]) { return null; }
+        if (!schema.definitions[clsName]) { return null; }
         return clsName;
     }
 };
 
-export const getSchemaClass = (spec) => definitions[getClassName(spec)];
+export const getSchemaClass = (spec) => schema.definitions[getClassName(spec)];
 
 /**
  * Places a given node on a given border
@@ -265,18 +273,34 @@ export const addBorderNode = (border, nodeID) => {
 };
 
 /**
- * Finds resource object in the parent group given an object or an ID
- * @param eArray - list of available resources
- * @param objOrID - resource or resource identifier to look for
+ * Find resource in a list with a given id. If the reference is a resource, it is returned straightaway.
+ * @param eArray - list of resources
+ * @param ref - resource or resource identifier to look for
  * @param namespace - namespace
  * @returns {*|void}
  */
-export const findResourceByID = (eArray, objOrID, namespace = undefined) =>
-    objOrID::isObject()? objOrID: (eArray||[]).find(x => objOrID && x.id === objOrID && (!namespace || x.namespace === namespace));
+export const findResourceByID = (eArray, ref, namespace = undefined) => {
+    return ref::isObject() ? ref : (eArray || []).find(x => ref && x.id === ref && (!namespace || !x.namespace || x.namespace === namespace));
+}
 
-export const isIncluded = (eArray, id, namespace = undefined) =>
-    eArray.find(x => getFullID(namespace, x) === getFullID(namespace, id));
+/**
+ * Check if a given resource in a list, accounting for namespace
+ * @param eArray - list of resources
+ * @param ref
+ * @param namespace
+ */
+export const isIncluded = (eArray, ref, namespace = undefined) =>
+    eArray.find(x => getFullID(namespace, x) === getFullID(namespace, ref));
 
+/**
+ * Find resource index in a list, accounting for namespace
+ * @param eArray - list of resources
+ * @param ref - resource or resource identifier to look for
+ * @param namespace
+ * @returns {number}
+ */
+export const findIndex = (eArray, ref, namespace = undefined) =>
+    (eArray||[]).findIndex(x => getFullID(namespace, x) === getFullID(namespace, ref));
 
 /**
  * Find resource object given its reference (identifier)
@@ -338,7 +362,7 @@ const getClassRefs = (spec) => {
  * Indicates whether schema class definition is abstract
  * @type {boolean} Returns true if the class is abstract
  */
-export const isClassAbstract = (clsName) => definitions[clsName].abstract;
+export const isClassAbstract = (clsName) => schema.definitions[clsName].abstract;
 
 export const genResource = (json, caller) => {
     // Uncomment to trace who created a certain resource
@@ -359,28 +383,30 @@ export const genResource = (json, caller) => {
 export const mergeGenResource = (group, parentGroup, resource, prop) => {
     if (!resource) { return; }
 
+    let nm = getRefNamespace(resource, parentGroup?.namespace);
+
+    if (resource::isObject()){
+        resource.id === resource.id || getNewID();
+        resource.namespace = nm;
+        resource.fullID = resource.fullID || getFullID(nm, resource.id);
+    }
+
     if (group){
         group[prop] = group[prop] || [];
         if (resource::isObject()){
-            if (resource.id){
-                resource.namespace = resource.namespace || getRefNamespace(resource, parentGroup.namespace);
-                resource.fullID = resource.fullID || getFullID(parentGroup.namespace, resource.id);
-                if (!isIncluded(group[prop], resource.id, parentGroup.namespace)){
-                    group[prop].push(resource.fullID);
-                }
+            if (!isIncluded(group[prop], resource.id, nm)){
+                group[prop].push(resource.fullID);
             }
             resource.hidden = group.hidden;
         } else {
-            if (!isIncluded(group[prop], resource, parentGroup.namespace)){
-                group[prop].push(getFullID(parentGroup.namespace, resource));
+            if (!isIncluded(group[prop], resource, nm)){
+                group[prop].push(getFullID(nm, resource));
             }
         }
     }
-    if (parentGroup && resource.id){
-        resource.namespace = resource.namespace || getRefNamespace(resource, parentGroup.namespace);
-        resource.fullID = resource.fullID || getFullID(parentGroup.namespace, resource.id);
+    if (parentGroup && resource::isObject()){
         parentGroup[prop] = parentGroup[prop] || [];
-        if (!parentGroup[prop].find(x => x === resource.id || x.id === resource.id)){
+        if (!isIncluded(parentGroup[prop], resource.id, nm)){
             parentGroup[prop].push(resource);
             if (parentGroup[prop + "ByID"]) {
                 parentGroup[prop + "ByID"][resource.fullID] = resource;
@@ -535,7 +561,7 @@ const extendsClass = (refs, value) => {
             if (clsName === value) {
                 res = true;
             } else {
-                let def = definitions[clsName];
+                let def = schema.definitions[clsName];
                 res = res || def && extendsClass(getClassRefs(def), value);
             }
         }
@@ -555,11 +581,11 @@ const getFieldDefaultValues = (className) => {
                 : specObj.default )
             : undefined;
     };
-    return definitions[className].properties::entries().map(([key, value]) => ({[key]: initValue(value)}));
+    return schema.definitions[className].properties::entries().map(([key, value]) => ({[key]: initValue(value)}));
 };
 
 /**
- * Recursively applies a given operation to the classes in schema definitions
+ * Recursively applies a given operation to the classes in schema schema.definitions
  * @param {string} className - initial class
  * @param {function} handler - function to apply to the current class
  */
@@ -568,8 +594,8 @@ const recurseSchema = (className, handler) => {
     let i = 0;
     while (stack[i]){
         let clsName = stack[i];
-        if (definitions[clsName]){
-            let refs = getClassRefs(definitions[clsName]);
+        if (schema.definitions[clsName]){
+            let refs = getClassRefs(schema.definitions[clsName]);
             (refs||[]).forEach(ref => {
                 stack.push(ref.substr(ref.lastIndexOf("/") + 1).trim());
             })
@@ -600,17 +626,17 @@ export class SchemaClass {
 
     constructor(schemaClsName) {
         this.schemaClsName = schemaClsName;
-        if (!definitions[schemaClsName]) {
+        if (!schema.definitions[schemaClsName]) {
             throw new Error("Failed to find schema definition for class: " + schemaClsName);
         } else {
-            this.schema = definitions[this.schemaClsName];
+            this.schema = schema.definitions[this.schemaClsName];
 
             let res = {};
             recurseSchema(this.schemaClsName, (currName) => res::merge(...getFieldDefaultValues(currName)));
             this.defaultValues = res;
 
             let res2 = {};
-            recurseSchema(this.schemaClsName, (currName) => res2::merge(definitions[currName].properties));
+            recurseSchema(this.schemaClsName, (currName) => res2::merge(schema.definitions[currName].properties));
             this.fields = res2::entries();
 
             this.relationships = this.fields.filter(([, spec]) => extendsClass(getClassRefs(spec), $SchemaClass.Resource));
@@ -660,8 +686,6 @@ export class SchemaClass {
 /**
  * Definition of all schema-based resource classes
  */
-export const schemaClassModels = definitions::keys().map(schemaClsName => [schemaClsName, new SchemaClass(schemaClsName)])::fromPairs();
-
 
 export const assignEntityById = (res, entitiesByID, namespace, modelClasses) => {
     if (entitiesByID){
@@ -797,3 +821,4 @@ export const replaceIDs = (modelClasses, entitiesByID, namespace, res) => {
         }
     });
 };
+export const schemaClassModels = schema.definitions::keys().map(schemaClsName => [schemaClsName, new SchemaClass(schemaClsName)])::fromPairs();
