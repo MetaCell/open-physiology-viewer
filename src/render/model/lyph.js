@@ -1,6 +1,5 @@
 import { objectBase } from './base';
 import { objectTypes } from './types';
-import { reducerTypes, queryTypes } from '../query/reducer';
 import { ThreeDFactory } from '../3D/threeDFactory'; 
 import { _clone, _cloneDeep } from 'lodash-bound';
 import { getPointInBetweenByPerc } from '../autoLayout/objects';
