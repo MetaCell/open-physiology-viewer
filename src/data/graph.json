@@ -92,8 +92,11 @@
     "imports": [
         "https://raw.githubusercontent.com/open-physiology/apinatomy-models/master/models/too-map/source/too-map.json"
     ],
+    "id": "ard-arm-cardiac_WBKG1",
+    "name": "Ardell Armour Cardiac Model + TOO-map-linked reference connectivity model",
     "groups": [
         {
+            "references": [],
             "nodes": [],
             "links": [
                 {
@@ -172,13 +175,6 @@
                     "source": "s-neuron-symp-pregang-5-T6",
                     "target": "t-neuron-symp-pregang-5-T6",
                     "conveyingLyph": "lyph-soma-symp-pregang-5-T6"
-                },
-                {
-                    "id": "link-soma-symp-postgang-6-T1",
-                    "name": "soma symp postgang 6 T1",
-                    "source": "s-neuron-symp-postgang-6-T1",
-                    "target": "t-neuron-symp-postgang-6-T1",
-                    "conveyingLyph": "lyph-soma-symp-postgang-6-T1"
                 },
                 {
                     "id": "link-soma-symp-postgang-6-T2",
@@ -386,300 +382,6 @@
             ],
             "lyphs": [
                 {
-                    "id": "lyph-cerebrum",
-                    "name": "Cerebrum (aacar)",
-                    "ontologyTerms": [
-                        "UBERON:0001869"
-                    ],
-                    "internalLyphs": [
-                        "lyph-insula"
-                    ],
-                    "internalLyphsInLayers": [
-                        0
-                    ]
-                },
-                {
-                    "id": "lyph-insula",
-                    "name": "Insula",
-                    "ontologyTerms": [
-                        "UBERON:0002022"
-                    ]
-                },
-                {
-                    "id": "lyph-nucleus-ambiguus",
-                    "name": "Nucleus ambiguus",
-                    "ontologyTerms": [
-                        "UBERON:0001719"
-                    ],
-                    "internalIn": "wbkg:lyph-medulla",
-                    "internalLyphs": [
-                        "lyph-soma-postsym-pregang-nucleus-ambiguus-4"
-                    ],
-                    "internalLyphsInLayers": [
-                        0
-                    ]
-                },
-                {
-                    "id": "lyph-dorsal-motor-vagus",
-                    "name": "Dorsal motor vagus nerve",
-                    "ontologyTerms": [
-                        "UBERON:0002870"
-                    ],
-                    "internalIn": "wbkg:lyph-medulla",
-                    "internalLyphs": [
-                        "lyph-soma-postsym-pregang-dorsal-motor-vagus-4"
-                    ],
-                    "internalLyphsInLayers": [
-                        0
-                    ]
-                },
-                {
-                    "id": "lyph-nucleus-tractus-solitarius",
-                    "name": "Nucleus Tractus Solitarius (NTS)",
-                    "ontologyTerms": [
-                        "ILX:0775009"
-                    ],
-                    "internalIn": "wbkg:lyph-medulla",
-                    "internalLyphs": [
-                        "lyph-soma-sensory-nucleus-tractus1"
-                    ],
-                    "internalLyphsInLayers": [
-                        0
-                    ]
-                },
-                {
-                    "id": "lyph-nodose-ganglion-vagus-nerve",
-                    "name": "Nodose ganglion of the Vagus nerve",
-                    "ontologyTerms": [
-                        "ILX:0738311"
-                    ],
-                    "internalLyphs": [
-                        "lyph-soma-sensory-nodose-11"
-                    ],
-                    "internalLyphsInLayers": [
-                        0
-                    ]
-                },
-                {
-                    "id": "lyph-heart",
-                    "name": "Heart (aacar)",
-                    "ontologyTerms": [
-                        "UBERON:0000948"
-                    ],
-                    "layers": [
-                        "lyph-epicardium",
-                        "lyph-visceral-pericardium",
-                        "lyph-pericardial-fluid",
-                        "lyph-patrietal-pericardium",
-                        "lyph-fibrous-pericardium",
-                        "lyph-epicardial-fat"
-                    ],
-                    "internalLyphs": [
-                        "lyph-right-atrium",
-                        "lyph-right-ventricle",
-                        "lyph-left-atrium",
-                        "lyph-left-ventricle",
-                        "lyph-arterial-inferior-cervical-ganglion",
-                        "lyph-ventricular-inferior-cervical-ganglion"
-                    ],
-                    "internalLyphsInLayers": [
-                        0,
-                        0,
-                        5,
-                        5,
-                        5,
-                        5
-                    ]
-                },
-                {
-                    "id": "lyph-right-atrium",
-                    "name": "Right Atrium (aacar)",
-                    "ontologyTerms": [
-                        "UBERON:0002078"
-                    ],
-                    "layers": [
-                        "mat-myocardium",
-                        "wbkg:mat-tissue-cardiovascular-endothelium",
-                        "wbkg:mat-blood"
-                    ]
-                },
-                {
-                    "id": "lyph-right-ventricle",
-                    "name": "Right Ventricle (aacar)",
-                    "ontologyTerms": [
-                        "UBERON:0002080"
-                    ],
-                    "layers": [
-                        "mat-myocardium",
-                        "wbkg:mat-tissue-cardiovascular-endothelium",
-                        "wbkg:mat-blood"
-                    ]
-                },
-                {
-                    "id": "lyph-left-atrium",
-                    "name": "Left Atrium (aacar)",
-                    "ontologyTerms": [
-                        "UBERON:0002079"
-                    ],
-                    "layers": [
-                        "mat-myocardium",
-                        "wbkg:mat-tissue-cardiovascular-endothelium",
-                        "wbkg:mat-blood"
-                    ]
-                },
-                {
-                    "id": "lyph-left-ventricle",
-                    "name": "Left Ventricle (aacar)",
-                    "ontologyTerms": [
-                        "UBERON:0002084"
-                    ],
-                    "layers": [
-                        "mat-myocardium",
-                        "wbkg:mat-tissue-cardiovascular-endothelium",
-                        "wbkg:mat-blood"
-                    ]
-                },
-                {
-                    "id": "lyph-aorta",
-                    "name": "Aorta (aacar)",
-                    "ontologyTerms": [
-                        "UBERON:0000947"
-                    ],
-                    "layers": [
-                        "mat-epicardial-fat",
-                        "mat-cardiac-smooth-muscle",
-                        "wbkg:mat-tissue-cardiovascular-endothelium",
-                        "wbkg:mat-blood"
-                    ]
-                },
-                {
-                    "id": "lyph-arterial-inferior-cervical-ganglion",
-                    "name": "Arterial Inferior cervical ganglion (aacar)",
-                    "ontologyTerms": [
-                        "UBERON:0002440"
-                    ],
-                    "internalLyphs": [
-                        "lyph-soma-parasymp-postgang-atrilICG-7",
-                        "lyph-soma-parasymp-postgang-atrilICG-8",
-                        "lyph-soma-parasymp-postgang-atrilICG-9",
-                        "lyph-soma-localcircuit-atrialICG-10"
-                    ],
-                    "internalLyphsInLayers": [
-                        0,
-                        0,
-                        0,
-                        0
-                    ]
-                },
-                {
-                    "id": "lyph-ventricular-inferior-cervical-ganglion",
-                    "name": "Ventricular Inferior cervical ganglion (aacar)",
-                    "ontologyTerms": [
-                        "UBERON:0002440"
-                    ],
-                    "internalLyphs": [
-                        "lyph-soma-parasymp-postgang-ventrICG-7",
-                        "lyph-soma-parasymp-postgang-ventrICG-8",
-                        "lyph-soma-parasymp-postgang-ventrICG-9",
-                        "lyph-soma-localcircuit-ventrICG-10"
-                    ],
-                    "internalLyphsInLayers": [
-                        0,
-                        0,
-                        0,
-                        0
-                    ]
-                },
-                {
-                    "id": "lyph-mediastinal",
-                    "name": "Mediastinal (aacar)",
-                    "ontologyTerms": [
-                        "NCIT:C25310"
-                    ],
-                    "internalLyphs": [
-                        "lyph-soma-symp-postgang-6-mediastinal"
-                    ],
-                    "internalLyphsInLayers": [
-                        0
-                    ]
-                },
-                {
-                    "id": "lyph-epicardium",
-                    "name": "Epicardium (aacar)",
-                    "ontologyTerms": [
-                        "UBERON:0002348"
-                    ]
-                },
-                {
-                    "id": "lyph-myocardium",
-                    "name": "Myocardium (aacar)",
-                    "ontologyTerms": [
-                        "UBERON:0002349"
-                    ]
-                },
-                {
-                    "id": "lyph-endocardium",
-                    "name": "Endocardium (aacar)",
-                    "ontologyTerms": [
-                        "UBERON:0002165"
-                    ],
-                    "layers": [
-                        "mat-epicardial-fat",
-                        "mat-cardiac-smooth-muscle",
-                        "wbkg:mat-tissue-cardiovascular-endothelium",
-                        "wbkg:mat-blood"
-                    ]
-                },
-                {
-                    "id": "lyph-pericardium",
-                    "name": "Pericardium (aacar)",
-                    "ontologyTerms": [
-                        "EMAPA:16133"
-                    ]
-                },
-                {
-                    "id": "lyph-visceral-pericardium",
-                    "name": "Visceral Pericardium (aacar)",
-                    "ontologyTerms": [
-                        "EMAPA:16589"
-                    ]
-                },
-                {
-                    "id": "lyph-pericardial-fluid",
-                    "name": "Pericardial Fluid (aacar)",
-                    "ontologyTerms": [
-                        "UBERON:0002409"
-                    ]
-                },
-                {
-                    "id": "lyph-patrietal-pericardium",
-                    "name": "Parietal Pericardium (aacar)",
-                    "ontologyTerms": [
-                        "EMAPA:16588"
-                    ]
-                },
-                {
-                    "id": "lyph-fibrous-pericardium",
-                    "name": "Fibrous Pericardium (aacar)",
-                    "ontologyTerms": [
-                        "UBERON:0002359"
-                    ]
-                },
-                {
-                    "id": "lyph-epicardial-fat",
-                    "name": "Epicardial fat (aacar)",
-                    "ontologyTerms": [
-                        "UBERON:0015129"
-                    ]
-                },
-                {
-                    "id": "lyph-pulmonary-artery",
-                    "name": "Pulmonary artery (aacar)",
-                    "ontologyTerms": [
-                        "UBERON:0002012"
-                    ]
-                },
-                {
                     "id": "lyph-soma-sensory-nucleus-tractus1",
                     "name": "Soma of sensory neuron in Nucleus Tractus Soltarius Neuron 1 (aacar)",
                     "ontologyTerms": [
@@ -687,6 +389,8 @@
                     ],
                     "topology": "TUBE",
                     "supertype": "lyph-segment-of-neuron",
+                    "internalIn": "wbkg:lyph-CNS-nucleus-tractus-solitarius",
+                    "internalInLayer": 0,
                     "seedIn": "neuron-1"
                 },
                 {
@@ -698,6 +402,7 @@
                     "topology": "TUBE",
                     "supertype": "lyph-segment-of-neuron",
                     "internalIn": "wbkg:lyph-middle-cervical-ganglion",
+                    "internalInLayer": 0,
                     "seedIn": "neuron-2-middle"
                 },
                 {
@@ -709,6 +414,7 @@
                     "topology": "TUBE",
                     "supertype": "lyph-segment-of-neuron",
                     "internalIn": "wbkg:lyph-stellate-ganglion",
+                    "internalInLayer": 0,
                     "seedIn": "neuron-2-infer"
                 },
                 {
@@ -719,6 +425,8 @@
                     ],
                     "topology": "TUBE",
                     "supertype": "lyph-segment-of-neuron",
+                    "internalIn": "wbkg:lyph-CNS-nucleus-ambiguus",
+                    "internalInLayer": 0,
                     "seedIn": "neuron-4"
                 },
                 {
@@ -728,7 +436,9 @@
                         "NLX:154731"
                     ],
                     "topology": "TUBE",
-                    "supertype": "lyph-segment-of-neuron"
+                    "supertype": "lyph-segment-of-neuron",
+                    "internalIn": "wbkg:lyph-CNS-nucleus-dorsal-motor-vagus",
+                    "internalInLayer": 0
                 },
                 {
                     "id": "lyph-soma-symp-pregang-5-T1",
@@ -792,17 +502,6 @@
                     "internalIn": "wbkg:lyph-T6-spinal-segment"
                 },
                 {
-                    "id": "lyph-soma-symp-postgang-6-T1",
-                    "name": "Soma of sympathetic postganglionic neuron in T1 sympathetic ganglion Neuron 6 (aacar)",
-                    "ontologyTerms": [
-                        "NLX:154731"
-                    ],
-                    "topology": "TUBE",
-                    "supertype": "lyph-segment-of-neuron",
-                    "internalIn": "wbkg:lyph-stellate-ganglion",
-                    "seedIn": "neuron-6"
-                },
-                {
                     "id": "lyph-soma-symp-postgang-6-T2",
                     "name": "Soma of sympathetic postganglionic neuron in T2 sympathetic ganglion Neuron 6 (aacar)",
                     "ontologyTerms": [
@@ -810,7 +509,8 @@
                     ],
                     "topology": "TUBE",
                     "supertype": "lyph-segment-of-neuron",
-                    "internalIn": "wbkg:lyph-T2-sympathetic-chain-ganglion"
+                    "internalIn": "wbkg:lyph-T2-sympathetic-chain-ganglion",
+                    "internalInLayer": 0
                 },
                 {
                     "id": "lyph-soma-symp-postgang-6-T3",
@@ -820,7 +520,8 @@
                     ],
                     "topology": "TUBE",
                     "supertype": "lyph-segment-of-neuron",
-                    "internalIn": "wbkg:lyph-T3-sympathetic-chain-ganglion"
+                    "internalIn": "wbkg:lyph-T3-sympathetic-chain-ganglion",
+                    "internalInLayer": 0
                 },
                 {
                     "id": "lyph-soma-symp-postgang-6-T4",
@@ -830,7 +531,8 @@
                     ],
                     "topology": "TUBE",
                     "supertype": "lyph-segment-of-neuron",
-                    "internalIn": "wbkg:lyph-T4-sympathetic-chain-ganglion"
+                    "internalIn": "wbkg:lyph-T4-sympathetic-chain-ganglion",
+                    "internalInLayer": 0
                 },
                 {
                     "id": "lyph-soma-symp-postgang-6-T5",
@@ -840,7 +542,8 @@
                     ],
                     "topology": "TUBE",
                     "supertype": "lyph-segment-of-neuron",
-                    "internalIn": "wbkg:lyph-T5-sympathetic-chain-ganglion"
+                    "internalIn": "wbkg:lyph-T5-sympathetic-chain-ganglion",
+                    "internalInLayer": 0
                 },
                 {
                     "id": "lyph-soma-symp-postgang-6-T6",
@@ -850,7 +553,8 @@
                     ],
                     "topology": "TUBE",
                     "supertype": "lyph-segment-of-neuron",
-                    "internalIn": "wbkg:lyph-T6-sympathetic-chain-ganglion"
+                    "internalIn": "wbkg:lyph-T6-sympathetic-chain-ganglion",
+                    "internalInLayer": 0
                 },
                 {
                     "id": "lyph-soma-symp-postgang-6-inferior-cervical",
@@ -860,7 +564,8 @@
                     ],
                     "topology": "TUBE",
                     "supertype": "lyph-segment-of-neuron",
-                    "internalIn": "wbkg:lyph-stellate-ganglion"
+                    "internalIn": "wbkg:lyph-stellate-ganglion",
+                    "internalInLayer": 0
                 },
                 {
                     "id": "lyph-soma-symp-postgang-6-middle-cervical",
@@ -870,7 +575,8 @@
                     ],
                     "topology": "TUBE",
                     "supertype": "lyph-segment-of-neuron",
-                    "internalIn": "wbkg:lyph-middle-cervical-ganglion"
+                    "internalIn": "wbkg:lyph-middle-cervical-ganglion",
+                    "internalInLayer": 0
                 },
                 {
                     "id": "lyph-soma-symp-postgang-6-superior-cervical",
@@ -880,7 +586,8 @@
                     ],
                     "topology": "TUBE",
                     "supertype": "lyph-segment-of-neuron",
-                    "internalIn": "wbkg:lyph-superior-cervical-ganglion"
+                    "internalIn": "wbkg:lyph-superior-cervical-ganglion",
+                    "internalInLayer": 0
                 },
                 {
                     "id": "lyph-soma-symp-postgang-6-mediastinal",
@@ -889,7 +596,9 @@
                         "NLX:154731"
                     ],
                     "topology": "TUBE",
-                    "supertype": "lyph-segment-of-neuron"
+                    "supertype": "lyph-segment-of-neuron",
+                    "internalIn": "wbkg:lyph-PNS-ganglion-mediastinal",
+                    "internalInLayer": 0
                 },
                 {
                     "id": "lyph-soma-parasymp-postgang-atrilICG-7",
@@ -979,6 +688,8 @@
                     ],
                     "topology": "TUBE",
                     "supertype": "lyph-segment-of-neuron",
+                    "internalIn": "wbkg:lyph-PNS-nodose-ganglion-vagus-nerve",
+                    "internalInLayer": 0,
                     "seedIn": "neuron-11"
                 },
                 {
@@ -988,7 +699,8 @@
                         "NLX:154731"
                     ],
                     "topology": "TUBE",
-                    "supertype": "229",
+                    "supertype": "lyph-segment-of-neuron",
+                    "internalIn": "wbkg:lyph-middle-cervical-ganglion",
                     "seedIn": "neuron-12"
                 },
                 {
@@ -998,7 +710,8 @@
                         "NLX:154731"
                     ],
                     "topology": "TUBE",
-                    "supertype": "229"
+                    "supertype": "lyph-segment-of-neuron",
+                    "internalIn": "wbkg:lyph-stellate-ganglion"
                 },
                 {
                     "id": "lyph-soma-sensory-dorsalroot-C6",
@@ -1103,230 +816,9 @@
                         "wbkg:mat-plasma-membrane",
                         "wbkg:mat-extracellular-fluid"
                     ]
-                },
-                {
-                    "id": "lyph-C1-dorsal-root-ganglion",
-                    "name": "C2 dorsal root ganglion",
-                    "supertype": "wbkg:lyph-XX-dorsal-root"
-                },
-                {
-                    "id": "229",
-                    "name": "Segment of neuron (aacar)",
-                    "ontologyTerms": [
-                        "CL:0000540"
-                    ],
-                    "isTemplate": true,
-                    "materials": [
-                        "AM_38",
-                        "AM_40",
-                        "AM_41"
-                    ]
-                },
-                {
-                    "id": "229bag",
-                    "name": "Segment of neuron bag (aacar)",
-                    "ontologyTerms": [
-                        "CL:0000540"
-                    ],
-                    "isTemplate": true,
-                    "topology": "BAG"
-                },
-                {
-                    "id": "229bag2",
-                    "name": "Segment of neuron  (aacar)",
-                    "ontologyTerms": [
-                        "CL:0000540"
-                    ],
-                    "isTemplate": true,
-                    "topology": "BAG+"
-                },
-                {
-                    "id": "axon-bag",
-                    "name": "Axon terminal (aacar)",
-                    "ontologyTerms": [
-                        "SAO:280355188"
-                    ],
-                    "isTemplate": true,
-                    "topology": "BAG-",
-                    "materials": [
-                        "AM_38",
-                        "AM_40",
-                        "AM_41"
-                    ]
-                },
-                {
-                    "id": "axon-tube",
-                    "name": "Axon segment (aacar)",
-                    "ontologyTerms": [
-                        "SAO:280355188"
-                    ],
-                    "isTemplate": true,
-                    "topology": "TUBE",
-                    "materials": [
-                        "AM_38",
-                        "AM_40",
-                        "AM_41"
-                    ]
-                },
-                {
-                    "id": "dend-bag",
-                    "name": "Dendrite terminal (aacar)",
-                    "ontologyTerms": [
-                        "SAO:420754792"
-                    ],
-                    "isTemplate": true,
-                    "topology": "BAG-",
-                    "materials": [
-                        "AM_38",
-                        "AM_40",
-                        "AM_41"
-                    ]
-                },
-                {
-                    "id": "dend-tube",
-                    "name": "Dendrite segment (aacar)",
-                    "ontologyTerms": [
-                        "SAO:420754792"
-                    ],
-                    "isTemplate": true,
-                    "topology": "TUBE"
-                },
-                {
-                    "id": "A80",
-                    "name": "Arterial Inferior cervical ganglion (aacar)",
-                    "ontologyTerms": [
-                        "UBERON:0002440"
-                    ]
-                },
-                {
-                    "id": "A81",
-                    "name": "Ventricular Inferior cervical ganglion (aacar)",
-                    "ontologyTerms": [
-                        "UBERON:0002440"
-                    ]
-                },
-                {
-                    "id": "A79",
-                    "name": "Aorta (aacar)",
-                    "ontologyTerms": [
-                        "UBERON:0000947"
-                    ]
-                },
-                {
-                    "id": "A95",
-                    "name": "Pulmonary artery (aacar)",
-                    "ontologyTerms": [
-                        "UBERON:0002012"
-                    ]
                 }
             ],
-            "materials": [
-                {
-                    "id": "mat-mediastinal",
-                    "name": "Mediastinal space",
-                    "ontologyTerms": [
-                        "UBERON:0003728"
-                    ]
-                },
-                {
-                    "id": "mat-epicardium",
-                    "name": "Epicardium",
-                    "ontologyTerms": [
-                        "UBERON:0002348"
-                    ]
-                },
-                {
-                    "id": "mat-myocardium",
-                    "name": "Myocardium",
-                    "ontologyTerms": [
-                        "UBERON:0002349"
-                    ]
-                },
-                {
-                    "id": "mat-pericardium",
-                    "name": "Pericardium",
-                    "ontologyTerms": [
-                        "EMAPA:16133"
-                    ]
-                },
-                {
-                    "id": "mat-visceral-pericardium",
-                    "name": "Visceral Pericardium",
-                    "ontologyTerms": [
-                        "EMAPA:16589"
-                    ]
-                },
-                {
-                    "id": "mat-pericardial-fluid",
-                    "name": "Pericardial Fluid",
-                    "ontologyTerms": [
-                        "UBERON:0002409"
-                    ]
-                },
-                {
-                    "id": "mat-parietal-pericardium",
-                    "name": "Parietal Pericardium",
-                    "ontologyTerms": [
-                        "EMAPA:16588"
-                    ]
-                },
-                {
-                    "id": "mat-fibrous-pericardium",
-                    "name": "Fibrous Pericardium",
-                    "ontologyTerms": [
-                        "UBERON:0002359"
-                    ]
-                },
-                {
-                    "id": "mat-epicardial-fat",
-                    "name": "Epicardial fat",
-                    "ontologyTerms": [
-                        "UBERON:0015129"
-                    ]
-                },
-                {
-                    "id": "mat-adventitia",
-                    "name": "Adventitia",
-                    "ontologyTerms": [
-                        "UBERON:0005742"
-                    ]
-                },
-                {
-                    "id": "mat-cardiac-smooth-muscle",
-                    "name": "Smooth muscle of heart",
-                    "ontologyTerms": [
-                        "UBERON:0001135"
-                    ]
-                },
-                {
-                    "id": "AM_38",
-                    "name": "Cytosol",
-                    "ontologyTerms": [
-                        "GO:0005829"
-                    ]
-                },
-                {
-                    "id": "AM_39",
-                    "name": "Membrane",
-                    "ontologyTerms": [
-                        "GO:0016020"
-                    ]
-                },
-                {
-                    "id": "AM_40",
-                    "name": "Plasma membrane",
-                    "ontologyTerms": [
-                        "GO:0005886"
-                    ]
-                },
-                {
-                    "id": "AM_41",
-                    "name": "Extracellular fluid",
-                    "ontologyTerms": [
-                        "GO:0005615"
-                    ]
-                }
-            ],
+            "materials": [],
             "coalescences": [],
             "chains": [
                 {
@@ -1342,7 +834,7 @@
                         0
                     ],
                     "housingLyphs": [
-                        "lyph-nucleus-tractus-solitarius"
+                        "wbkg:lyph-CNS-nucleus-tractus-solitarius"
                     ]
                 },
                 {
@@ -1364,13 +856,13 @@
                         0
                     ],
                     "housingLyphs": [
-                        "lyph-nucleus-tractus-solitarius",
-                        "lyph-medulla",
+                        "wbkg:lyph-CNS-nucleus-tractus-solitarius",
+                        "wbkg:lyph-CNS-medulla",
                         "lyph-pons",
                         "lyph-midbrain",
                         "lyph-diencephalon",
-                        "lyph-cerebrum",
-                        "lyph-insula"
+                        "wbkg:lyph-CNS-telencephalon",
+                        "wbkg:lyph-CNS-insula"
                     ]
                 },
                 {
@@ -1450,7 +942,7 @@
                         0
                     ],
                     "housingLyphs": [
-                        "lyph-nucleus-ambiguus"
+                        "wbkg:lyph-CNS-nucleus-ambiguus"
                     ]
                 },
                 {
@@ -1467,8 +959,8 @@
                         0
                     ],
                     "housingLyphs": [
-                        "lyph-nucleus-ambiguus",
-                        "wbkg:lyph-medulla"
+                        "wbkg:lyph-CNS-nucleus-ambiguus",
+                        "wbkg:lyph-CNS-medulla"
                     ]
                 },
                 {
@@ -1484,7 +976,7 @@
                         0
                     ],
                     "housingLyphs": [
-                        "lyph-dorsal-motor-vagus"
+                        "wbkg:lyph-CNS-nucleus-dorsal-motor-vagus"
                     ]
                 },
                 {
@@ -1501,8 +993,8 @@
                         0
                     ],
                     "housingLyphs": [
-                        "lyph-dorsal-motor-vagus",
-                        "wbkg:lyph-medulla"
+                        "wbkg:lyph-CNS-nucleus-dorsal-motor-vagus",
+                        "wbkg:lyph-CNS-medulla"
                     ]
                 },
                 {
@@ -1520,9 +1012,9 @@
                         0
                     ],
                     "housingLyphs": [
-                        "wbkg:lyph-medulla",
-                        "lyph-heart",
-                        "lyph-arterial-inferior-cervical-ganglion"
+                        "wbkg:lyph-CNS-medulla",
+                        "wbkg:lyph-cardiovascular-heart",
+                        "wbkg:lyph-PNS-ganglion-atrial-intrinsic-cardiac-ganglion"
                     ]
                 },
                 {
@@ -1540,9 +1032,9 @@
                         0
                     ],
                     "housingLyphs": [
-                        "wbkg:lyph-medulla",
-                        "lyph-heart",
-                        "lyph-ventricular-inferior-cervical-ganglion"
+                        "wbkg:lyph-CNS-medulla",
+                        "wbkg:lyph-cardiovascular-heart",
+                        "wbkg:lyph-PNS-ganglion-ventricular-intrinsic-cardiac-ganglion"
                     ]
                 },
                 {
@@ -2115,7 +1607,7 @@
                         0
                     ],
                     "housingLyphs": [
-                        "lyph-mediastinal"
+                        "wbkg:lyph-PNS-ganglion-mediastinal"
                     ]
                 },
                 {
@@ -2133,9 +1625,9 @@
                         0
                     ],
                     "housingLyphs": [
-                        "lyph-mediastinal",
-                        "lyph-heart",
-                        "lyph-ventricular-inferior-cervical-ganglion"
+                        "wbkg:lyph-PNS-ganglion-mediastinal",
+                        "wbkg:lyph-cardiovascular-heart",
+                        "wbkg:lyph-PNS-ganglion-ventricular-intrinsic-cardiac-ganglion"
                     ]
                 },
                 {
@@ -2153,41 +1645,9 @@
                         0
                     ],
                     "housingLyphs": [
-                        "lyph-mediastinal",
-                        "lyph-heart",
-                        "lyph-arterial-inferior-cervical-ganglion"
-                    ]
-                },
-                {
-                    "id": "dend-soma-symp-postgang-6-T1",
-                    "name": "Dendrite in the T1 sympathetic ganglion-Neuron 6 (aacar)",
-                    "ontologyTerms": [
-                        "SAO:1211023249"
-                    ],
-                    "lyphTemplate": "wbkg:lt-dend-bag",
-                    "root": "s-neuron-symp-postgang-6-T1",
-                    "leaf": "leaf-neuron-symp-postgang-6-T1",
-                    "housingLayers": [
-                        0
-                    ],
-                    "housingLyphs": [
-                        "wbkg:lyph-stellate-ganglion"
-                    ]
-                },
-                {
-                    "id": "axon-soma-symp-postgang-6-T1",
-                    "name": "Axon in the T1 sympathetic ganglion-Neuron 6 (aacar)",
-                    "ontologyTerms": [
-                        "SAO:1770195789"
-                    ],
-                    "lyphTemplate": "wbkg:lt-axon-tube",
-                    "root": "t-neuron-symp-postgang-6-T1",
-                    "leaf": "con-neuron-symp-postgang-6-x",
-                    "housingLayers": [
-                        0
-                    ],
-                    "housingLyphs": [
-                        "wbkg:lyph-stellate-ganglion"
+                        "wbkg:lyph-PNS-ganglion-mediastinal",
+                        "wbkg:lyph-cardiovascular-heart",
+                        "wbkg:lyph-PNS-ganglion-atrial-intrinsic-cardiac-ganglion"
                     ]
                 },
                 {
@@ -2589,7 +2049,7 @@
                         "SAO:1770195789"
                     ],
                     "lyphTemplate": "wbkg:lt-axon-tube",
-                    "root": "con-neuron-symp-postgang-6-1z",
+                    "root": "con-neuron-symp-postgang-6-x",
                     "leaf": "con-neuron-symp-postgang-6-6",
                     "housingLayers": [
                         0,
@@ -2691,7 +2151,7 @@
                         0
                     ],
                     "housingLyphs": [
-                        "lyph-arterial-inferior-cervical-ganglion"
+                        "wbkg:lyph-PNS-ganglion-atrial-intrinsic-cardiac-ganglion"
                     ]
                 },
                 {
@@ -2713,13 +2173,13 @@
                         5
                     ],
                     "housingLyphs": [
-                        "lyph-arterial-inferior-cervical-ganglion",
-                        "lyph-heart",
-                        "lyph-heart",
-                        "lyph-heart",
-                        "lyph-heart",
-                        "lyph-heart",
-                        "lyph-heart"
+                        "wbkg:lyph-PNS-ganglion-atrial-intrinsic-cardiac-ganglion",
+                        "wbkg:lyph-cardiovascular-heart",
+                        "wbkg:lyph-cardiovascular-heart",
+                        "wbkg:lyph-cardiovascular-heart",
+                        "wbkg:lyph-cardiovascular-heart",
+                        "wbkg:lyph-cardiovascular-heart",
+                        "wbkg:lyph-cardiovascular-heart"
                     ]
                 },
                 {
@@ -2735,7 +2195,7 @@
                         5
                     ],
                     "housingLyphs": [
-                        "lyph-heart"
+                        "wbkg:lyph-cardiovascular-heart"
                     ]
                 },
                 {
@@ -2752,8 +2212,8 @@
                         0
                     ],
                     "housingLyphs": [
-                        "lyph-heart",
-                        "lyph-left-atrium"
+                        "wbkg:lyph-cardiovascular-heart",
+                        "wbkg:lyph-cardiovascular-left-atrium"
                     ]
                 },
                 {
@@ -2771,9 +2231,9 @@
                         1
                     ],
                     "housingLyphs": [
-                        "lyph-heart",
-                        "lyph-left-atrium",
-                        "lyph-left-atrium"
+                        "wbkg:lyph-cardiovascular-heart",
+                        "wbkg:lyph-cardiovascular-left-atrium",
+                        "wbkg:lyph-cardiovascular-left-atrium"
                     ]
                 },
                 {
@@ -2790,8 +2250,8 @@
                         0
                     ],
                     "housingLyphs": [
-                        "lyph-heart",
-                        "lyph-right-atrium"
+                        "wbkg:lyph-cardiovascular-heart",
+                        "wbkg:lyph-cardiovascular-right-atrium"
                     ]
                 },
                 {
@@ -2809,9 +2269,9 @@
                         1
                     ],
                     "housingLyphs": [
-                        "lyph-heart",
-                        "lyph-right-atrium",
-                        "lyph-right-atrium"
+                        "wbkg:lyph-cardiovascular-heart",
+                        "wbkg:lyph-cardiovascular-right-atrium",
+                        "wbkg:lyph-cardiovascular-right-atrium"
                     ]
                 },
                 {
@@ -2827,7 +2287,7 @@
                         0
                     ],
                     "housingLyphs": [
-                        "lyph-ventricular-inferior-cervical-ganglion"
+                        "wbkg:lyph-PNS-ganglion-ventricular-intrinsic-cardiac-ganglion"
                     ]
                 },
                 {
@@ -2845,9 +2305,9 @@
                         5
                     ],
                     "housingLyphs": [
-                        "lyph-ventricular-inferior-cervical-ganglion",
-                        "lyph-heart",
-                        "lyph-heart"
+                        "wbkg:lyph-PNS-ganglion-ventricular-intrinsic-cardiac-ganglion",
+                        "wbkg:lyph-cardiovascular-heart",
+                        "wbkg:lyph-cardiovascular-heart"
                     ]
                 },
                 {
@@ -2863,7 +2323,7 @@
                         5
                     ],
                     "housingLyphs": [
-                        "lyph-heart"
+                        "wbkg:lyph-cardiovascular-heart"
                     ]
                 },
                 {
@@ -2880,8 +2340,8 @@
                         0
                     ],
                     "housingLyphs": [
-                        "lyph-heart",
-                        "lyph-left-ventricle"
+                        "wbkg:lyph-cardiovascular-heart",
+                        "wbkg:lyph-cardiovascular-left-ventricle"
                     ]
                 },
                 {
@@ -2899,8 +2359,8 @@
                         1
                     ],
                     "housingLyphs": [
-                        "lyph-heart",
-                        "lyph-left-ventricle"
+                        "wbkg:lyph-cardiovascular-heart",
+                        "wbkg:lyph-cardiovascular-left-ventricle"
                     ]
                 },
                 {
@@ -2917,8 +2377,8 @@
                         0
                     ],
                     "housingLyphs": [
-                        "lyph-heart",
-                        "lyph-right-ventricle"
+                        "wbkg:lyph-cardiovascular-heart",
+                        "wbkg:lyph-cardiovascular-right-ventricle"
                     ]
                 },
                 {
@@ -2936,9 +2396,9 @@
                         1
                     ],
                     "housingLyphs": [
-                        "lyph-heart",
-                        "lyph-right-ventricle",
-                        "lyph-right-ventricle"
+                        "wbkg:lyph-cardiovascular-heart",
+                        "wbkg:lyph-cardiovascular-right-ventricle",
+                        "wbkg:lyph-cardiovascular-right-ventricle"
                     ]
                 },
                 {
@@ -2954,7 +2414,7 @@
                         0
                     ],
                     "housingLyphs": [
-                        "lyph-arterial-inferior-cervical-ganglion"
+                        "wbkg:lyph-PNS-ganglion-atrial-intrinsic-cardiac-ganglion"
                     ]
                 },
                 {
@@ -2976,13 +2436,13 @@
                         5
                     ],
                     "housingLyphs": [
-                        "lyph-arterial-inferior-cervical-ganglion",
-                        "lyph-heart",
-                        "lyph-heart",
-                        "lyph-heart",
-                        "lyph-heart",
-                        "lyph-heart",
-                        "lyph-heart"
+                        "wbkg:lyph-PNS-ganglion-atrial-intrinsic-cardiac-ganglion",
+                        "wbkg:lyph-cardiovascular-heart",
+                        "wbkg:lyph-cardiovascular-heart",
+                        "wbkg:lyph-cardiovascular-heart",
+                        "wbkg:lyph-cardiovascular-heart",
+                        "wbkg:lyph-cardiovascular-heart",
+                        "wbkg:lyph-cardiovascular-heart"
                     ]
                 },
                 {
@@ -2998,7 +2458,7 @@
                         5
                     ],
                     "housingLyphs": [
-                        "lyph-heart"
+                        "wbkg:lyph-cardiovascular-heart"
                     ]
                 },
                 {
@@ -3015,8 +2475,8 @@
                         0
                     ],
                     "housingLyphs": [
-                        "lyph-heart",
-                        "lyph-left-atrium"
+                        "wbkg:lyph-cardiovascular-heart",
+                        "wbkg:lyph-cardiovascular-left-atrium"
                     ]
                 },
                 {
@@ -3034,9 +2494,9 @@
                         1
                     ],
                     "housingLyphs": [
-                        "lyph-heart",
-                        "lyph-left-atrium",
-                        "lyph-left-atrium"
+                        "wbkg:lyph-cardiovascular-heart",
+                        "wbkg:lyph-cardiovascular-left-atrium",
+                        "wbkg:lyph-cardiovascular-left-atrium"
                     ]
                 },
                 {
@@ -3053,8 +2513,8 @@
                         0
                     ],
                     "housingLyphs": [
-                        "lyph-heart",
-                        "lyph-right-atrium"
+                        "wbkg:lyph-cardiovascular-heart",
+                        "wbkg:lyph-cardiovascular-right-atrium"
                     ]
                 },
                 {
@@ -3072,9 +2532,9 @@
                         1
                     ],
                     "housingLyphs": [
-                        "lyph-heart",
-                        "lyph-right-atrium",
-                        "lyph-right-atrium"
+                        "wbkg:lyph-cardiovascular-heart",
+                        "wbkg:lyph-cardiovascular-right-atrium",
+                        "wbkg:lyph-cardiovascular-right-atrium"
                     ]
                 },
                 {
@@ -3090,7 +2550,7 @@
                         0
                     ],
                     "housingLyphs": [
-                        "lyph-ventricular-inferior-cervical-ganglion"
+                        "wbkg:lyph-PNS-ganglion-ventricular-intrinsic-cardiac-ganglion"
                     ]
                 },
                 {
@@ -3108,9 +2568,9 @@
                         5
                     ],
                     "housingLyphs": [
-                        "lyph-ventricular-inferior-cervical-ganglion",
-                        "lyph-heart",
-                        "lyph-heart"
+                        "wbkg:lyph-PNS-ganglion-ventricular-intrinsic-cardiac-ganglion",
+                        "wbkg:lyph-cardiovascular-heart",
+                        "wbkg:lyph-cardiovascular-heart"
                     ]
                 },
                 {
@@ -3126,7 +2586,7 @@
                         5
                     ],
                     "housingLyphs": [
-                        "lyph-heart"
+                        "wbkg:lyph-cardiovascular-heart"
                     ]
                 },
                 {
@@ -3143,8 +2603,8 @@
                         0
                     ],
                     "housingLyphs": [
-                        "lyph-heart",
-                        "lyph-left-ventricle"
+                        "wbkg:lyph-cardiovascular-heart",
+                        "wbkg:lyph-cardiovascular-left-ventricle"
                     ]
                 },
                 {
@@ -3162,9 +2622,9 @@
                         1
                     ],
                     "housingLyphs": [
-                        "lyph-heart",
-                        "lyph-left-ventricle",
-                        "lyph-left-ventricle"
+                        "wbkg:lyph-cardiovascular-heart",
+                        "wbkg:lyph-cardiovascular-left-ventricle",
+                        "wbkg:lyph-cardiovascular-left-ventricle"
                     ]
                 },
                 {
@@ -3181,8 +2641,8 @@
                         0
                     ],
                     "housingLyphs": [
-                        "lyph-heart",
-                        "lyph-right-ventricle"
+                        "wbkg:lyph-cardiovascular-heart",
+                        "wbkg:lyph-cardiovascular-right-ventricle"
                     ]
                 },
                 {
@@ -3200,9 +2660,9 @@
                         1
                     ],
                     "housingLyphs": [
-                        "lyph-heart",
-                        "lyph-right-ventricle",
-                        "lyph-right-ventricle"
+                        "wbkg:lyph-cardiovascular-heart",
+                        "wbkg:lyph-cardiovascular-right-ventricle",
+                        "wbkg:lyph-cardiovascular-right-ventricle"
                     ]
                 },
                 {
@@ -3218,7 +2678,7 @@
                         0
                     ],
                     "housingLyphs": [
-                        "lyph-arterial-inferior-cervical-ganglion"
+                        "wbkg:lyph-PNS-ganglion-atrial-intrinsic-cardiac-ganglion"
                     ]
                 },
                 {
@@ -3236,9 +2696,9 @@
                         5
                     ],
                     "housingLyphs": [
-                        "lyph-arterial-inferior-cervical-ganglion",
-                        "lyph-heart",
-                        "lyph-heart"
+                        "wbkg:lyph-PNS-ganglion-atrial-intrinsic-cardiac-ganglion",
+                        "wbkg:lyph-cardiovascular-heart",
+                        "wbkg:lyph-cardiovascular-heart"
                     ]
                 },
                 {
@@ -3254,7 +2714,7 @@
                         5
                     ],
                     "housingLyphs": [
-                        "lyph-heart"
+                        "wbkg:lyph-cardiovascular-heart"
                     ]
                 },
                 {
@@ -3271,8 +2731,8 @@
                         0
                     ],
                     "housingLyphs": [
-                        "lyph-heart",
-                        "lyph-right-atrium"
+                        "wbkg:lyph-cardiovascular-heart",
+                        "wbkg:lyph-cardiovascular-right-atrium"
                     ]
                 },
                 {
@@ -3290,9 +2750,9 @@
                         1
                     ],
                     "housingLyphs": [
-                        "lyph-heart",
-                        "lyph-left-atrium",
-                        "lyph-left-atrium"
+                        "wbkg:lyph-cardiovascular-heart",
+                        "wbkg:lyph-cardiovascular-left-atrium",
+                        "wbkg:lyph-cardiovascular-left-atrium"
                     ]
                 },
                 {
@@ -3309,8 +2769,8 @@
                         0
                     ],
                     "housingLyphs": [
-                        "lyph-heart",
-                        "lyph-right-atrium"
+                        "wbkg:lyph-cardiovascular-heart",
+                        "wbkg:lyph-cardiovascular-right-atrium"
                     ]
                 },
                 {
@@ -3328,9 +2788,9 @@
                         1
                     ],
                     "housingLyphs": [
-                        "lyph-heart",
-                        "lyph-right-atrium",
-                        "lyph-right-atrium"
+                        "wbkg:lyph-cardiovascular-heart",
+                        "wbkg:lyph-cardiovascular-right-atrium",
+                        "wbkg:lyph-cardiovascular-right-atrium"
                     ]
                 },
                 {
@@ -3346,7 +2806,7 @@
                         0
                     ],
                     "housingLyphs": [
-                        "lyph-ventricular-inferior-cervical-ganglion"
+                        "wbkg:lyph-PNS-ganglion-ventricular-intrinsic-cardiac-ganglion"
                     ]
                 },
                 {
@@ -3364,9 +2824,9 @@
                         5
                     ],
                     "housingLyphs": [
-                        "lyph-ventricular-inferior-cervical-ganglion",
-                        "lyph-heart",
-                        "lyph-heart"
+                        "wbkg:lyph-PNS-ganglion-ventricular-intrinsic-cardiac-ganglion",
+                        "wbkg:lyph-cardiovascular-heart",
+                        "wbkg:lyph-cardiovascular-heart"
                     ]
                 },
                 {
@@ -3382,7 +2842,7 @@
                         0
                     ],
                     "housingLyphs": [
-                        "lyph-heart"
+                        "wbkg:lyph-cardiovascular-heart"
                     ]
                 },
                 {
@@ -3399,8 +2859,8 @@
                         0
                     ],
                     "housingLyphs": [
-                        "lyph-heart",
-                        "lyph-left-ventricle"
+                        "wbkg:lyph-cardiovascular-heart",
+                        "wbkg:lyph-cardiovascular-left-ventricle"
                     ]
                 },
                 {
@@ -3418,9 +2878,9 @@
                         1
                     ],
                     "housingLyphs": [
-                        "lyph-heart",
-                        "lyph-left-ventricle",
-                        "lyph-left-ventricle"
+                        "wbkg:lyph-cardiovascular-heart",
+                        "wbkg:lyph-cardiovascular-left-ventricle",
+                        "wbkg:lyph-cardiovascular-left-ventricle"
                     ]
                 },
                 {
@@ -3437,8 +2897,8 @@
                         0
                     ],
                     "housingLyphs": [
-                        "lyph-heart",
-                        "lyph-right-ventricle"
+                        "wbkg:lyph-cardiovascular-heart",
+                        "wbkg:lyph-cardiovascular-right-ventricle"
                     ]
                 },
                 {
@@ -3456,9 +2916,9 @@
                         1
                     ],
                     "housingLyphs": [
-                        "lyph-heart",
-                        "lyph-right-ventricle",
-                        "lyph-right-ventricle"
+                        "wbkg:lyph-cardiovascular-heart",
+                        "wbkg:lyph-cardiovascular-right-ventricle",
+                        "wbkg:lyph-cardiovascular-right-ventricle"
                     ]
                 },
                 {
@@ -3474,7 +2934,7 @@
                         0
                     ],
                     "housingLyphs": [
-                        "lyph-arterial-inferior-cervical-ganglion"
+                        "wbkg:lyph-PNS-ganglion-atrial-intrinsic-cardiac-ganglion"
                     ]
                 },
                 {
@@ -3490,7 +2950,7 @@
                         0
                     ],
                     "housingLyphs": [
-                        "lyph-arterial-inferior-cervical-ganglion"
+                        "wbkg:lyph-PNS-ganglion-atrial-intrinsic-cardiac-ganglion"
                     ]
                 },
                 {
@@ -3506,7 +2966,7 @@
                         0
                     ],
                     "housingLyphs": [
-                        "lyph-ventricular-inferior-cervical-ganglion"
+                        "wbkg:lyph-PNS-ganglion-ventricular-intrinsic-cardiac-ganglion"
                     ]
                 },
                 {
@@ -3522,7 +2982,7 @@
                         0
                     ],
                     "housingLyphs": [
-                        "lyph-ventricular-inferior-cervical-ganglion"
+                        "wbkg:lyph-PNS-ganglion-ventricular-intrinsic-cardiac-ganglion"
                     ]
                 },
                 {
@@ -3544,13 +3004,13 @@
                         5
                     ],
                     "housingLyphs": [
-                        "lyph-nodose-ganglion-vagus-nerve",
-                        "lyph-heart",
-                        "lyph-heart",
-                        "lyph-heart",
-                        "lyph-heart",
-                        "lyph-heart",
-                        "lyph-heart"
+                        "wbkg:lyph-PNS-nodose-ganglion-vagus-nerve",
+                        "wbkg:lyph-cardiovascular-heart",
+                        "wbkg:lyph-cardiovascular-heart",
+                        "wbkg:lyph-cardiovascular-heart",
+                        "wbkg:lyph-cardiovascular-heart",
+                        "wbkg:lyph-cardiovascular-heart",
+                        "wbkg:lyph-cardiovascular-heart"
                     ]
                 },
                 {
@@ -3568,9 +3028,9 @@
                         0
                     ],
                     "housingLyphs": [
-                        "lyph-nodose-ganglion-vagus-nerve",
-                        "wbkg:lyph-medulla",
-                        "lyph-nucleus-tractus-solitarius"
+                        "wbkg:lyph-PNS-nodose-ganglion-vagus-nerve",
+                        "wbkg:lyph-CNS-medulla",
+                        "wbkg:lyph-CNS-nucleus-tractus-solitarius"
                     ]
                 },
                 {
@@ -3586,7 +3046,7 @@
                         5
                     ],
                     "housingLyphs": [
-                        "lyph-heart"
+                        "wbkg:lyph-cardiovascular-heart"
                     ]
                 },
                 {
@@ -3602,7 +3062,7 @@
                         5
                     ],
                     "housingLyphs": [
-                        "lyph-heart"
+                        "wbkg:lyph-cardiovascular-heart"
                     ]
                 },
                 {
@@ -3619,8 +3079,8 @@
                         0
                     ],
                     "housingLyphs": [
-                        "lyph-heart",
-                        "lyph-left-atrium"
+                        "wbkg:lyph-cardiovascular-heart",
+                        "wbkg:lyph-cardiovascular-left-atrium"
                     ]
                 },
                 {
@@ -3638,9 +3098,9 @@
                         1
                     ],
                     "housingLyphs": [
-                        "lyph-heart",
-                        "lyph-left-atrium",
-                        "lyph-left-atrium"
+                        "wbkg:lyph-cardiovascular-heart",
+                        "wbkg:lyph-cardiovascular-left-atrium",
+                        "wbkg:lyph-cardiovascular-left-atrium"
                     ]
                 },
                 {
@@ -3656,7 +3116,7 @@
                         5
                     ],
                     "housingLyphs": [
-                        "lyph-heart"
+                        "wbkg:lyph-cardiovascular-heart"
                     ]
                 },
                 {
@@ -3672,7 +3132,7 @@
                         5
                     ],
                     "housingLyphs": [
-                        "lyph-heart"
+                        "wbkg:lyph-cardiovascular-heart"
                     ]
                 },
                 {
@@ -3689,8 +3149,8 @@
                         0
                     ],
                     "housingLyphs": [
-                        "lyph-heart",
-                        "lyph-left-ventricle"
+                        "wbkg:lyph-cardiovascular-heart",
+                        "wbkg:lyph-cardiovascular-left-ventricle"
                     ]
                 },
                 {
@@ -3708,9 +3168,9 @@
                         1
                     ],
                     "housingLyphs": [
-                        "lyph-heart",
-                        "lyph-left-ventricle",
-                        "lyph-left-ventricle"
+                        "wbkg:lyph-cardiovascular-heart",
+                        "wbkg:lyph-cardiovascular-left-ventricle",
+                        "wbkg:lyph-cardiovascular-left-ventricle"
                     ]
                 },
                 {
@@ -3726,7 +3186,7 @@
                         5
                     ],
                     "housingLyphs": [
-                        "lyph-heart"
+                        "wbkg:lyph-cardiovascular-heart"
                     ]
                 },
                 {
@@ -3742,7 +3202,7 @@
                         5
                     ],
                     "housingLyphs": [
-                        "lyph-heart"
+                        "wbkg:lyph-cardiovascular-heart"
                     ]
                 },
                 {
@@ -3759,8 +3219,8 @@
                         0
                     ],
                     "housingLyphs": [
-                        "lyph-heart",
-                        "lyph-aorta"
+                        "wbkg:lyph-cardiovascular-heart",
+                        "wbkg:lyph-cardiovascular-arch-of-aorta"
                     ]
                 },
                 {
@@ -3777,8 +3237,8 @@
                         0
                     ],
                     "housingLyphs": [
-                        "lyph-heart",
-                        "lyph-pulmonary-artery"
+                        "wbkg:lyph-cardiovascular-heart",
+                        "wbkg:lyph-cardiovascular-pulmonary-trunk"
                     ]
                 },
                 {
@@ -3787,14 +3247,14 @@
                     "ontologyTerms": [
                         "SAO:1211023249"
                     ],
-                    "lyphTemplate": "dend-tube",
+                    "lyphTemplate": "wbkg:lt-dend-tube",
                     "root": "s-neuron-sensory-middle-cervical-12",
                     "leaf": "con-neuron-sensory-middle-cervical-12x",
                     "housingLayers": [
                         0
                     ],
                     "housingLyphs": [
-                        "A80"
+                        "wbkg:lyph-middle-cervical-ganglion"
                     ]
                 },
                 {
@@ -3803,14 +3263,14 @@
                     "ontologyTerms": [
                         "SAO:1770195789"
                     ],
-                    "lyphTemplate": "axon-bag",
+                    "lyphTemplate": "wbkg:lt-axon-bag",
                     "root": "t-neuron-sensory-middle-cervical-12",
                     "leaf": "con-neuron-sensory-middle-cervical-12a",
                     "housingLayers": [
                         0
                     ],
                     "housingLyphs": [
-                        "A80"
+                        "wbkg:lyph-middle-cervical-ganglion"
                     ]
                 },
                 {
@@ -3819,14 +3279,14 @@
                     "ontologyTerms": [
                         "SAO:1211023249"
                     ],
-                    "lyphTemplate": "dend-tube",
+                    "lyphTemplate": "wbkg:lt-dend-tube",
                     "root": "s-neuron-sensory-inferior-cervical-12",
                     "leaf": "con-neuron-sensory-middle-cervical-12x",
                     "housingLayers": [
                         0
                     ],
                     "housingLyphs": [
-                        "A81"
+                        "wbkg:lyph-stellate-ganglion"
                     ]
                 },
                 {
@@ -3835,14 +3295,14 @@
                     "ontologyTerms": [
                         "SAO:1770195789"
                     ],
-                    "lyphTemplate": "axon-bag",
+                    "lyphTemplate": "wbkg:lt-axon-bag",
                     "root": "t-neuron-sensory-inferior-cervical-12",
                     "leaf": "con-neuron-sensory-inferior-cervical-12b",
                     "housingLayers": [
                         0
                     ],
                     "housingLyphs": [
-                        "A81"
+                        "wbkg:lyph-stellate-ganglion"
                     ]
                 },
                 {
@@ -3851,14 +3311,14 @@
                     "ontologyTerms": [
                         "SAO:1211023249"
                     ],
-                    "lyphTemplate": "dend-bag",
+                    "lyphTemplate": "wbkg:lt-dend-bag",
                     "root": "con-neuron-sensory-middle-cervical-12x",
                     "leaf": "con-neuron-sensory-inferior-cervical-12c",
                     "housingLayers": [
                         0
                     ],
                     "housingLyphs": [
-                        "A79"
+                        "wbkg:lyph-cardiovascular-arch-of-aorta"
                     ]
                 },
                 {
@@ -3867,14 +3327,14 @@
                     "ontologyTerms": [
                         "SAO:1211023249"
                     ],
-                    "lyphTemplate": "dend-bag",
+                    "lyphTemplate": "wbkg:lt-dend-bag",
                     "root": "con-neuron-sensory-middle-cervical-12x",
                     "leaf": "con-neuron-sensory-inferior-cervical-12d",
                     "housingLayers": [
                         0
                     ],
                     "housingLyphs": [
-                        "A95"
+                        "wbkg:lyph-cardiovascular-pulmonary-trunk"
                     ]
                 },
                 {
@@ -3883,7 +3343,7 @@
                     "ontologyTerms": [
                         "SAO:1211023249"
                     ],
-                    "lyphTemplate": "wbkg:lt-dend-bag2",
+                    "lyphTemplate": "wbkg:lt-dend-bag",
                     "root": "s-neuron-sensory-dorsalroot-C6",
                     "leaf": "leaf-neuron-sensory-dorsalroot-C6",
                     "housingLayers": [
@@ -3917,7 +3377,7 @@
                     "ontologyTerms": [
                         "SAO:1211023249"
                     ],
-                    "lyphTemplate": "wbkg:lt-dend-bag2",
+                    "lyphTemplate": "wbkg:lt-dend-bag",
                     "root": "s-neuron-sensory-dorsalroot-C7",
                     "leaf": "leaf-neuron-sensory-dorsalroot-C7",
                     "housingLayers": [
@@ -3951,7 +3411,7 @@
                     "ontologyTerms": [
                         "SAO:1211023249"
                     ],
-                    "lyphTemplate": "wbkg:lt-dend-bag2",
+                    "lyphTemplate": "wbkg:lt-dend-bag",
                     "root": "s-neuron-sensory-dorsalroot-C8",
                     "leaf": "leaf-neuron-sensory-dorsalroot-C8",
                     "housingLayers": [
@@ -3985,7 +3445,7 @@
                     "ontologyTerms": [
                         "SAO:1211023249"
                     ],
-                    "lyphTemplate": "wbkg:lt-dend-bag2",
+                    "lyphTemplate": "wbkg:lt-dend-bag",
                     "root": "s-neuron-sensory-dorsalroot-T1",
                     "leaf": "leaf-neuron-sensory-dorsalroot-T1",
                     "housingLayers": [
@@ -4019,7 +3479,7 @@
                     "ontologyTerms": [
                         "SAO:1211023249"
                     ],
-                    "lyphTemplate": "wbkg:lt-dend-bag2",
+                    "lyphTemplate": "wbkg:lt-dend-bag",
                     "root": "s-neuron-sensory-dorsalroot-T2",
                     "leaf": "leaf-neuron-sensory-dorsalroot-T2",
                     "housingLayers": [
@@ -4053,7 +3513,7 @@
                     "ontologyTerms": [
                         "SAO:1211023249"
                     ],
-                    "lyphTemplate": "wbkg:lt-dend-bag2",
+                    "lyphTemplate": "wbkg:lt-dend-bag",
                     "root": "s-neuron-sensory-dorsalroot-T3",
                     "leaf": "leaf-neuron-sensory-dorsalroot-T3",
                     "housingLayers": [
@@ -4087,7 +3547,7 @@
                     "ontologyTerms": [
                         "SAO:1211023249"
                     ],
-                    "lyphTemplate": "wbkg:lt-dend-bag2",
+                    "lyphTemplate": "wbkg:lt-dend-bag",
                     "root": "s-neuron-sensory-dorsalroot-T4",
                     "leaf": "leaf-neuron-sensory-dorsalroot-T4",
                     "housingLayers": [
@@ -4121,7 +3581,7 @@
                     "ontologyTerms": [
                         "SAO:1211023249"
                     ],
-                    "lyphTemplate": "wbkg:lt-dend-bag2",
+                    "lyphTemplate": "wbkg:lt-dend-bag",
                     "root": "s-neuron-sensory-dorsalroot-T5",
                     "leaf": "leaf-neuron-sensory-dorsalroot-T5",
                     "housingLayers": [
@@ -4155,7 +3615,7 @@
                     "ontologyTerms": [
                         "SAO:1211023249"
                     ],
-                    "lyphTemplate": "wbkg:lt-dend-bag2",
+                    "lyphTemplate": "wbkg:lt-dend-bag",
                     "root": "s-neuron-sensory-dorsalroot-T6",
                     "leaf": "leaf-neuron-sensory-dorsalroot-T6",
                     "housingLayers": [
@@ -4167,11 +3627,11 @@
                 },
                 {
                     "id": "axon-soma-sensory-dorsalroot-T6",
-                    "name": "Axon in the T6 dorsal root ganglia-Neuron 13 (aacar)",
+                    "name": "Axon in the T6 dorsal root ganglia_Neuron 13 (aacar)",
                     "ontologyTerms": [
                         "SAO:1770195789"
                     ],
-                    "lyphTemplate": "wbkg:lt-axon-tube",
+                    "lyphTemplate": "wbkg:lt-axon-bag",
                     "root": "t-neuron-sensory-dorsalroot-T6",
                     "leaf": "con-neuron-sensory-dorsalroot-C6x",
                     "housingLayers": [
@@ -4185,11 +3645,11 @@
                 },
                 {
                     "id": "axon-soma-sensory-dorsalroot-T6-2",
-                    "name": "Axon in heart-Neuron 13 (aacar)",
+                    "name": "Dendrite in heart_Neuron 13 (aacar)",
                     "ontologyTerms": [
-                        "SAO:1770195789"
+                        "SAO:1211023249"
                     ],
-                    "lyphTemplate": "wbkg:lt-axon-tube",
+                    "lyphTemplate": "wbkg:lt-dend-tube",
                     "root": "con-neuron-sensory-dorsalroot-C6x",
                     "leaf": "con-neuron-sensory-heart-neuron13",
                     "housingLayers": [
@@ -4201,11 +3661,11 @@
                 },
                 {
                     "id": "axon-soma-sensory-dorsalroot-T6-3",
-                    "name": "Axon branch to heart-Neuron 13 (aacar)",
+                    "name": "Dendrite branch to heart (aacar)",
                     "ontologyTerms": [
-                        "SAO:1770195789"
+                        "SAO:1211023249"
                     ],
-                    "lyphTemplate": "wbkg:lt-axon-bag",
+                    "lyphTemplate": "wbkg:lt-dend-bag",
                     "root": "con-neuron-sensory-heart-neuron13",
                     "leaf": "con-neuron-sensory-heart-neuron13x",
                     "housingLayers": [
@@ -4217,11 +3677,11 @@
                 },
                 {
                     "id": "axon-soma-sensory-dorsalroot-T6-4",
-                    "name": "Axon to left ventricle-layer 0-Neuron 13 (aacar)",
+                    "name": "Dendrite to left ventricle-layer 0_Neuron 13 (aacar)",
                     "ontologyTerms": [
-                        "SAO:1770195789"
+                        "SAO:1211023249"
                     ],
-                    "lyphTemplate": "wbkg:lt-axon-bag",
+                    "lyphTemplate": "wbkg:lt-dend-bag",
                     "root": "con-neuron-sensory-heart-neuron13",
                     "leaf": "con-neuron-sensory-heart-leftvent-layer0-neuron13",
                     "housingLayers": [
@@ -4235,11 +3695,11 @@
                 },
                 {
                     "id": "axon-soma-sensory-dorsalroot-T6-5",
-                    "name": "Axon to left ventricle-layer 1-Neuron 13 (aacar)",
+                    "name": "Dendrite to left ventricle-layer 1_Neuron 13 (aacar)",
                     "ontologyTerms": [
-                        "SAO:1770195789"
+                        "SAO:1211023249"
                     ],
-                    "lyphTemplate": "wbkg:lt-axon-bag",
+                    "lyphTemplate": "wbkg:lt-dend-bag",
                     "root": "con-neuron-sensory-heart-neuron13",
                     "leaf": "con-neuron-sensory-heart-leftvent-layer1-neuron13",
                     "housingLayers": [
@@ -4255,11 +3715,11 @@
                 },
                 {
                     "id": "axon-soma-sensory-dorsalroot-T6-6",
-                    "name": "Axon to right ventricle-layer 0-Neuron 13 (aacar)",
+                    "name": "Dendrite to right ventricle-layer 0_Neuron 13 (aacar)",
                     "ontologyTerms": [
-                        "SAO:1770195789"
+                        "SAO:1211023249"
                     ],
-                    "lyphTemplate": "wbkg:lt-axon-bag",
+                    "lyphTemplate": "wbkg:lt-dend-bag",
                     "root": "con-neuron-sensory-heart-neuron13",
                     "leaf": "con-neuron-sensory-heart-rightvent-layer0-neuron13",
                     "housingLayers": [
@@ -4273,11 +3733,11 @@
                 },
                 {
                     "id": "axon-soma-sensory-dorsalroot-T6-7",
-                    "name": "Axon to right ventricle-layer 1-Neuron 13 (aacar)",
+                    "name": "Dendrite to right ventricle-layer 1_Neuron 13 (aacar)",
                     "ontologyTerms": [
-                        "SAO:1770195789"
+                        "SAO:1211023249"
                     ],
-                    "lyphTemplate": "wbkg:lt-axon-bag",
+                    "lyphTemplate": "wbkg:lt-dend-bag",
                     "root": "con-neuron-sensory-heart-neuron13",
                     "leaf": "con-neuron-sensory-heart-rightvent-layer1-neuron13",
                     "housingLayers": [
@@ -4411,6 +3871,27 @@
                     "ontologyTerms": [
                         "ilxtr:neuron-type-aacar-13"
                     ]
+                },
+                {
+                    "id": "soma-6",
+                    "links": [
+                        "link-soma-symp-postgang-6-T2",
+                        "link-soma-symp-postgang-6-T3",
+                        "link-soma-symp-postgang-6-T4",
+                        "link-soma-symp-postgang-6-T5",
+                        "link-soma-symp-postgang-6-T6",
+                        "link-soma-symp-postgang-6-inferior-cervical",
+                        "link-soma-symp-postgang-6-middle-cervical",
+                        "link-soma-symp-postgang-6-superior-cervical",
+                        "link-soma-symp-postgang-6-mediastinal"
+                    ]
+                },
+                {
+                    "id": "soma-12",
+                    "links": [
+                        "link-soma-sensory-middle-cervical-12",
+                        "link-soma-sensory-inferior-cervical-12"
+                    ]
                 }
             ],
             "id": "ard-arm-cardiac",
@@ -4496,6 +3977,7 @@
                         "SAO:280355188"
                     ],
                     "isTemplate": true,
+                    "color": "#006400",
                     "topology": "BAG-",
                     "supertype": "lt-cell-bag"
                 },
@@ -4506,6 +3988,7 @@
                         "SAO:280355188"
                     ],
                     "isTemplate": true,
+                    "color": "#006400",
                     "topology": "TUBE",
                     "supertype": "lt-cell-segment"
                 },
@@ -4516,6 +3999,7 @@
                         "SAO:420754792"
                     ],
                     "isTemplate": true,
+                    "color": "#640000",
                     "topology": "BAG-",
                     "supertype": "lt-cell-bag"
                 },
@@ -4526,6 +4010,7 @@
                         "SAO:420754792"
                     ],
                     "isTemplate": true,
+                    "color": "#640000",
                     "topology": "TUBE",
                     "supertype": "lt-cell-segment"
                 },
@@ -4536,6 +4021,7 @@
                         "SAO:280355188"
                     ],
                     "isTemplate": true,
+                    "color": "#006400",
                     "topology": "BAG+",
                     "supertype": "lt-cell-bag"
                 },
@@ -4546,6 +4032,7 @@
                         "SAO:420754792"
                     ],
                     "isTemplate": true,
+                    "color": "#640000",
                     "topology": "BAG+",
                     "supertype": "lt-cell-bag"
                 },
@@ -8301,6 +7788,7 @@
                 },
                 {
                     "id": "lyph-cardiovascular-inferior-vena-cava",
+                    "name": "Inferior vena cava",
                     "ontologyTerms": [
                         "UBERON:0001072"
                     ],
@@ -8308,6 +7796,7 @@
                 },
                 {
                     "id": "lyph-cardiovascular-superior-vena-cava",
+                    "name": "Superior vena cava",
                     "ontologyTerms": [
                         "UBERON:0001585"
                     ],
@@ -8315,6 +7804,7 @@
                 },
                 {
                     "id": "lyph-cardiovascular-pulmonary-vein",
+                    "name": "Pulmonary vein",
                     "ontologyTerms": [
                         "UBERON:0002016"
                     ],
@@ -9600,18 +9090,18 @@
                     ]
                 },
                 {
-                    "id": "matt-tissue-pancreatic-acinar-epithelium",
+                    "id": "mat-tissue-pancreatic-acinar-epithelium",
                     "name": "Pancreatic acinar epithelium",
                     "ontologyTerms": [
                         "ILX:0793613"
                     ],
                     "materials": [
-                        "matt-cellular-component-of-pancreatic-acinar-epithelium",
+                        "mat-cellular-component-of-pancreatic-acinar-epithelium",
                         "mat-extracellular-material"
                     ]
                 },
                 {
-                    "id": "matt-cellular-component-of-pancreatic-acinar-epithelium",
+                    "id": "mat-cellular-component-of-pancreatic-acinar-epithelium",
                     "name": "Cellular component of pancreatic acinar epithelium",
                     "materials": [
                         "lyph-cell-pancreatic-acinar"
@@ -9628,36 +9118,36 @@
                     ]
                 },
                 {
-                    "id": "matt-tissue-hepatic-lobular-epithelium",
+                    "id": "mat-tissue-hepatic-lobular-epithelium",
                     "name": "Hepatic lobular epithelial cords",
                     "ontologyTerms": [
                         "UBERON:0005452"
                     ],
                     "materials": [
-                        "matt-cellular-component-of-hepatic-lobular-epithelium",
+                        "mat-cellular-component-of-hepatic-lobular-epithelium",
                         "mat-extracellular-material"
                     ]
                 },
                 {
-                    "id": "matt-cellular-component-of-hepatic-lobular-epithelium",
+                    "id": "mat-cellular-component-of-hepatic-lobular-epithelium",
                     "name": "Cellular component of hepatic lobular epithelium",
                     "materials": [
                         "lyph-cell-liver-hepatocyte"
                     ]
                 },
                 {
-                    "id": "matt-tissue-duodenal-mucosal-epithelium",
+                    "id": "mat-tissue-duodenal-mucosal-epithelium",
                     "name": "Duodenal mucosal epithelium",
                     "ontologyTerms": [
                         "UBERON:0000320"
                     ],
                     "materials": [
-                        "matt-cellular-component-of-duodenal-mucosal-epithelium",
+                        "mat-cellular-component-of-duodenal-mucosal-epithelium",
                         "mat-extracellular-material"
                     ]
                 },
                 {
-                    "id": "matt-cellular-component-of-duodenal-mucosal-epithelium",
+                    "id": "mat-cellular-component-of-duodenal-mucosal-epithelium",
                     "name": "Cellular component of duodenal mucosal epithelium",
                     "materials": [
                         "lyph-cell-gastrointestinal-duodenal-goblet",
@@ -10377,7 +9867,8 @@
                     ],
                     "wiredTo": "too:w-S-A",
                     "levels": [
-                        null,
+                        {
+                        },
                         {
                             "target": "carotid-entry"
                         }
@@ -10447,6 +9938,6 @@
             "namespace": "wbkg"
         }
     ],
-    "created": "2022-06-23",
-    "lastUpdated": "2022-06-23"
+    "created": "2022-07-12",
+    "lastUpdated": "2022-07-12"
 }

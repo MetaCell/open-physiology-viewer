@@ -15,7 +15,7 @@ import {Shape, Lyph, Region, Border} from './shapeModel'
 import {Coalescence}  from './coalescenceModel';
 import {State, Snapshot} from "./snapshotModel";
 import {isString, isObject, isArray, isNumber, isEmpty, keys, assign} from "lodash-bound";
-import * as schema from "./graphScheme";
+import schema from "./graphScheme";
 import {logger} from "./logger";
 
 import * as XLSX from 'xlsx';
@@ -33,6 +33,9 @@ import {
     getRefNamespace,
     assignEntityById,
     schemaClassModels,
+    $SchemaType,
+    getGenID,
+    getGenName
 } from "./utils";
 
 export const modelClasses = {
@@ -181,6 +184,10 @@ export function fromJSON(inputModel) {
  * @returns
  */
 export function fromJSONGenerated(inputModel) {
+    let namespace = inputModel.namespace || undefined;
+    let entitiesByID = { waitingList: {}};
+    const added = [];
+
     function typeCast(obj) {
         if (obj instanceof Object && !(obj instanceof Array) && !(typeof obj === 'function') && obj['class'] !== undefined && modelClasses[obj['class']] !== undefined) {
             const cls = modelClasses[obj['class']];
@@ -194,17 +201,14 @@ export function fromJSONGenerated(inputModel) {
         }
     }
 
-    let namespace = inputModel.namespace || undefined;
-    let entitiesByID = { waitingList: {}};
     const _casted_model = typeCast(inputModel);
-    const added = [];
-
     if (_casted_model.class === ModelType.GRAPH) {
         Graph.processGraphWaitingList(_casted_model, entitiesByID, namespace, added, modelClasses, typeCast);
     } else if (_casted_model.class === ModelType.SCAFFOLD) {
         Scaffold.processScaffoldWaitingList(_casted_model, entitiesByID, namespace, added, modelClasses, typeCast);
     }
 
+    _casted_model.entitiesByID = entitiesByID;
     return _casted_model;
 }
 
@@ -235,7 +239,7 @@ export function joinModels(inputModelA, inputModelB, flattenGroups = false){
             schema.definitions.Scaffold.properties::keys().forEach(prop => {
                 let spec = schema.definitions.Scaffold.properties[prop];
                 //FIXME? Local conventions can have duplicates
-                if (spec.type === "array"){
+                if (spec.type === $SchemaType.ARRAY){
                     joined[prop] = Array.from(new Set([...inputModelA[prop]||[], ...inputModelB[prop]||[]]));
                 }
                 delete inputModelB[prop];
@@ -246,7 +250,11 @@ export function joinModels(inputModelA, inputModelB, flattenGroups = false){
                 inputModelA.components.push(inputModelB);
                 return inputModelA;
             }
-            return joined::mergeWith({[$Field.components]: [inputModelA, inputModelB]});
+            return joined::mergeWith({
+                [$Field.id]        : getGenID(inputModelA.id, inputModelB.id),
+                [$Field.name]      : getGenName(inputModelA.name, "+" ,inputModelB.name),
+                [$Field.components]: [inputModelA, inputModelB]
+            });
         } else {
             //Connectivity model B gets constrained by scaffold A
             inputModelB.scaffolds = inputModelB.scaffolds || [];
@@ -265,7 +273,7 @@ export function joinModels(inputModelA, inputModelB, flattenGroups = false){
     schema.definitions.Graph.properties::keys().forEach(prop => {
         let spec = schema.definitions.Graph.properties[prop];
         //FIXME? Local conventions can have duplicates, abbrev is lost
-        if (spec.type === "array"){
+        if (spec.type === $SchemaType.ARRAY){
             joined[prop] = Array.from(new Set([...inputModelA[prop]||[], ...inputModelB[prop]||[]]));
         }
         delete inputModelB[prop];
@@ -275,5 +283,9 @@ export function joinModels(inputModelA, inputModelB, flattenGroups = false){
         inputModelA.groups = inputModelA.groups || [];
         inputModelA.groups.push(inputModelB);
     }
-    return joined::mergeWith({[$Field.groups]: [inputModelA, inputModelB]});
+    return joined::mergeWith({
+        [$Field.id]    : getGenID(inputModelA.id, inputModelB.id),
+        [$Field.name]  : getGenName(inputModelA.name, "+" ,inputModelB.name),
+        [$Field.groups]: [inputModelA, inputModelB]
+    });
 }

@@ -96,14 +96,17 @@ import { autoLayout, layoutLabelCollide } from '../view/render/autoLayout'
                                 (click)="exportResourceMapLDFlat()" title="Export flattened json-ld resource map">
                             <i class="fa fa-file-text-o"> </i>
                         </button>
-                        <button *ngIf="graphData?.logger" class="w3-bar-item w3-hover-light-grey"
+                        <button *ngIf="graphData?.logger.status === graphData.logger.statusOptions.ERROR" class="w3-bar-item w3-hover-light-grey"
                                 (click)="showReport()" title="Show logs">
-                            <i *ngIf="graphData.logger.status === graphData.logger.statusOptions.ERROR"
-                               class="fa fa-exclamation-triangle" style="color:red"> </i>
-                            <i *ngIf="graphData.logger.status === graphData.logger.statusOptions.WARNING"
-                               class="fa fa-exclamation-triangle" style="color:yellow"> </i>
-                            <i *ngIf="graphData.logger.status === graphData.logger.statusOptions.OK"
-                               class="fa fa-check-circle" style="color:green"> </i>
+                            <i class="fa fa-exclamation-triangle" style="color:red"> </i>
+                        </button>
+                        <button *ngIf="graphData?.logger.status === graphData.logger.statusOptions.WARNING" class="w3-bar-item w3-hover-light-grey"
+                                (click)="showReport()" title="Show logs">
+                            <i class="fa fa-exclamation-triangle" style="color:yellow"> </i>
+                        </button>
+                        <button *ngIf="graphData?.logger.status === graphData.logger.statusOptions.OK" class="w3-bar-item w3-hover-light-grey"
+                                (click)="showReport()" title="Show logs">
+                            <i class="fa fa-check-circle" style="color:green"> </i>
                         </button>
                     </section>
                 </section>

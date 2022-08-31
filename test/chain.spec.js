@@ -5,17 +5,17 @@ import {
     after,
     expect,
 } from './test.helper';
-import keastSpinalTest from './data/keastSpinalTest';
-import keastSpinal from './data/keastSpinal';
-import m1 from './data/M1-model';
-import wbkgSpleen from './data/wbkgSpleen.json';
-import wbkgStomach from './data/wbkgStomach.json';
-import wbkgSynapseTest from './data/wbkgSynapseTest.json';
-import wiredChain from './data/basicChainWireConflict.json';
 import {modelClasses} from '../src/model/index';
 import {Logger} from "../src/model/logger";
 import {values} from 'lodash-bound';
 import {getRefID} from "../src/model/utils";
+import keastSpinalTest from './data/keastSpinalTest';
+import keastSpinal from './data/keastSpinal';
+import wbkgSpleen from './data/wbkgSpleen.json';
+import wbkgStomach from './data/wbkgStomach.json';
+import wbkgPancreas from './data/wbkgPancreas.json';
+import wbkgSynapseTest from './data/wbkgSynapseTest.json';
+import wiredChain from './data/basicChainWireConflict.json';
 
 describe("Generate groups from chain templates (Keast Spinal Test)", () => {
     let graphData;
@@ -55,11 +55,12 @@ describe("Generate groups from chain templates (Keast Spinal Test)", () => {
         expect(n2.leafOf[0]).to.have.property("id").that.equal("ch1");
 
         expect(graphData).to.have.property("groups");
-        //count auto-created force link group (Empty "Ungrouped" is not added after issue #149 fix)
-        expect(graphData.groups).to.be.an('array').that.has.length(4);
-        const gr1 = graphData.groups[1];
+        //Empty "Ungrouped" is not added after issue #149 fix
+        //Do not count auto-created force group when it is disabled, +1 otherwise
+        expect(graphData.groups).to.be.an('array').that.has.length(3);
+
+        const gr1 = graphData.groups.find(g => g.id === "group_ch1");
         expect(gr1).to.be.an('object');
-        expect(gr1).to.have.property("id").that.equal("group_ch1");
         expect(gr1).to.have.property("generated").that.equal(true);
 
         expect(gr1).to.have.property("nodes").that.is.an('array');
@@ -209,8 +210,8 @@ describe("Link joint chains (Keast Spinal)", () => {
         const collapsibleLinks = graphData.links.filter(lnk => lnk.collapsible);
         const chain1 = graphData.chains.find(ch => ch.id === "t1");
         const chain2 = graphData.chains.find(ch => ch.id === "t2");
-        expect(chain1).has.property('levels').that.has.length.of(7);
-        expect(chain2).has.property('levels').that.has.length.of(10);
+        expect(chain1).has.property('levels').that.has.length(7);
+        expect(chain2).has.property('levels').that.has.length(10);
         for (let i = 0; i < 7; i++){
             expect(chain1.levels[i]).to.have.property("levelIn");
             expect(chain1.levels[i].levelIn).to.be.an('array').that.has.length(1);
@@ -221,13 +222,13 @@ describe("Link joint chains (Keast Spinal)", () => {
             expect(chain2.levels[i].levelIn).to.be.an('array').that.has.length(1);
             expect(chain2.levels[i].levelIn[0]).to.have.property("id").that.equals(chain2.id);
         }
-        expect(collapsibleLinks).has.length.of(17);
+        expect(collapsibleLinks).has.length(17);
     });
 
     it("Chain joining node was cloned", () => {
         const joinNode = graphData.nodes.find(node => node.id === "n2");
         expect(joinNode).to.be.an('object');
-        expect(joinNode).to.have.property('clones').that.has.length.of(2);
+        expect(joinNode).to.have.property('clones').that.has.length(2);
     });
 
     it("Joint chains are linked together", () => {
@@ -239,39 +240,12 @@ describe("Link joint chains (Keast Spinal)", () => {
         expect(firstInChain2).to.be.an('object');
         expect(lastInChain1).to.have.property('nextChainStartLevels');
         expect(firstInChain2).to.have.property('prevChainEndLevels');
-        expect(lastInChain1.nextChainStartLevels).to.be.an('array').that.has.length.of(1);
-        expect(firstInChain2.prevChainEndLevels).to.be.an('array').that.has.length.of(1);
+        expect(lastInChain1.nextChainStartLevels).to.be.an('array').that.has.length(1);
+        expect(firstInChain2.prevChainEndLevels).to.be.an('array').that.has.length(1);
         expect(lastInChain1.nextChainStartLevels[0]).to.be.an('object');
         expect(firstInChain2.prevChainEndLevels[0]).to.be.an('object');
         expect(lastInChain1.nextChainStartLevels[0]).to.have.property('id').that.equals(firstInChain2.id);
         expect(firstInChain2.prevChainEndLevels[0]).to.have.property('id').that.equals(lastInChain1.id);
-    });
-
-    after(() => {
-        graphData.logger.clear();
-    });
-});
-
-describe("Expand chain template (M1)", () => {
-    let graphData;
-    before(() => {
-        graphData = modelClasses.Graph.fromJSON(m1, modelClasses);
-    });
-
-    it("Generated chain of lyphs has root and leaf", () => {
-        expect(graphData).to.have.property("chains");
-        expect(graphData.chains).to.be.an('array').that.has.length(1);
-
-        const ch1 = graphData.chains[0];
-        expect(ch1).to.be.an('object');
-        expect(ch1).to.have.property("name").that.equal("Airways");
-        expect(ch1).to.have.property("numLevels").that.equal(6);
-        expect(ch1).to.have.property("levels").that.is.an("array");
-        expect(ch1).to.have.property("root").that.is.an("object");
-        expect(ch1).to.have.property("leaf").that.is.an("object");
-        expect(ch1).to.have.property("wiredTo").that.is.an("object");
-        expect(ch1.wiredTo).to.have.property("id").that.equals("w-X-f1L");
-        expect(ch1.levels.length).to.be.equal(6);
     });
 
     after(() => {
@@ -432,7 +406,6 @@ describe("Process model with multiple namespaces (Stomach)", () => {
     });
 });
 
-
 describe("Process a model with lyph, chain and channel templates from a different namespace", () => {
     let graphData;
     before(() => {
@@ -461,6 +434,29 @@ describe("Process a model with lyph, chain and channel templates from a differen
         }
         expect(duplicates).to.have.length(0);
         expect(noFullID).to.have.length(0);
+    });
+
+    after(() => {
+        graphData.logger.clear();
+    });
+});
+
+describe("Neurulator discovers neurons (Pancreas)", () => {
+    let graphData;
+    before(() => {
+        graphData = modelClasses.Graph.fromJSON(wbkgPancreas, modelClasses);
+    });
+
+   it("Dynamic groups created for model neurons (Pancreas)", () => {
+        expect(graphData).to.have.property("class");
+        expect(graphData).to.be.instanceOf(modelClasses.Graph);
+        graphData.neurulator();
+        expect(graphData).to.have.property("groups");
+        expect(graphData.groups[0]).to.be.instanceOf(modelClasses.Group);
+        let dynamic = graphData.groups.filter(g => g.description === "dynamic");
+        expect(dynamic.length).to.be.equal(4);
+        let neurons = dynamic.filter(g => g.name.startsWith("Neuron"));
+        expect(neurons.length).to.be.equal(4);
     });
 
     after(() => {
