@@ -16,12 +16,18 @@ export class Lyph extends objectBase
   _layers = [];
   _topology ;
   _radialTypes = [false, false];
-  _isTemplate = false ;
-  _superType = undefined ;
+  _isTemplate  = false ;
+  _superType   = undefined ;
 
-  constructor(model, query)
+  _query   = undefined
+  _reducer = undefined ;
+  static type    = objectTypes.lyphs; 
+
+  constructor(id, query, reducer, props)
   {
-    super(model, objectTypes.lyphs, query);
+    const model = props ? Object.assign(query(id, Lyph.type), props) : query(id, Lyph.type) ; 
+    super(model, objectTypes.lyphs, reducer);
+    this.color       = model.color ;
     this.width       = model.scale?.width ;
     this.height      = model.scale?.height ;
     this.radius      = model.radius || ( this.height / 8 ) ;
@@ -29,6 +35,9 @@ export class Lyph extends objectBase
     this._groupped   = true ;
     this._isTemplate = model.isTemplate ;
     this._superType  = model.supertype ;
+
+    this._query = query ;
+    this._reducer = reducer ;
 
     this.initRadialTypes();
     //layout based positioning and sizing
@@ -62,7 +71,7 @@ export class Lyph extends objectBase
   }
 
   clone() {
-    const cloned = new Lyph(this._json, this._reducer);
+    const cloned = new Lyph(this._id, this._query, this._reducer, props);
     cloned._layers = this._layers ;
     cloned._isTemplate = false ;
     return cloned ;
@@ -74,16 +83,18 @@ export class Lyph extends objectBase
     if( totalLayers > 0)
     {
       this.model.layers.forEach((layer, i)=>{
-        const width = this._width  ;
+        const width  = this._width  ;
         const height = this._height / totalLayers;
         const radius = height / 8 ;
+        const color  = layer.color ;
         const starty = this.position.y + ( -1 * this._height * 0.5 ) + height * 0.5;
-        const scale = { width, height, radius }
+        const scale  = { width, height, radius }
         const x = this.position.x ;
         const y = starty + (i * height);
         const z = 0.1 ;
-        const layout = { x, y , z }
-        const innerLayer = new Lyph({ scale, layout})
+        const id = layer.id ;
+        const layout = { x, y, z }
+        const innerLayer = new Lyph(id, this._query, this._reducer, { scale, layout, color })
         this._layers.push(innerLayer);
       })
     }
@@ -94,13 +105,13 @@ export class Lyph extends objectBase
     if (this._isTemplate)
       return null ;
 
-    const group = new THREE.Group();
+    const group     = new THREE.Group();
     const hasLayers = this._layers.length > 0 ;
 
-    const params = { color: this._color, polygonOffsetFactor: this._polygonOffsetFactor} ;
+    const params   = { color: this._color, polygonOffsetFactor: this._polygonOffsetFactor} ;
     //thickness, height, radius, top, bottom
     const geometry = ThreeDFactory.lyphShape([this._width, this._height, this._radius, ...this._radialTypes]) ;
-    let mesh = ThreeDFactory.createMeshWithBorder(geometry, params);
+    let mesh       = ThreeDFactory.createMeshWithBorder(geometry, params);
     mesh.position.set(this.position.x, this.position.y, this.position.z);
     group.add(mesh);
 

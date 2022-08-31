@@ -13,7 +13,6 @@ export class modelHandler
     this._model = model ;
     this._scene = scene ;
     this.parse();
-    this.merge();
   }
 
   scene(scene) { this._scene = scene ; }
@@ -23,7 +22,12 @@ export class modelHandler
     return this._createdObjects;
   }
 
-  query(objectId, type, selectType = queryTypes.id, ...params)
+  queryGeneratedModel(objectId, type)
+  {
+    return this._model[type].find( o => o.id === objectId ) ;
+  }
+
+  queryCreatedObjects(objectId, selectType = queryTypes.id, ...params)
   {
     let targetIndex =  -1 ;
     if (selectType == queryTypes.id)
@@ -44,19 +48,11 @@ export class modelHandler
       {
         const children = this._model[objType];
         children?.forEach((node)=>{
-          const createdObject = objectFactory.create(objType, node, this.query.bind(this));
+          const createdObject = objectFactory.create(node.id, objType, this.queryGeneratedModel.bind(this), this.queryCreatedObjects.bind(this));
           this._createdObjects.push(createdObject);
         });
       }
     })
-  }
-
-  merge()
-  {
-    // this._createdObjects.forEach(o =>{ o.merge() });
-    // this._createdObjects.forEach(o =>{ 
-    //   o.mergeSuperTypes() 
-    // });
   }
 
   render()
@@ -71,7 +67,6 @@ export class modelHandler
     });
 
     this._renderedObjects.forEach(o => this._scene.add(o));
-
   }
 
   clearCreatedObjects()
