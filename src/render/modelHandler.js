@@ -61,6 +61,22 @@ export class modelHandler
     const links = this._createdObjects.filter( o => o._type === objectTypes.links ).map( o => linkFromGeneratedModel(o) )
     this._graph = new DirectedGraph(nodes, links);
     this._graph.runLayout();
+    this.updateCreatedObjectsLayout();
+  }
+
+  updateCreatedObjectsLayout()
+  {
+    const elements = this._graph._graph._private.elements ;
+    this._createdObjects.filter( o => o._type === objectTypes.nodes )
+    .forEach( node => {
+      const el = elements.find( e => e.data().id == node.id );
+      if (el)
+      {
+        const layoutPosition = el.position() ;
+        node._position.x = layoutPosition.x ;
+        node._position.y = layoutPosition.y ;
+      }
+    })
   }
 
   render()
