@@ -1,0 +1,52 @@
+{
+  "id"  : "housedTree",
+  "name": "Larynx through Diencephalon, Midbrain, Pons, and Medulla",
+  "description": "Demo model with a housed omega tree template",
+  "nodes": [
+    {
+      "id": "n1",
+      "layout": {
+        "x": -100
+      }
+    },
+    {"id": "n2"},
+    {"id": "n3"},
+    {"id": "n4"},
+    {
+      "id": "n5",
+      "layout": {
+        "x": 100
+      }
+    }
+  ],
+  "links": [
+    {
+      "id": "lnk1",
+      "source": "n1",
+      "target": "n2",
+      "color": "#ff0000",
+      "length": 20
+    },
+    {
+      "id": "lnk2",
+      "source": "n2",
+      "target": "n3",
+      "color": "#00ff00",
+      "length": 20
+    },
+    {
+      "id": "lnk3",
+      "source": "n3",
+      "target": "n4",
+      "color": "#0000ff",
+      "length": 20
+    },
+    {
+      "id": "lnk4",
+      "source": "n4",
+      "target": "n5",
+      "color": "#000000",
+      "length": 20
+    }
+  ]
+}
