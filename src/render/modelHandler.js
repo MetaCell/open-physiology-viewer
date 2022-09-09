@@ -1,12 +1,14 @@
 import { objectTypes } from "./model/types"
 import objectFactory from "./model/factory"
 import { queryTypes } from "./query/reducer";
+import { nodeFromGeneratedModel, linkFromGeneratedModel, DirectedGraph } from "./graph/directedGraph";
 
 export class modelHandler
 {
   _model ;
   _createdObjects = [];
   _renderedObjects = [];
+  _graph = undefined ;
   _secene ;
 
   constructor(model, scene) { 
@@ -53,6 +55,11 @@ export class modelHandler
         });
       }
     })
+
+    //set initial location for nodes and links
+    const nodes = this._createdObjects.filter( o => o._type === objectTypes.nodes ).map( o => nodeFromGeneratedModel(o) );
+    const links = this._createdObjects.filter( o => o._type === objectTypes.links ).map( o => linkFromGeneratedModel(o) )
+    this._graph = new DirectedGraph(nodes, links);
   }
 
   render()
