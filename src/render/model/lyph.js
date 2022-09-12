@@ -48,10 +48,13 @@ export class Lyph extends objectBase
       const link = model.conveys ;
       if (link)
       {
-        this.width = link.length * 0.5 ;      
+        this.width = 15; //link.length * 0.5 ;
+        this.height = 25 ;
+        const source = reducer(link.source.id)
+        const target = reducer(link.target.id)      
         this.position = getPointInBetweenByPerc(
-            layoutToVector3(link.source.layout)
-          , layoutToVector3(link.target.layout)
+          layoutToVector3(source.position), 
+          layoutToVector3(target.position)
           , 0.5) ;
       }
     }

@@ -20,8 +20,8 @@ export class Layer extends objectBase
   }
 
   render() {
-    const width = this._json.scale.width ;
-    const height = this._json.scale.height ;
+    const width = 15 ; //this._json.scale.width ;
+    const height = 25 ; //this._json.scale.height ;
     const geometry = ThreeDFactory.createBoxGeometry(width, height);
 
     const material = MaterialFactory.createMeshLambertMaterial({
