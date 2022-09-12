@@ -1,7 +1,9 @@
 export const objectTypes = {
   chains: 'chains',
-  links: 'links',
-  nodes: 'nodes',
   lyphs: 'lyphs',
   layers: 'layers'
+}
+export const mainObjectTypes = { 
+  links: 'links',
+  nodes: 'nodes'
 }

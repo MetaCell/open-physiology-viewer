@@ -1,4 +1,4 @@
-import { objectTypes } from "./model/types"
+import { objectTypes, mainObjectTypes } from "./model/types"
 import objectFactory from "./model/factory"
 import { queryTypes } from "./query/reducer";
 import { nodeFromGeneratedModel, linkFromGeneratedModel, DirectedGraph } from "./graph/directedGraph";
@@ -42,40 +42,60 @@ export class modelHandler
 
   parse()
   {
+    //nodes 
+    let children = this._model[mainObjectTypes.nodes];
+    children?.forEach((node)=>{
+      const createdObject = objectFactory.create(node.id, mainObjectTypes.nodes, this.queryGeneratedModel.bind(this), this.queryCreatedObjects.bind(this));
+      this._createdObjects.push(createdObject);
+    });
+
+    //links
+    children = this._model[mainObjectTypes.links];
+    children?.forEach((node)=>{
+      const createdObject = objectFactory.create(node.id, mainObjectTypes.links, this.queryGeneratedModel.bind(this), this.queryCreatedObjects.bind(this));
+      this._createdObjects.push(createdObject);
+    });
+
+    //set initial location for nodes and links
+    const nodes = this._createdObjects.filter( o => o._type === mainObjectTypes.nodes ).map( o => nodeFromGeneratedModel(o) );
+    const links = this._createdObjects.filter( o => o._type === mainObjectTypes.links ).map( o => linkFromGeneratedModel(o) );
+
+    this._graph = new DirectedGraph(nodes, links);
+    this._graph.runLayout();
+    this.updateCreatedObjectsLayout(); //now anything else is safe to be crated using the nodes position
+
     const props = Object.getOwnPropertyNames(this._model);
     const validObjNames = Object.getOwnPropertyNames(objectTypes);
 
     props.forEach((objType)=>{
       if (validObjNames.indexOf(objType) > -1)
       {
-        const children = this._model[objType];
+        children = this._model[objType];
         children?.forEach((node)=>{
           const createdObject = objectFactory.create(node.id, objType, this.queryGeneratedModel.bind(this), this.queryCreatedObjects.bind(this));
           this._createdObjects.push(createdObject);
         });
       }
     })
-
-    //set initial location for nodes and links
-    const nodes = this._createdObjects.filter( o => o._type === objectTypes.nodes ).map( o => nodeFromGeneratedModel(o) );
-    const links = this._createdObjects.filter( o => o._type === objectTypes.links ).map( o => linkFromGeneratedModel(o) )
-    this._graph = new DirectedGraph(nodes, links);
-    this._graph.runLayout();
-    this.updateCreatedObjectsLayout();
   }
 
   updateCreatedObjectsLayout()
   {
     const elements = this._graph._graph._private.elements ;
-    this._createdObjects.filter( o => o._type === objectTypes.nodes )
+    this._createdObjects.filter( o => o._type === mainObjectTypes.nodes )
     .forEach( node => {
       const el = elements.find( e => e.data().id == node.id );
       if (el)
       {
         const layoutPosition = el.position() ;
-        node._position.x = layoutPosition.x ;
-        node._position.y = layoutPosition.y ;
+        node.position.x = layoutPosition.x ;
+        node.position.y = layoutPosition.y ;
+        node.position.z = 0 ;
       }
+    })
+    this._createdObjects.filter( o => o._type === mainObjectTypes.links )
+    .forEach( link => {
+      link.updatePoints();
     })
   }
 

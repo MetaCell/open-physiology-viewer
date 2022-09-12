@@ -1,5 +1,5 @@
 import { objectBase } from './base';
-import { objectTypes } from './types';
+import { mainObjectTypes } from './types';
 import { MaterialFactory } from '../3D/materialFactory'
 import { renderConsts } from './base';
 import { layoutToVector3 } from '../autoLayout/objects';
@@ -13,14 +13,27 @@ export class Link extends objectBase
   _lineWidth = 1;
   _pointLength = 5;
   _points = [];
-  static type = objectTypes.links ;
+  _reducer = undefined ;
+  static type = mainObjectTypes.links ;
 
   constructor(id, query, reducer)
   {
     const model = query(id, Link.type)
-    super(model, objectTypes.links, query);
+    super(model, mainObjectTypes.links, query);
+    this._reducer = reducer ;
     if(!model._points)
-      this._points = [layoutToVector3(model.source.layout), layoutToVector3(model.target.layout)]
+    {
+      //need nodes from created objects
+      const source = reducer(model.source.id)
+      const target = reducer(model.target.id)
+      this._points = [layoutToVector3(source.position), layoutToVector3(target.position)]
+    }
+  }
+
+  updatePoints() {
+    const source = this._reducer(this._generatedModel.source.id)
+    const target = this._reducer(this._generatedModel.target.id)
+    this._points = [layoutToVector3(source.position), layoutToVector3(target.position)]
   }
 
   render() {

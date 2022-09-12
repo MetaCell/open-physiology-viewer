@@ -1,7 +1,7 @@
 import { Node } from './node';
 import { Chain } from './chain';
 import { Link } from './link';
-import { objectTypes } from './types';
+import { objectTypes, mainObjectTypes } from './types';
 import { Lyph } from './lyph';
 export default class factory
 {
@@ -10,9 +10,9 @@ export default class factory
 
     if (type === objectTypes.chains) {
       threeObj = new Chain(id, query, reducer);
-    } else if (type === objectTypes.links) {
+    } else if (type === mainObjectTypes.links) {
       threeObj = new Link(id, query, reducer);
-    } else if (type === objectTypes.nodes) {
+    } else if (type === mainObjectTypes.nodes) {
       threeObj = new Node(id, query, reducer);
     } else if (type === objectTypes.lyphs) {
       threeObj = new Lyph(id, query, reducer);

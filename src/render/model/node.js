@@ -1,11 +1,11 @@
 import { objectBase } from './base';
-import { objectTypes } from './types';
+import { mainObjectTypes } from './types';
 import { ThreeDFactory } from '../3D/threeDFactory'; 
 import { MaterialFactory } from '../3D/materialFactory';
 
 export class Node extends objectBase
 {
-  static type = objectTypes.nodes ;
+  static type = mainObjectTypes.nodes ;
 
   constructor(id, query, reducer)
   {
