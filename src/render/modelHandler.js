@@ -105,9 +105,13 @@ export class modelHandler
 
     //TODO handle THREEJS Groups
     this._createdObjects?.forEach(o =>{
-      const renderedObject = o.render();
-      if(renderedObject)
-        this._renderedObjects.push(renderedObject);
+      const skip = ( o._generatedModel.invisible != undefined && o._generatedModel.invisible ) || ( o._generatedModel.geometry == 'invisible') ;
+      if (!skip)
+      {
+        const renderedObject = o.render();
+        if(renderedObject)
+          this._renderedObjects.push(renderedObject);
+      }
     });
 
     this._renderedObjects.forEach(o => this._scene.add(o));

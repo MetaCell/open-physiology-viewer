@@ -1,5 +1,6 @@
 import { hightlight, unhighlight } from '../utils/highlight';
 import { stringToColor } from '../utils/color';
+import { mode } from 'd3';
 
 const edgeStroke = Object.freeze({
   DASHED: 'DASHED',
@@ -53,7 +54,7 @@ export class objectBase
   _children = [];
   _groupped = false ;
   _polygonOffsetFactor = 0;
-
+  _shouldRender = true ;
   _reducer = undefined ;
 
   constructor(model, type, reducer)
@@ -65,6 +66,7 @@ export class objectBase
     this._reducer = reducer;
     if (this.model.layout)
       this._position = new THREE.Vector3(this.model.layout.x, this.model.layout.y, 0);
+    //this._shouldRender = !(model.invisible || model.hidden) ;
   }
 
   fromJSON(json, modelClasses = {}, entitiesByID, namespace) {
@@ -72,6 +74,9 @@ export class objectBase
   }
 
   _render(geometry, material, position) {
+    if (!this._shouldRender)
+      return null ;
+
     geometry.translate(position.x, position.y, position.z);
     const mesh = new THREE.Mesh(geometry, material);
     return mesh ;
