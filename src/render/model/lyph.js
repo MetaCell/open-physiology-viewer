@@ -45,13 +45,14 @@ export class Lyph extends objectBase
       this.position = model.layout ;
     else {
       //link based positioning and sizing
-      const link = model.conveys ;
-      if (link)
+      const linkId = model.conveys?.id ;
+      if (linkId)
       {
-        this.width = 15; //link.length * 0.5 ;
-        this.height = 25 ;
-        const source = reducer(link.source.id)
-        const target = reducer(link.target.id)      
+        const link    = reducer(linkId);
+        this.width    = link.width * 0.125 ;
+        this.height   = link.width * 0.25 ;
+        const source  = reducer(link._generatedModel.source.id)
+        const target  = reducer(link._generatedModel.target.id)      
         this.position = getPointInBetweenByPerc(
           layoutToVector3(source.position), 
           layoutToVector3(target.position)
@@ -86,14 +87,13 @@ export class Lyph extends objectBase
     if( totalLayers > 0)
     {
       this.model.layers.forEach((layer, i)=>{
-        const width  = this._width  ;
-        const height = this._height / totalLayers;
+        const width  = this._width  / totalLayers;
+        const height = this._height ;
         const radius = height / 8 ;
         const color  = layer.color ;
-        const starty = this.position.y + ( -1 * this._height * 0.5 ) + height * 0.5;
         const scale  = { width, height, radius }
-        const x = this.position.x ;
-        const y = starty + (i * height);
+        const x = this.position.x + i * width;
+        const y = this.position.y ;
         const z = 0.1 ;
         const id = layer.id ;
         const layout = { x, y, z }

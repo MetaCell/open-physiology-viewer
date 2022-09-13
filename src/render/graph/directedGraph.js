@@ -18,7 +18,9 @@ export function linkFromGeneratedModel(o)
     data: {
       id: o._id,
       source: o._generatedModel.source.id,
-      target: o._generatedModel.target.id
+      target: o._generatedModel.target.id,
+      weight: o._generatedModel.length, 
+      minLen: o._generatedModel.length, 
     }
   }
 }
