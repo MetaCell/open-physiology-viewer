@@ -483,19 +483,27 @@ export class Chain extends GroupTemplate {
                     logger.warn($LogMsg.CHAIN_NO_HOUSING_LAYERS, hostLyph.layers, hostLyph.id);
                     return;
                 }
-                //FIXME search by fullID?
-                bundlingLayer = layers.find(e => (e.bundlesChains||[]).find(t => t === chain.id));
-                let index = layers.length - 1;
+                let nm = chain.namespace || parentGroup.namespace;
+                bundlingLayer = layers.find(e => (e.bundlesChains||[]).find(t => t === chain.id ||
+                    (nm && t === getFullID(nm, chain.id))));
+                let hostLayer = null;
                 if (chain.housingLayers && chain.housingLayers.length > i){
-                    if (chain.housingLayers[i] < index){
-                        index = Math.max(0, chain.housingLayers[i]);
-                        if (bundlingLayer && (bundlingLayer !== layers[index])){
-                            logger.warn($LogMsg.CHAIN_CONFLICT3,
-                                bundlingLayer.id, layers[index].id);
+                    if (chain.housingLayers[i] >= 0){
+                        if (chain.housingLayers[i] <= layers.length - 1) {
+                            hostLayer = layers[chain.housingLayers[i]];
+                        }
+                    } else {
+                        //Negative housing layer means the chain passes through the given layer counting from the outermost
+                        if (-chain.housingLayers[i] <= layers.length){
+                            hostLayer = layers[layers.length + chain.housingLayers[i]];
                         }
                     }
+                    if (bundlingLayer && hostLayer && (bundlingLayer !== hostLayer)) {
+                        logger.warn($LogMsg.CHAIN_CONFLICT3, bundlingLayer.id, hostLayer.id);
+                    }
                 }
-                hostLyph = bundlingLayer || layers[index] || hostLyph;
+
+                hostLyph = bundlingLayer || hostLayer || hostLyph;
             }
 
             let level = refToResource(chain.levels[i], parentGroup, $Field.links);

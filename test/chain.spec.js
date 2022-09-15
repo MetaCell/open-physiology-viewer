@@ -16,6 +16,7 @@ import wbkgStomach from './data/wbkgStomach.json';
 import wbkgPancreas from './data/wbkgPancreas.json';
 import wbkgSynapseTest from './data/wbkgSynapseTest.json';
 import wiredChain from './data/basicChainWireConflict.json';
+import uotBag from './data/neurulatorTestShortUotBag.json';
 
 describe("Generate groups from chain templates (Keast Spinal Test)", () => {
     let graphData;
@@ -128,7 +129,6 @@ describe("Generate groups from chain templates (Keast Spinal Test)", () => {
         expect(c3).to.have.property("internalLyphsInLayers");
         expect(c3.internalLyphsInLayers).to.be.an('array').that.has.length(1);
         expect(c3.internalLyphsInLayers[0]).to.be.equal(3);
-        //TODO check that properties like fascilitatesIn and bundles are updated after mapInternalResourcesToLayers
 
         expect(c3).to.have.property("layers");
         expect(c3.layers).to.be.an('array').that.has.length(14);
@@ -155,16 +155,31 @@ describe("Generate groups from chain templates (Keast Spinal Test)", () => {
         expect(nn1.housingRange).to.have.property("min").that.equals(2);
         expect(nn1.housingRange).to.have.property("max").that.equals(9);
         expect(nn1.housingLayers).to.be.an('array').that.has.length(7);
+        expect(nn1.housingLayers[5]).to.be.equal(-1);
+
+        expect(nn1.levels).to.be.an("array").that.has.length(7);
+        expect(nn1.levels[5]).to.have.property("fasciculatesIn");
+        let outerLayer = nn1.levels[5].fasciculatesIn;
+        expect(outerLayer).to.have.property("layerIn");
+        expect(outerLayer.layerIn).to.have.property("layers");
+        let numLayers = outerLayer.layerIn.layers.length;
+        expect(outerLayer.layerIn.layers[numLayers-1]).to.have.property("id").that.equals(outerLayer.id);
 
         for (let i = nn1.housingRange.min; i < nn1.housingRange.max; i++){
             expect(ch1.lyphs[i]).to.be.an('object');
             expect(ch1.lyphs[i]).to.have.property('layers');
             let j = nn1.housingLayers[i - nn1.housingRange.min];
+            if (j < 0){
+                j = ch1.lyphs[i].layers.length - 1;
+            }
             expect(ch1.lyphs[i].layers).to.be.an('array').that.has.length.above(j);
             expect(ch1.lyphs[i].layers[j]).to.be.an('object');
         }
         for (let i = nn1.housingRange.min + 1; i < nn1.housingRange.max - 1; i++) {
             let j = nn1.housingLayers[i - nn1.housingRange.min];
+            if (j < 0){
+                j = ch1.lyphs[i].layers.length - 1;
+            }
             expect(ch1.lyphs[i].layers[j]).to.have.property('bundles');
             expect(ch1.lyphs[i].layers[j].endBundles).to.be.a("undefined");
             const lnk = ch1.lyphs[i].layers[j].bundles;
@@ -182,6 +197,9 @@ describe("Generate groups from chain templates (Keast Spinal Test)", () => {
 
         [nn1.housingRange.min, nn1.housingRange.max-1].forEach(i => {
             let j = nn1.housingLayers[i - nn1.housingRange.min];
+             if (j < 0){
+                j = ch1.lyphs[i].layers.length - 1;
+            }
             expect(ch1.lyphs[i].layers[j]).to.have.property('endBundles');
             const lnk = ch1.lyphs[i].layers[j].endBundles;
             expect(lnk).to.be.an('array').that.has.length(1);
@@ -195,6 +213,46 @@ describe("Generate groups from chain templates (Keast Spinal Test)", () => {
             expect(housedLyph).to.have.property('housingLyph')
             expect(housedLyph.housingLyph).to.have.property('id').that.equals(housingLyph.id)
         })
+    });
+
+    it("Neuron chains are correctly embedded when housingLayers are negative or outside the range", () => {
+        const ch1 = graphData.chains.find(chain => chain.id === "ch1");
+        expect(ch1).to.be.an('object');
+        expect(ch1).to.have.property("lyphs");
+        expect(ch1.lyphs).to.be.an('array').that.has.length(16);
+
+        const nn2 = graphData.chains.find(chain => chain.id === "nn2");
+        expect(nn2).to.be.an('object');
+        expect(nn2).to.have.property("housingChain");
+        expect(nn2).to.have.property("housingRange");
+        expect(nn2).to.have.property("housingLayers");
+        expect(nn2.housingRange).to.have.property("min").that.equals(2);
+        expect(nn2.housingRange).to.have.property("max").that.equals(11);
+        expect(nn2.housingLayers).to.be.an('array').that.has.length(9);
+        expect(nn2.levels).to.be.an("array").that.has.length(9);
+
+        expect(nn2.housingLayers[6]).to.be.equal(-2);
+        expect(nn2.housingLayers[7]).to.be.equal(100);
+        expect(nn2.housingLayers[8]).to.be.equal(-100);
+
+        //Index -2 means the chain level is embedded to second to last outermost layer
+        expect(nn2.levels[6]).to.have.property("fasciculatesIn");
+        let hostLayer = nn2.levels[6].fasciculatesIn;
+        expect(hostLayer).to.have.property("layerIn");
+        let hostLyph = hostLayer.layerIn;
+        expect(hostLyph).to.have.property("layers");
+        let numLayers = hostLyph.layers.length;
+        expect(hostLyph.layers[numLayers-2]).to.have.property("id").that.equals(hostLayer.id);
+
+        //Positive out-of-range index defaults to host lyph
+        expect(nn2.levels[7]).to.have.property("fasciculatesIn");
+        let hostLyph1 = nn2.levels[7].fasciculatesIn;
+        expect(hostLyph1).to.have.property("id").that.equals("l2");
+
+        //Negative out-of-range index defaults to host lyph
+        expect(nn2.levels[8]).to.have.property("endsIn");
+        let hostLyph2 = nn2.levels[8].endsIn;
+        expect(hostLyph2).to.have.property("id").that.equals("l3");
     });
 
     after(() => {});
@@ -409,6 +467,17 @@ describe("Process model with multiple namespaces (Stomach)", () => {
         expect(noFullID).to.have.length(0);
     });
 
+    it("Generated lyph layers inherit composition materials (Stomach)", () => {
+        let lt_dend_bag = graphData.entitiesByID["wbkg:lt-dend-bag"];
+        expect(lt_dend_bag).not.to.be.an("undefined");
+        expect(lt_dend_bag).to.have.property("topology").that.equals("BAG-");
+        expect(lt_dend_bag).to.have.property("layers");
+        let layer = lt_dend_bag.layers[0];
+        expect(layer).to.have.property("materials");
+        expect(layer.materials).to.be.an("array").that.has.length(1);
+        expect(layer.materials[0]).to.have.property("fullID").that.equals("wbkg:mat-cytoplasm");
+    });
+
     after(() => {
         graphData.logger.clear();
     });
@@ -469,5 +538,25 @@ describe("Neurulator discovers neurons (Pancreas)", () => {
 
     after(() => {
         graphData.logger.clear();
-    }); 
+    });
 });
+
+describe("Neurulator discovers closed groups (UOT)", () => {
+    let graphData;
+    before(() => {
+        graphData = modelClasses.Graph.fromJSON(uotBag, modelClasses);
+    });
+
+   it("Dynamic group representing tree (UOT)", () => {
+        expect(graphData).to.be.instanceOf(modelClasses.Graph);
+        graphData.neurulator();
+        expect(graphData).to.have.property("groups");
+        expect(graphData.groups[0]).to.be.instanceOf(modelClasses.Group);
+        let dynamic = graphData.groups.filter(g => g.description === "dynamic");
+        expect(dynamic.length).to.be.equal(1);
+    });
+
+    after(() => {
+        graphData.logger.clear();
+    });
+})
