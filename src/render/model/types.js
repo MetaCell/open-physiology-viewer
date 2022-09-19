@@ -5,5 +5,6 @@ export const objectTypes = {
 }
 export const mainObjectTypes = { 
   links: 'links',
-  nodes: 'nodes'
+  nodes: 'nodes',
+  chains: 'chains'
 }

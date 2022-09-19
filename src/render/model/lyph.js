@@ -39,7 +39,7 @@ export class Lyph extends objectBase
     this._query = query ;
     this._reducer = reducer ;
 
-    this.initRadialTypes();
+    //this.initRadialTypes(); TODO for some reason this doesn't match model
     //layout based positioning and sizing
     if(model.layout)
       this.position = model.layout ;
@@ -104,8 +104,7 @@ export class Lyph extends objectBase
   }
 
   render() {
-    //don't render templates
-    if (this._isTemplate)
+    if (!this._shouldRender)
       return null ;
 
     const group     = new THREE.Group();
@@ -122,9 +121,17 @@ export class Lyph extends objectBase
     {      
       this._layers.forEach( l => {
         const renderedLayer = l.render();
-        group.add(renderedLayer);
+        if (renderedLayer)
+        {
+          renderedLayer.visible = true ;
+          group.add(renderedLayer);
+        }
+        
       })
     }
+
+    if(this._generatedModel.layerIn !== undefined)
+      group.visible = false ;
 
     this._cache = group ;
     

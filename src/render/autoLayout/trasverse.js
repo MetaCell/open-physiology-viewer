@@ -12,7 +12,7 @@ export function trasverseHostedBy(graphData, dict) {
     const val = graphData[k];
     if (Array.isArray(val)) {
       val.forEach((child)=>{
-        const hostKey = child.hostedBy?.id ;
+        const hostKey = child.hostedBy?.id || child.internalLyphs?.id;
         if (hostKey)
         {
           if (dict[hostKey])

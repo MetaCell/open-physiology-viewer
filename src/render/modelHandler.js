@@ -49,6 +49,12 @@ export class modelHandler
       this._createdObjects.push(createdObject);
     });
 
+    //chains 
+    children = this._model[mainObjectTypes.chains];
+    children?.forEach((chain)=>{
+      //chain.update();
+    });
+
     //links
     children = this._model[mainObjectTypes.links];
     children?.forEach((node)=>{
@@ -101,12 +107,13 @@ export class modelHandler
 
   render()
   {
+    this._renderedObjects = [];
     while (this._scene.children.length) { this._scene.remove(this._scene.children[0]) } // Clear the place
 
     //TODO handle THREEJS Groups
     this._createdObjects?.forEach(o =>{
-      const skip = ( o._generatedModel.invisible != undefined && o._generatedModel.invisible ) || ( o._generatedModel.geometry == 'invisible') ;
-      if (!skip)
+      //const skip = ( o._generatedModel.invisible != undefined && o._generatedModel.invisible ) || ( o._generatedModel.geometry == 'invisible') ;
+      if (o)
       {
         const renderedObject = o.render();
         if(renderedObject)
@@ -115,6 +122,7 @@ export class modelHandler
     });
 
     this._renderedObjects.forEach(o => this._scene.add(o));
+    //autoLayout(this._scene, this._model, false);
   }
 
   clearCreatedObjects()

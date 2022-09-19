@@ -66,20 +66,15 @@ export class objectBase
     this._reducer = reducer;
     if (this.model.layout)
       this._position = new THREE.Vector3(this.model.layout.x, this.model.layout.y, 0);
-    //this._shouldRender = !(model.invisible || model.hidden) ;
+    this._shouldRender = ! model.isTemplate ;
   }
 
   fromJSON(json, modelClasses = {}, entitiesByID, namespace) {
     this._json = json ;
   }
 
-  _render(geometry, material, position) {
-    if (!this._shouldRender)
-      return null ;
+  _render(mesh) { //implemented on child
 
-    geometry.translate(position.x, position.y, position.z);
-    const mesh = new THREE.Mesh(geometry, material);
-    return mesh ;
   }
 
   //move, scale, skew, etc.
@@ -106,6 +101,7 @@ export class objectBase
   get radius() { return this._radius }
 
   get model() { return this._generatedModel }
+  get shouldRender() { return this._shouldRender }
 
   get position() { return this._position }
 

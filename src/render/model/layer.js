@@ -20,6 +20,9 @@ export class Layer extends objectBase
   }
 
   render() {
+    if (!this._shouldRender)
+      return null ;
+      
     const width = this._json.scale.width ;
     const height = this._json.scale.height ;
     const geometry = ThreeDFactory.createBoxGeometry(width, height);
