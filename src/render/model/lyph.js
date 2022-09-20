@@ -133,6 +133,8 @@ export class Lyph extends objectBase
     if(this._generatedModel.layerIn !== undefined)
       group.visible = false ;
 
+    group.userData = this._generatedModel ;
+
     this._cache = group ;
     
     return this._cache ;

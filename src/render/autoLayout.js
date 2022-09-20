@@ -237,7 +237,7 @@ function layoutLyphs(scene, hostLyphDic, lyphDic, lyphInLyph)
             {
               hostedLyphs.forEach((l)=> {
                 fitToTargetRegion(host, l, lyphInLyph);
-                translateMeshToTarget(host, l);
+                l.type == 'Group' ? translateGroupToTarget(host, l) : translateMeshToTarget(host, l);
               });
             }
             else {
@@ -409,11 +409,10 @@ export function autoLayout(scene, graphData, showLabelWires) {
   preventZFighting(scene);
   //clearByObjectType(scene, "Node");
   let hostLyphRegionDic = {}, lyphDic = {};
+  
   trasverseHostedBy(graphData, hostLyphRegionDic);
   layoutLyphs(scene, hostLyphRegionDic, lyphDic, false);
-  trasverseHostedBy(graphData, hostLyphRegionDic);
-  layoutLyphs(scene, hostLyphRegionDic,lyphDic, false);
-  
+
   let hostLyphLyphDic = {};
   if(graphData.lyphs)
   {

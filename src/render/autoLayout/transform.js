@@ -25,7 +25,7 @@ export function translateMeshToTarget(target, mesh)
 export function translateGroupToTarget(target, group) {
   //const targetPos = computeGroupCenter(target);
   const groupPos  = computeGroupCenter(group);
-  const targetPos = getCenterPoint(target);
+  const targetPos = target.type == 'Group' ? computeGroupCenter(target) : getCenterPoint(target);
   group.translateX(targetPos.x - groupPos.x) ; //- ( objSize.x * 0.5 * 0 );
   group.translateY(targetPos.y - groupPos.y) ; //- ( objSize.y * 0.5 * 0);
   group.translateZ(3) ; 
