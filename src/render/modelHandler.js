@@ -123,6 +123,7 @@ export class modelHandler
     });
 
     this._renderedObjects.forEach(o => this._scene.add(o));
+    
     autoLayout(this._scene, this._model, false);
   }
 

@@ -20,7 +20,9 @@ export class Node extends objectBase
         color: this.color,
         polygonOffsetFactor: this._polygonOffsetFactor
     });
-  
-    return this._render(geometry, material, this._position);
+
+    geometry.translate(this.position.x, this.position.y, this.position.z);
+    const mesh = new THREE.Mesh(geometry, material);
+    return mesh ;
   }
 }

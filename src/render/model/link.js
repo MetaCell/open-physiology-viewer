@@ -37,6 +37,9 @@ export class Link extends objectBase
   }
 
   render() {
+    if (!this._shouldRender)
+      return null ;
+      
     let material;
     const stroke    = this.model.stroke ;
     const color     = this.model.color ;

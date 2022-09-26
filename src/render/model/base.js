@@ -66,7 +66,7 @@ export class objectBase
     this._reducer = reducer;
     if (this.model.layout)
       this._position = new THREE.Vector3(this.model.layout.x, this.model.layout.y, 0);
-    this._shouldRender = ! model.isTemplate ;
+    this._shouldRender = !(model.isTemplate || model.geometry == "invisible") ;
   }
 
   fromJSON(json, modelClasses = {}, entitiesByID, namespace) {
