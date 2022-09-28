@@ -1,6 +1,7 @@
 import { Node } from './node';
 import { Link } from './link';
-import { objectTypes, mainObjectTypes } from './types';
+import { Wire } from './wire';
+import { objectTypes, mainObjectTypes, scaffoldTypes } from './types';
 import { Lyph } from './lyph';
 export default class factory
 {
@@ -15,6 +16,10 @@ export default class factory
       threeObj = new Lyph(id, query, reducer);
     } else if (type === objectTypes.layers) {
       threeObj = new Layer(id, query, reducer);
+    } else if ( type === scaffoldTypes.wires) {
+      threeObj = new Wire(id, query, reducer);
+    } else if ( type === scaffoldTypes.anchors ) {
+      threeObj = new Anchor(id, query, reducer);
     }
 
     return threeObj;
