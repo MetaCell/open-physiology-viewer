@@ -1,4 +1,4 @@
-import { objectTypes, mainObjectTypes } from "./model/types"
+import { objectTypes, mainObjectTypes, scaffoldTypes } from "./model/types"
 import objectFactory from "./model/factory"
 import { queryTypes } from "./query/reducer";
 import { nodeFromGeneratedModel, linkFromGeneratedModel, DirectedGraph } from "./graph/directedGraph";
@@ -25,9 +25,12 @@ export class modelHandler
     return this._createdObjects;
   }
 
-  queryGeneratedModel(objectId, type)
+  queryGeneratedModel(objectId, type, scaffold_index)
   {
-    return this._model[type].find( o => o.id === objectId ) ;
+    if (scaffold_index > -1)
+      return this._model['scaffolds'][scaffold_index][type].find( o => o.id === objectId ) ;
+    else
+      return this._model[type].find( o => o.id === objectId ) ;
   }
 
   queryCreatedObjects(objectId, selectType = queryTypes.id, ...params)
@@ -41,8 +44,25 @@ export class modelHandler
     return target ;
   }
 
+  parseScaffolds()
+  {
+    this._model.scaffolds.forEach( (s,i) => {
+      const anchors = s.anchors ;
+      const wires = s.wires ;
+      anchors?.forEach((anchor)=>{
+        const createdObject = objectFactory.create(anchor.id, scaffoldTypes.anchors, this.queryGeneratedModel.bind(this), this.queryCreatedObjects.bind(this), i);
+        this._createdObjects.push(createdObject);
+      });
+      wires?.forEach((wire)=>{
+        const createdObject = objectFactory.create(wire.id, scaffoldTypes.wires, this.queryGeneratedModel.bind(this), this.queryCreatedObjects.bind(this), i);
+        this._createdObjects.push(createdObject);
+      });
+    })
+  }
+
   parse()
   {
+    this.parseScaffolds();
     //nodes 
     let children = this._model[mainObjectTypes.nodes];
     children?.forEach((node)=>{

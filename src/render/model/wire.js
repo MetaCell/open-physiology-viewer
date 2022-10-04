@@ -1,25 +1,22 @@
 import { objectBase } from './base';
-import { objectTypes } from './types';
+import { scaffoldTypes } from './types';
 import { ThreeDFactory } from '../3D/threeDFactory'; 
 import { MaterialFactory } from '../3D/materialFactory';
 import {
   extractCoords,
-  copyCoords,
-  direction,
   semicircleCurve,
   rectangleCurve,
-  getPoint,
   arcCurve, 
   getDefaultControlPoint
 } from "../autoLayout/curve";
 
 export class Wire extends objectBase
 {
-  static type = objectTypes.edges ;
+  static type = scaffoldTypes.wires ;
 
-  constructor(id, query, reducer)
+  constructor(id, query, reducer, scaffold_index)
   {
-    //const model = query(id, Edge.type)
+    const model = query(id, Wire.type, scaffold_index)
     super(model, Edge.type, reducer);
   }
 

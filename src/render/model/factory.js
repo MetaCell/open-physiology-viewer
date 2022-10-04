@@ -3,9 +3,11 @@ import { Link } from './link';
 import { Wire } from './wire';
 import { objectTypes, mainObjectTypes, scaffoldTypes } from './types';
 import { Lyph } from './lyph';
+import { Anchor } from './anchor';
+
 export default class factory
 {
-  static create(id, type, query, reducer) {
+  static create(id, type, query, reducer, scaffold_index = -1) {
     let threeObj;
 
     if (type === mainObjectTypes.links) {
@@ -17,9 +19,9 @@ export default class factory
     } else if (type === objectTypes.layers) {
       threeObj = new Layer(id, query, reducer);
     } else if ( type === scaffoldTypes.wires) {
-      threeObj = new Wire(id, query, reducer);
+      threeObj = new Wire(id, query, reducer, scaffold_index);
     } else if ( type === scaffoldTypes.anchors ) {
-      threeObj = new Anchor(id, query, reducer);
+      threeObj = new Anchor(id, query, reducer, scaffold_index);
     }
 
     return threeObj;
