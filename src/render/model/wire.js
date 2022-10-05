@@ -10,6 +10,9 @@ import {
   getDefaultControlPoint
 } from "../autoLayout/curve";
 
+const EDGE_STROKE = renderConsts.EDGE_STROKE ;
+const EDGE_GEOMETRY = renderConsts.EDGE_GEOMETRY ;
+
 export class Wire extends objectBase
 {
   static type = scaffoldTypes.wires ;
@@ -25,25 +28,63 @@ export class Wire extends objectBase
     const model = query(id, Wire.type, scaffold_index)
     super(model, Wire.type, reducer);
     this._geometry  = model.geometry ;
-    this._start     = model.start ;
-    this._end       = model.end ;
+    this._start     = model.source ;
+    this._end       = model.target ;
     this._arcCenter = model.arcCenter ;
     this._curvature = model.curvature ;
+    if ( !this._start && model.radius )
+      this._start = model.radius
+    if ( !this._end && model.radius )
+      this._end = model.radius
   }
 
-  render() {
-    switch (this._geometry) {
-      case renderConsts.EDGE_GEOMETRY.ARC:
-        return arcCurve(this._start, this._end, extractCoords(this._arcCenter));
+  geometry() {
+    switch (this._geometry.toUpperCase()) {
+      case renderConsts.EDGE_GEOMETRY.ARC || renderConsts.EDGE_GEOMETRY.ELLIPSE:
+        return arcCurve(extractCoords(this._start), extractCoords(this._end), extractCoords(this._arcCenter.layout));
       case renderConsts.EDGE_GEOMETRY.SEMICIRCLE:
         return semicircleCurve(this._start, this._end,);
       case renderConsts.EDGE_GEOMETRY.RECTANGLE:
         return rectangleCurve(this._start, this._end,);
       case renderConsts.WIRE_GEOMETRY.SPLINE:
         const control = this._controlPoint? extractCoords(this._controlPoint): getDefaultControlPoint(this._start, this._end, this._curvature);
-        return new THREE.QuadraticBezierCurve3(this._start, this._controlPoint, this._end);
+        return new THREE.QuadraticBezierCurve3(this._start, control, this._end);
       default:
         return new THREE.Line3(start, end);
     }
+  }
+
+  render() {
+    if (!this._shouldRender)
+      return null ;
+
+    const geometry = this.geometry();
+
+    let material;
+    const stroke    = this.model.stroke ;
+    const color     = this.model.color ;
+    const linewidth = this.model.lineWidth ;
+    if (stroke === EDGE_STROKE.DASHED) {
+      material = MaterialFactory.createLineDashedMaterial({color: color});
+    } else {
+      //Thick lines
+      if (stroke=== EDGE_STROKE.THICK) {
+        // Line 2 method: draws thick lines
+        material = MaterialFactory.createLine2Material({
+          color: color,
+          lineWidth: linewidth,
+          polygonOffsetFactor: this._polygonOffsetFactor
+        });
+      } else {
+        //Normal lines
+        material = MaterialFactory.createLineBasicMaterial({
+          color: color
+        });
+      }
+    }
+
+    const mesh = new THREE.Mesh(geometry, material);
+
+    return mesh; 
   }
 }

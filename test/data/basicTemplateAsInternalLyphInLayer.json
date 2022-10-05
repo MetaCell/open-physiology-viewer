@@ -33,7 +33,8 @@
     },
     {
       "id": "h1",
-      "layers": ["h1_l1", "h1_l2", "h1_l3"]
+      "layers": ["h1_l1", "h1_l2", "h1_l3"],
+      "topology": "BAG"
     },
     {
       "id": "h2",

@@ -9,11 +9,13 @@ const edgeStroke = Object.freeze({
 })
 
 const edgeGeometry = Object.freeze({
-  GEOMETRY: 'GEOMETRY',
-  PATH: 'PATH'
+  ELLIPSE: 'ELLIPSE'
 })
 
 const wireGeometry = Object.freeze({
+  ARC: 'ARC',
+  SEMICIRCLE: 'SEMICIRCLE',
+  RECTANGLE: 'RECTANGLE',
   SPLINE: 'SPLINE'
 })
 
