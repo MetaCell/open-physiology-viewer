@@ -13,6 +13,10 @@ const edgeGeometry = Object.freeze({
   PATH: 'PATH'
 })
 
+const wireGeometry = Object.freeze({
+  SPLINE: 'SPLINE'
+})
+
 export const renderConsts = Object.freeze({
   verticeRelSize   : 4 ,     // volume per val unit
   verticeResolution: 8 ,     // how many slice segments in the sphere's circumference
@@ -28,7 +32,8 @@ export const renderConsts = Object.freeze({
   scaleFactor    : 10,
   isConnectivity : true,
   EDGE_STROKE: edgeStroke,
-  EDGE_GEOMETRY: edgeGeometry
+  EDGE_GEOMETRY: edgeGeometry,
+  WIRE_GEOMETRY: wireGeometry
 });
 
 export class objectBase
