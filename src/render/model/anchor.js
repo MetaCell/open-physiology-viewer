@@ -14,7 +14,7 @@ export class Anchor extends objectBase
   }
 
   render() {
-    const geometry = ThreeDFactory.createSphereGeometry(this._val);
+    const geometry = ThreeDFactory.createSphereGeometry(this._val * 10);
     
     const material = MaterialFactory.createMeshLambertMaterial({
         color: this.color,

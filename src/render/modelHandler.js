@@ -46,15 +46,15 @@ export class modelHandler
 
   parseScaffolds()
   {
-    this._model.scaffolds.forEach( (s,i) => {
+    this._model.scaffolds.forEach( (s, level) => {
       const anchors = s.anchors ;
       const wires = s.wires ;
       anchors?.forEach((anchor)=>{
-        const createdObject = objectFactory.create(anchor.id, scaffoldTypes.anchors, this.queryGeneratedModel.bind(this), this.queryCreatedObjects.bind(this), i);
+        const createdObject = objectFactory.create(anchor.id, scaffoldTypes.anchors, this.queryGeneratedModel.bind(this), this.queryCreatedObjects.bind(this), level);
         this._createdObjects.push(createdObject);
       });
       wires?.forEach((wire)=>{
-        const createdObject = objectFactory.create(wire.id, scaffoldTypes.wires, this.queryGeneratedModel.bind(this), this.queryCreatedObjects.bind(this), i);
+        const createdObject = objectFactory.create(wire.id, scaffoldTypes.wires, this.queryGeneratedModel.bind(this), this.queryCreatedObjects.bind(this), level);
         this._createdObjects.push(createdObject);
       });
     })

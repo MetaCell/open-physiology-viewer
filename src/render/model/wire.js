@@ -7,7 +7,8 @@ import {
   semicircleCurve,
   rectangleCurve,
   arcCurve, 
-  getDefaultControlPoint
+  getDefaultControlPoint,
+  vectorEquals
 } from "../autoLayout/curve";
 
 const EDGE_STROKE = renderConsts.EDGE_STROKE ;
@@ -41,7 +42,18 @@ export class Wire extends objectBase
   geometry() {
     switch (this._geometry.toUpperCase()) {
       case renderConsts.EDGE_GEOMETRY.ARC || renderConsts.EDGE_GEOMETRY.ELLIPSE:
-        return arcCurve(extractCoords(this._start), extractCoords(this._end), extractCoords(this._arcCenter.layout));
+        {
+          let start  = extractCoords(this._start);
+          const end    = extractCoords(this._end) ;
+          const center = extractCoords(this._arcCenter.layout)
+          if ( vectorEquals(start, end ) )
+          {
+            const aux = start.clone();
+            aux.x *= -1; 
+            start = aux ;
+          }
+          return arcCurve( start, end, center );
+        }
       case renderConsts.EDGE_GEOMETRY.SEMICIRCLE:
         return semicircleCurve(this._start, this._end,);
       case renderConsts.EDGE_GEOMETRY.RECTANGLE:
@@ -58,13 +70,13 @@ export class Wire extends objectBase
     if (!this._shouldRender)
       return null ;
 
-    const geometry = this.geometry();
+    const curve = this.geometry();
 
     let material;
     const stroke    = this.model.stroke ;
     const color     = this.model.color ;
     const linewidth = this.model.lineWidth ;
-    if (stroke === EDGE_STROKE.DASHED) {
+    if (stroke.toUpperCase() === EDGE_STROKE.DASHED) {
       material = MaterialFactory.createLineDashedMaterial({color: color});
     } else {
       //Thick lines
@@ -83,6 +95,8 @@ export class Wire extends objectBase
       }
     }
 
+    const points = curve.getPoints( 50 );
+    const geometry = new THREE.BufferGeometry().setFromPoints( points );
     const mesh = new THREE.Mesh(geometry, material);
 
     return mesh; 

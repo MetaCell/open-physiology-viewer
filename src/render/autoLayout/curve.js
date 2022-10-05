@@ -191,6 +191,10 @@ export function rectangleCurve(startV, endV){
     return curvePath;
 }
 
+export function vectorEquals( v1, v2, epsilon = Number.EPSILON ) {
+  return ( ( Math.abs( v1.x - v2.x ) < epsilon ) && ( Math.abs( v1.y - v2.y ) < epsilon ) && ( Math.abs( v1.z - v2.z ) < epsilon ) );
+}
+
 
 /**
  * Draw a 2d elliptic curve given 2 points on it and the center
