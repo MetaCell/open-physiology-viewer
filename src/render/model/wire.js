@@ -2,6 +2,8 @@ import { objectBase, renderConsts } from './base';
 import { scaffoldTypes } from './types';
 import { ThreeDFactory } from '../3D/threeDFactory'; 
 import { MaterialFactory } from '../3D/materialFactory';
+import { queryTypes } from "../query/reducer";
+
 import {
   extractCoords,
   semicircleCurve,
@@ -23,20 +25,33 @@ export class Wire extends objectBase
   _arcCenter = undefined ;
   _controlPoint = undefined ; 
   _curvature = undefined ;
+  _points = [];
 
   constructor(id, query, reducer, scaffold_index)
   {
     const model = query(id, Wire.type, scaffold_index)
     super(model, Wire.type, reducer);
     this._geometry  = model.geometry ;
-    this._start     = model.source ;
-    this._end       = model.target ;
+    if (model.source)
+    {
+      const source = reducer(model.source.id, queryTypes.id);
+      this._start = source._position ;
+    }
+    if (model.source)
+    {
+      const end = reducer(model.target.id, queryTypes.id);
+      this._end = end._position ;
+    }
     this._arcCenter = model.arcCenter ;
     this._curvature = model.curvature ;
     if ( !this._start && model.radius )
       this._start = model.radius
     if ( !this._end && model.radius )
       this._end = model.radius
+
+    this._geometry = this.geometry();
+    if ( this._geometry.getPoints ) //proper check
+      this._points = this._geometry.getPoints(150);
   }
 
   geometry() {
@@ -62,21 +77,25 @@ export class Wire extends objectBase
         const control = this._controlPoint? extractCoords(this._controlPoint): getDefaultControlPoint(this._start, this._end, this._curvature);
         return new THREE.QuadraticBezierCurve3(this._start, control, this._end);
       default:
-        return new THREE.Line3(start, end);
+        return new THREE.Line3(this._start, this._end);
     }
+  }
+
+  position(offset) {
+    const len = this._points.length ;
+    const index = Math.floor(len * offset);
+    return this._points[index];
   }
 
   render() {
     if (!this._shouldRender)
       return null ;
 
-    const curve = this.geometry();
-
     let material;
-    const stroke    = this.model.stroke ;
+    const stroke    = this.model.stroke?.toUpperCase() ;
     const color     = this.model.color ;
     const linewidth = this.model.lineWidth ;
-    if (stroke.toUpperCase() === EDGE_STROKE.DASHED) {
+    if (stroke === EDGE_STROKE.DASHED) {
       material = MaterialFactory.createLineDashedMaterial({color: color});
     } else {
       //Thick lines
@@ -95,8 +114,7 @@ export class Wire extends objectBase
       }
     }
 
-    const points = curve.getPoints( 50 );
-    const geometry = new THREE.BufferGeometry().setFromPoints( points );
+    const geometry =  this._geometry.getPoints ? new THREE.BufferGeometry().setFromPoints( this._points ) : this._geometry ;
     const mesh = new THREE.Mesh(geometry, material);
 
     return mesh; 

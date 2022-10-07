@@ -15,6 +15,20 @@
                   "y": 0
               },
               "color": "#FFA500"
+          },
+          {
+              "id": "B",
+              "name": "BUCCAL",
+              "color": "#FF0000",
+              "hostedBy": "w-F",
+              "offset": 0
+          },
+          {
+              "id": "O",
+              "name": "junction of ampulla of Vater with duodenum",
+              "color": "#FF0000",
+              "hostedBy": "w-F",
+              "offset": 0.25
           }
       ],
       "wires": [
@@ -27,6 +41,16 @@
                 "y": 80
             },
             "stroke": "dashed"
+        },
+        {
+            "id": "w-B-O",
+            "source": "B",
+            "target": "O",
+            "geometry": "arc",
+            "arcCenter": "F",
+            "color": "#006400",
+            "stroke": "thick",
+            "hidden": true
         }
       ],
       "id": "too-map",

@@ -49,11 +49,23 @@ export class modelHandler
     this._model.scaffolds.forEach( (s, level) => {
       const anchors = s.anchors ;
       const wires = s.wires ;
-      anchors?.forEach((anchor)=>{
+      //anchors with fixed position
+      anchors?.filter( a=> !a.hostedBy ).forEach((anchor)=>{
         const createdObject = objectFactory.create(anchor.id, scaffoldTypes.anchors, this.queryGeneratedModel.bind(this), this.queryCreatedObjects.bind(this), level);
         this._createdObjects.push(createdObject);
       });
-      wires?.forEach((wire)=>{
+      //wires with radius
+      wires?.filter( w=> w.radius ).forEach((wire)=>{
+        const createdObject = objectFactory.create(wire.id, scaffoldTypes.wires, this.queryGeneratedModel.bind(this), this.queryCreatedObjects.bind(this), level);
+        this._createdObjects.push(createdObject);
+      });
+      //anchors relative to wires
+      anchors?.filter( a=> a.hostedBy ).forEach((anchor)=>{
+        const createdObject = objectFactory.create(anchor.id, scaffoldTypes.anchors, this.queryGeneratedModel.bind(this), this.queryCreatedObjects.bind(this), level);
+        this._createdObjects.push(createdObject);
+      });
+      //wires without radius
+      wires?.filter( w=> !w.radius ).forEach((wire)=>{
         const createdObject = objectFactory.create(wire.id, scaffoldTypes.wires, this.queryGeneratedModel.bind(this), this.queryCreatedObjects.bind(this), level);
         this._createdObjects.push(createdObject);
       });
