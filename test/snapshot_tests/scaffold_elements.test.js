@@ -72,6 +72,7 @@ describe('Scaffold Model Elements', () => {
         console.log('Toggle Groups from Scaffold Model')
 
         await click_(page, SHOW_SETTING_SELECTOR)
+        await page.waitForTimeout(ONE_SECOND)
 
         const ScaffoldGroups = await page.evaluate(() => document.querySelectorAll("span.mat-slide-toggle-content").length)
         expect(ScaffoldGroups).toBe(9)
