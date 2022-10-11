@@ -59,7 +59,7 @@ describe('Scaffold Model Elements', () => {
         });
 
         await page.goto(baseURL);
-        await page.setUserAgent('Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/69.0.3497.100 Safari/537.36');
+        // await page.setUserAgent('Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/69.0.3497.100 Safari/537.36');
     });
 
     it('Scaffold Model', async () => {
@@ -77,7 +77,7 @@ describe('Scaffold Model Elements', () => {
         const ScaffoldGroups = await page.evaluate(() => document.querySelectorAll("span.mat-slide-toggle-content").length)
         expect(ScaffoldGroups).toBe(9)
 
-        await fullpageSnapshot(page, SNAPSHOT_OPTIONS, 'Groups from Scaffold Model')
+        // await fullpageSnapshot(page, SNAPSHOT_OPTIONS, 'Groups from Scaffold Model')
         await page.waitForTimeout(ONE_SECOND)
         await click_(page, HIDE_SETTINGS_SELECTOR)
     })
@@ -88,7 +88,7 @@ describe('Scaffold Model: F Group', () => {
     
     it('F Anchors, Wires and Regions from Scaffold Model', async () => {
         console.log('Toggle F Anchors from Scaffold Model')
-
+        await page.waitForTimeout(ONE_SECOND)
         await click_(page, SHOW_SETTING_SELECTOR)
         await click_(page, TOGGLE_ALL_GROUPS_CON_MODEL_SELECTOR)
         await page.waitForTimeout(2000)
