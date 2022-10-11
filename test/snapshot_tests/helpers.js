@@ -76,6 +76,7 @@ export function range(size, startAt = 0) {
 
 
 export const fullpageSnapshot = async (page, snapshotOptions, snapshotIdentifier) => {
+  await page.waitForTimeout(ONE_SECOND)
   await console.log('... taking snapshot ...')
   expect(await page.screenshot())
     .toMatchImageSnapshot({

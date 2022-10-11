@@ -77,7 +77,7 @@ describe('Scaffold Model Elements', () => {
         expect(ScaffoldGroups).toBe(9)
 
         await fullpageSnapshot(page, SNAPSHOT_OPTIONS, 'Groups from Scaffold Model')
-
+        await page.waitForTimeout(ONE_SECOND)
         await click_(page, HIDE_SETTINGS_SELECTOR)
     })
 })
