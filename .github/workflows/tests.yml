@@ -8,9 +8,6 @@ on:
   pull_request:
     branches: [ "tests/164" ]
 
-  # Allows you to run this workflow manually from the Actions tab
-  workflow_dispatch:
-
 # A workflow run is made up of one or more jobs that can run sequentially or in parallel
 jobs:
   # This workflow contains a single job called "build"
@@ -27,7 +24,7 @@ jobs:
       uses: actions/setup-node@v1
       with:
           node-version: ${{ matrix.node-version }}
-    - name: npm install, build, and test
+    - name: scaffold elements snapshot test
       run: |
           npm ci
           npm run snapshot_test
