@@ -37,7 +37,7 @@ export class Wire extends objectBase
       const source = reducer(model.source.id, queryTypes.id);
       this._start = source._position ;
     }
-    if (model.source)
+    if (model.target)
     {
       const end = reducer(model.target.id, queryTypes.id);
       this._end = end._position ;
@@ -56,7 +56,8 @@ export class Wire extends objectBase
 
   geometry() {
     switch (this._geometry.toUpperCase()) {
-      case renderConsts.EDGE_GEOMETRY.ARC || renderConsts.EDGE_GEOMETRY.ELLIPSE:
+      case renderConsts.EDGE_GEOMETRY.ARC:
+      case renderConsts.EDGE_GEOMETRY.ELLIPSE:
         {
           let start  = extractCoords(this._start);
           const end    = extractCoords(this._end) ;
