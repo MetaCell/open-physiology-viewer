@@ -21,8 +21,6 @@ export class Node extends objectBase
         polygonOffsetFactor: this._polygonOffsetFactor
     });
 
-    geometry.translate(this.position.x, this.position.y, this.position.z);
-    const mesh = new THREE.Mesh(geometry, material);
-    return mesh ;
+    return this._render(geometry, material);
   }
 }

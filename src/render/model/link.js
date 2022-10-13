@@ -23,10 +23,13 @@ export class Link extends objectBase
     this._reducer = reducer ;
     if(!model._points)
     {
-      //need nodes from created objects
-      const source = reducer(model.source.id)
-      const target = reducer(model.target.id)
-      this._points = [layoutToVector3(source.position), layoutToVector3(target.position)]
+      if ( model.source.id && model.target.id )
+      {
+        //need nodes from created objects
+        const source = reducer(model.source.id)
+        const target = reducer(model.target.id)
+        this._points = [layoutToVector3(source.position), layoutToVector3(target.position)]
+      }
     }
   }
 

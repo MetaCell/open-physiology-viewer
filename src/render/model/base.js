@@ -81,8 +81,12 @@ export class objectBase
     this._json = json ;
   }
 
-  _render(mesh) { //implemented on child
-
+  _render(geometry, material) { //implemented on child
+    if (this._position)
+      geometry.translate(this._position.x, this._position.y, this._position.z);
+      
+    const mesh = new THREE.Mesh(geometry, material);
+    return mesh ;
   }
 
   //move, scale, skew, etc.

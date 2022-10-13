@@ -27,8 +27,6 @@ export class Anchor extends objectBase
         polygonOffsetFactor: this._polygonOffsetFactor
     });
 
-    geometry.translate(this._position.x, this._position.y, this._position.z);
-    const mesh = new THREE.Mesh(geometry, material);
-    return mesh ;
+    return this._render(geometry, material);
   }
 }
