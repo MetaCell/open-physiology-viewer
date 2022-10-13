@@ -52,22 +52,26 @@ export class modelHandler
       //anchors with fixed position
       anchors?.filter( a=> !a.hostedBy ).forEach((anchor)=>{
         const createdObject = objectFactory.create(anchor.id, scaffoldTypes.anchors, this.queryGeneratedModel.bind(this), this.queryCreatedObjects.bind(this), level);
-        this._createdObjects.push(createdObject);
+        if(createdObject)
+          this._createdObjects.push(createdObject);
       });
       //wires with radius
       wires?.filter( w=> w.radius ).forEach((wire)=>{
         const createdObject = objectFactory.create(wire.id, scaffoldTypes.wires, this.queryGeneratedModel.bind(this), this.queryCreatedObjects.bind(this), level);
-        this._createdObjects.push(createdObject);
+        if(createdObject)
+          this._createdObjects.push(createdObject);
       });
       //anchors relative to wires
       anchors?.filter( a=> a.hostedBy ).forEach((anchor)=>{
         const createdObject = objectFactory.create(anchor.id, scaffoldTypes.anchors, this.queryGeneratedModel.bind(this), this.queryCreatedObjects.bind(this), level);
-        this._createdObjects.push(createdObject);
+        if(createdObject)
+          this._createdObjects.push(createdObject);
       });
       //wires without radius
       wires?.filter( w=> !w.radius ).forEach((wire)=>{
         const createdObject = objectFactory.create(wire.id, scaffoldTypes.wires, this.queryGeneratedModel.bind(this), this.queryCreatedObjects.bind(this), level);
-        this._createdObjects.push(createdObject);
+        if(createdObject)
+          this._createdObjects.push(createdObject);
       });
     })
   }
@@ -79,7 +83,8 @@ export class modelHandler
     let children = this._model[mainObjectTypes.nodes];
     children?.forEach((node)=>{
       const createdObject = objectFactory.create(node.id, mainObjectTypes.nodes, this.queryGeneratedModel.bind(this), this.queryCreatedObjects.bind(this));
-      this._createdObjects.push(createdObject);
+      if(createdObject)
+        this._createdObjects.push(createdObject);
     });
 
     //chains 
@@ -92,14 +97,15 @@ export class modelHandler
     children = this._model[mainObjectTypes.links];
     children?.forEach((node)=>{
       const createdObject = objectFactory.create(node.id, mainObjectTypes.links, this.queryGeneratedModel.bind(this), this.queryCreatedObjects.bind(this));
-      this._createdObjects.push(createdObject);
+      if(createdObject)
+        this._createdObjects.push(createdObject);
     });
 
     //set initial location for nodes and links
     const nodes = this._createdObjects.filter( o => o._type === mainObjectTypes.nodes ).map( o => nodeFromGeneratedModel(o) );
     const links = this._createdObjects.filter( o => o._type === mainObjectTypes.links ).map( o => linkFromGeneratedModel(o) );
 
-    this._graph = new DirectedGraph(nodes, links);
+    this._graph = new DirectedGraph(nodes.filter ( o => o !== undefined), links.filter ( o => o !== undefined));
     this._graph.runLayout();
     this.updateCreatedObjectsLayout(); //now anything else is safe to be crated using the nodes position
 
@@ -112,7 +118,8 @@ export class modelHandler
         children = this._model[objType];
         children?.forEach((node)=>{
           const createdObject = objectFactory.create(node.id, objType, this.queryGeneratedModel.bind(this), this.queryCreatedObjects.bind(this));
-          this._createdObjects.push(createdObject);
+          if(createdObject)
+            this._createdObjects.push(createdObject);
         });
       }
     })
@@ -154,7 +161,7 @@ export class modelHandler
       }
     });
 
-    this._renderedObjects.forEach(o => this._scene.add(o));
+    this._renderedObjects.filter( o => o.geometry ).forEach(o => this._scene.add(o));
     
     autoLayout(this._scene, this._model, false);
   }

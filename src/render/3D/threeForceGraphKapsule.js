@@ -245,8 +245,8 @@ export default Kapsule({
           .alpha(1)// re-heat the simulation
           .alphaDecay(state.d3AlphaDecay)
           .velocityDecay(state.d3VelocityDecay)
-          .numDimensions(state.numDimensions);
-          //.nodes(state.graphData.visibleNodes||[]);
+          .numDimensions(state.numDimensions)
+          .nodes(state.graphData.visibleNodes||[]);
 
       // Initial ticks before starting to render
       for (let i = 0; i < state.warmupTicks; i++) { layout['tick'](); }

@@ -118,6 +118,6 @@ export class Wire extends objectBase
     const geometry =  this._geometry.getPoints ? new THREE.BufferGeometry().setFromPoints( this._points ) : this._geometry ;
     const mesh = new THREE.Mesh(geometry, material);
 
-    return mesh; 
+    return null; //TODO revisit this
   }
 }
