@@ -46,7 +46,7 @@ export class modelHandler
 
   parseScaffolds()
   {
-    this._model.scaffolds.forEach( (s, level) => {
+    this._model.scaffolds?.forEach( (s, level) => {
       const anchors = s.anchors ;
       const wires = s.wires ;
       //anchors with fixed position
