@@ -25,7 +25,14 @@ export class Lyph extends objectBase
 
   constructor(id, query, reducer, props)
   {
-    const model = props ? Object.assign(query(id, Lyph.type), props) : query(id, Lyph.type) ; 
+    if (id.indexOf('ref_mat_mat')) //TODO support materials
+    {
+      super(undefined, objectTypes.lyphs, reducer);
+      return undefined ;
+    }
+
+    const obj = query(id, Lyph.type);
+    const model = props ? Object.assign(obj, props) : obj ; 
     super(model, objectTypes.lyphs, reducer);
     this.color       = model.color ;
     this.width       = model.scale?.width ;
@@ -104,7 +111,7 @@ export class Lyph extends objectBase
   }
 
   render() {
-    if (!this._shouldRender)
+    if ((!this._shouldRender) || (!this._generatedModel))
       return null ;
 
     const group     = new THREE.Group();

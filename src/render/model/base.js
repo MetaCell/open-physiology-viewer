@@ -67,6 +67,8 @@ export class objectBase
 
   constructor(model, type, reducer)
   {
+    if(!model)
+      return undefined ;
     this._generatedModel = model ;
     this._id = model.id ;
     this._color = model.color ;

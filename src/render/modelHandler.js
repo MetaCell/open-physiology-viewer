@@ -15,7 +15,7 @@ export class modelHandler
   constructor(model, scene) { 
     this._model = model ;
     this._scene = scene ;
-    this.parse();
+    this.parse(model);
   }
 
   scene(scene) { this._scene = scene ; }
@@ -28,9 +28,9 @@ export class modelHandler
   queryGeneratedModel(objectId, type, scaffold_index)
   {
     if (scaffold_index > -1)
-      return this._model['scaffolds'][scaffold_index][type].find( o => o.id === objectId ) ;
+      return this['scaffolds'][scaffold_index][type].find( o => o.id === objectId ) ;
     else
-      return this._model[type].find( o => o.id === objectId ) ;
+      return this[type].find( o => o.id === objectId ) ;
   }
 
   queryCreatedObjects(objectId, selectType = queryTypes.id, ...params)
@@ -44,59 +44,63 @@ export class modelHandler
     return target ;
   }
 
-  parseScaffolds()
+  parseScaffolds(model)
   {
-    this._model.scaffolds?.forEach( (s, level) => {
+    model.scaffolds?.forEach( (s, level) => {
       const anchors = s.anchors ;
       const wires = s.wires ;
       //anchors with fixed position
       anchors?.filter( a=> !a.hostedBy ).forEach((anchor)=>{
-        const createdObject = objectFactory.create(anchor.id, scaffoldTypes.anchors, this.queryGeneratedModel.bind(this), this.queryCreatedObjects.bind(this), level);
+        const createdObject = objectFactory.create(anchor.id, scaffoldTypes.anchors, this.queryGeneratedModel.bind(model), this.queryCreatedObjects.bind(this), level);
         if(createdObject)
           this._createdObjects.push(createdObject);
       });
       //wires with radius
       wires?.filter( w=> w.radius ).forEach((wire)=>{
-        const createdObject = objectFactory.create(wire.id, scaffoldTypes.wires, this.queryGeneratedModel.bind(this), this.queryCreatedObjects.bind(this), level);
+        const createdObject = objectFactory.create(wire.id, scaffoldTypes.wires, this.queryGeneratedModel.bind(model), this.queryCreatedObjects.bind(this), level);
         if(createdObject)
           this._createdObjects.push(createdObject);
       });
       //anchors relative to wires
       anchors?.filter( a=> a.hostedBy ).forEach((anchor)=>{
-        const createdObject = objectFactory.create(anchor.id, scaffoldTypes.anchors, this.queryGeneratedModel.bind(this), this.queryCreatedObjects.bind(this), level);
+        const createdObject = objectFactory.create(anchor.id, scaffoldTypes.anchors, this.queryGeneratedModel.bind(model), this.queryCreatedObjects.bind(this), level);
         if(createdObject)
           this._createdObjects.push(createdObject);
       });
       //wires without radius
       wires?.filter( w=> !w.radius ).forEach((wire)=>{
-        const createdObject = objectFactory.create(wire.id, scaffoldTypes.wires, this.queryGeneratedModel.bind(this), this.queryCreatedObjects.bind(this), level);
+        const createdObject = objectFactory.create(wire.id, scaffoldTypes.wires, this.queryGeneratedModel.bind(model), this.queryCreatedObjects.bind(this), level);
         if(createdObject)
           this._createdObjects.push(createdObject);
       });
     })
   }
 
-  parse()
+  parse(model)
   {
-    this.parseScaffolds();
+    this.parseScaffolds(model);
+
+    model.groups?.forEach((group) => {
+      this.parse(group);
+    })
     //nodes 
-    let children = this._model[mainObjectTypes.nodes];
+    let children = model[mainObjectTypes.nodes];
     children?.forEach((node)=>{
-      const createdObject = objectFactory.create(node.id, mainObjectTypes.nodes, this.queryGeneratedModel.bind(this), this.queryCreatedObjects.bind(this));
+      const createdObject = objectFactory.create(node.id, mainObjectTypes.nodes, this.queryGeneratedModel.bind(model), this.queryCreatedObjects.bind(this));
       if(createdObject)
         this._createdObjects.push(createdObject);
     });
 
     //chains 
-    children = this._model[mainObjectTypes.chains];
+    children = model[mainObjectTypes.chains];
     children?.forEach((chain)=>{
       //chain.update();
     });
 
     //links
-    children = this._model[mainObjectTypes.links];
+    children = model[mainObjectTypes.links];
     children?.forEach((node)=>{
-      const createdObject = objectFactory.create(node.id, mainObjectTypes.links, this.queryGeneratedModel.bind(this), this.queryCreatedObjects.bind(this));
+      const createdObject = objectFactory.create(node.id, mainObjectTypes.links, this.queryGeneratedModel.bind(model), this.queryCreatedObjects.bind(this));
       if(createdObject)
         this._createdObjects.push(createdObject);
     });
@@ -105,19 +109,20 @@ export class modelHandler
     const nodes = this._createdObjects.filter( o => o._type === mainObjectTypes.nodes ).map( o => nodeFromGeneratedModel(o) );
     const links = this._createdObjects.filter( o => o._type === mainObjectTypes.links ).map( o => linkFromGeneratedModel(o) );
 
-    this._graph = new DirectedGraph(nodes.filter ( o => o !== undefined), links.filter ( o => o !== undefined));
-    this._graph.runLayout();
-    this.updateCreatedObjectsLayout(); //now anything else is safe to be crated using the nodes position
+    //re run when?
+    // this._graph = new DirectedGraph(nodes.filter ( o => o !== undefined), links.filter ( o => o !== undefined));
+    // this._graph.runLayout();
+    // this.updateCreatedObjectsLayout(); //now anything else is safe to be crated using the nodes position
 
-    const props = Object.getOwnPropertyNames(this._model);
+    const props = Object.getOwnPropertyNames(model);
     const validObjNames = Object.getOwnPropertyNames(objectTypes);
 
     props.forEach((objType)=>{
       if (validObjNames.indexOf(objType) > -1)
       {
-        children = this._model[objType];
+        children = model[objType];
         children?.forEach((node)=>{
-          const createdObject = objectFactory.create(node.id, objType, this.queryGeneratedModel.bind(this), this.queryCreatedObjects.bind(this));
+          const createdObject = objectFactory.create(node.id, objType, this.queryGeneratedModel.bind(model), this.queryCreatedObjects.bind(this));
           if(createdObject)
             this._createdObjects.push(createdObject);
         });
