@@ -114,36 +114,37 @@ export class Lyph extends objectBase
     if ((!this._shouldRender) || (!this._generatedModel))
       return null ;
 
-    const group     = new THREE.Group();
+    //const group     = new THREE.Group();
     const hasLayers = this._layers.length > 0 ;
 
     const params   = { color: this._color, polygonOffsetFactor: this._polygonOffsetFactor} ;
     //thickness, height, radius, top, bottom
-    const geometry = ThreeDFactory.lyphShape([this._width, this._height, this._radius, ...this._radialTypes]) ;
-    let mesh       = ThreeDFactory.createMeshWithBorder(geometry, params);
-    mesh.position.set(this.position.x, this.position.y, this.position.z);
-    group.add(mesh);
-
-    if (hasLayers)
-    {      
-      this._layers.forEach( l => {
-        const renderedLayer = l.render();
-        if (renderedLayer)
-        {
-          renderedLayer.visible = true ;
-          group.add(renderedLayer);
-        }
-        
-      })
-    }
-
-    if(this._generatedModel.layerIn !== undefined)
-      group.visible = false ;
-
-    group.userData = this._generatedModel ;
-
-    this._cache = group ;
+    const shape = ThreeDFactory.lyphShape([this._width, this._height, this._radius, ...this._radialTypes]) ;
     
-    return this._cache ;
+    let mesh       = ThreeDFactory.createMeshWithBorder(shape, params);
+    mesh.position.set(Math.floor(Math.random() * 100), Math.floor(Math.random() * 100), Math.floor(Math.random() * 100));
+    //group.add(mesh);
+    return mesh;
+    // if (hasLayers)
+    // {      
+    //   this._layers.forEach( l => {
+    //     const renderedLayer = l.render();
+    //     if (renderedLayer)
+    //     {
+    //       renderedLayer.visible = true ;
+    //       group.add(renderedLayer);
+    //     }
+        
+    //   })
+    // }
+
+    // if(this._generatedModel.layerIn !== undefined)
+    //   group.visible = false ;
+
+    // group.userData = this._generatedModel ;
+
+    // this._cache = group ;
+    
+    // return this._cache ;
   }
 }
