@@ -4,7 +4,7 @@ import { queryTypes } from "./query/reducer";
 import { nodeFromGeneratedModel, linkFromGeneratedModel, DirectedGraph } from "./graph/directedGraph";
 import { autoLayout } from "./autoLayout"
 
-export class modelHandler
+export class renderer
 {
   _model ;
   _createdObjects = [];

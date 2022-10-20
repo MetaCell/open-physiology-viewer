@@ -25,13 +25,13 @@ export class Lyph extends objectBase
 
   constructor(id, query, reducer, props)
   {
-    if (id.indexOf('ref_mat_mat')) //TODO support materials
+    if (id.indexOf('ref_mat_mat') > -1) //TODO support materials
     {
       super(undefined, objectTypes.lyphs, reducer);
       return undefined ;
     }
 
-    const obj = query(id, Lyph.type);
+    const obj = query(id, Lyph.type) || {};
     const model = props ? Object.assign(obj, props) : obj ; 
     super(model, objectTypes.lyphs, reducer);
     this.color       = model.color ;
@@ -46,7 +46,7 @@ export class Lyph extends objectBase
     this._query = query ;
     this._reducer = reducer ;
 
-    //this.initRadialTypes(); TODO for some reason this doesn't match model
+    this.initRadialTypes(); //TODO for some reason this doesn't match model
     //layout based positioning and sizing
     if(model.layout)
       this.position = model.layout ;
@@ -114,37 +114,36 @@ export class Lyph extends objectBase
     if ((!this._shouldRender) || (!this._generatedModel))
       return null ;
 
-    //const group     = new THREE.Group();
+    const group     = new THREE.Group();
     const hasLayers = this._layers.length > 0 ;
 
     const params   = { color: this._color, polygonOffsetFactor: this._polygonOffsetFactor} ;
     //thickness, height, radius, top, bottom
-    const shape = ThreeDFactory.lyphShape([this._width, this._height, this._radius, ...this._radialTypes]) ;
-    
-    let mesh       = ThreeDFactory.createMeshWithBorder(shape, params);
-    mesh.position.set(Math.floor(Math.random() * 100), Math.floor(Math.random() * 100), Math.floor(Math.random() * 100));
-    //group.add(mesh);
-    return mesh;
-    // if (hasLayers)
-    // {      
-    //   this._layers.forEach( l => {
-    //     const renderedLayer = l.render();
-    //     if (renderedLayer)
-    //     {
-    //       renderedLayer.visible = true ;
-    //       group.add(renderedLayer);
-    //     }
+    const geometry = ThreeDFactory.lyphShape([this._width, this._height, this._radius, ...this._radialTypes]) ;
+    let mesh       = ThreeDFactory.createMeshWithBorder(geometry, params);
+    mesh.position.set(this.position.x, this.position.y, this.position.z);
+    group.add(mesh);
+
+    if (hasLayers)
+    {      
+      this._layers.forEach( l => {
+        const renderedLayer = l.render();
+        if (renderedLayer)
+        {
+          renderedLayer.visible = true ;
+          group.add(renderedLayer);
+        }
         
-    //   })
-    // }
+      })
+    }
 
-    // if(this._generatedModel.layerIn !== undefined)
-    //   group.visible = false ;
+    if(this._generatedModel.layerIn !== undefined)
+      group.visible = false ;
 
-    // group.userData = this._generatedModel ;
+    group.userData = this._generatedModel ;
 
-    // this._cache = group ;
+    this._cache = group ;
     
-    // return this._cache ;
+    return this._cache ;
   }
 }

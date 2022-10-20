@@ -7,7 +7,7 @@ import {
 } from 'd3-force-3d';
 import {select as d3Select } from 'd3-selection';
 import {drag as d3Drag } from 'd3-drag';
-import { modelHandler } from "../modelHandler"
+import { renderer } from "../renderer"
 
 import Kapsule from 'kapsule';
 //import {modelClasses} from '../model/index';
@@ -234,9 +234,8 @@ export default Kapsule({
       state.onFrame = null; // Pause simulation
       state.onLoading();
 
-      this._modelHandler = new modelHandler(state.graphData, state.graphScene);
-      console.log(this._modelHandler.createdObjects());
-      this._modelHandler.render();
+      this._renderer = new renderer(state.graphData, state.graphScene);
+      this._renderer.render();
       // Feed data to force-directed layout
       let layout;
       // D3-force
@@ -257,8 +256,8 @@ export default Kapsule({
       state.onFinishLoading();
 
       function layoutTick() {
-        if (this._modelHandler)
-          this._modelHandler.render();
+        if (this._renderer)
+          this._renderer.render();
       }
   }
 });
