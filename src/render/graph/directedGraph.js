@@ -3,6 +3,13 @@ import dagre from "cytoscape-dagre";
 
 cytoscape.use(dagre);
 
+function getPropertyOrValue(o, prop)
+{
+  if(o[prop])
+    return o[prop];
+  else return o ;
+}
+
 export function nodeFromGeneratedModel(o)
 {
   return {
@@ -14,16 +21,20 @@ export function nodeFromGeneratedModel(o)
 
 export function linkFromGeneratedModel(o)
 {
+  if (!o._generatedModel.source || !o._generatedModel.target)
+    return;
+    
   return {
     data: {
       id: o._id,
-      source: o._generatedModel.source.id,
-      target: o._generatedModel.target.id,
+      source: getPropertyOrValue(o._generatedModel.source, 'id'),
+      target: getPropertyOrValue(o._generatedModel.target, 'id'),
       weight: o._generatedModel.length, 
       minLen: o._generatedModel.length, 
     }
   }
 }
+
 function createElements(nodes, edges)
 {
   return {

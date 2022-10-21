@@ -4,12 +4,18 @@ import { ThreeDFactory } from '../3D/threeDFactory';
 import { _clone, _cloneDeep } from 'lodash-bound';
 import { getPointInBetweenByPerc } from '../autoLayout/objects';
 import { layoutToVector3 } from '../autoLayout/objects';
+import angle from '../autoLayout/curve'
 
 const LYPH_TOPOLOGY = Object.freeze({
   CYST: 'DASHED',
   BAG: 'THICK',
   BAG2: 'LINK'
 })
+
+export function angleBetween(v1, v2){
+  let dot = v1.dot(v2);
+  return Math.acos( dot / (v1.length() * v2.length()) );
+}
 
 export class Lyph extends objectBase
 {
@@ -56,9 +62,10 @@ export class Lyph extends objectBase
         const sourceVector = layoutToVector3(source.position) ;
         const targetVector = layoutToVector3(target.position)
         const midPoint = getPointInBetweenByPerc(sourceVector, targetVector, 0.5); 
-        const angle = sourceVector.angleTo(targetVector);
+        const a = angleBetween(sourceVector, targetVector);
+        console.log(a);
         this.position = midPoint ;
-        this.rotation = angle ;
+        this.rotation = a ;
       }
     }
     this._autoArrangeLayers();
@@ -116,22 +123,26 @@ export class Lyph extends objectBase
     //thickness, height, radius, top, bottom
     const geometry = ThreeDFactory.lyphShape([this._width, this._height, this._radius, ...this._radialTypes]) ;
     let mesh       = ThreeDFactory.createMeshWithBorder(geometry, params);
-    mesh.position.set(this.position.x, this.position.y, this.position.z);
-    //mesh.rotateZ( this.rotation );
+
     group.add(mesh);
 
-    if (hasLayers)
-    {      
-      this._layers.forEach( l => {
-        const renderedLayer = l.render();
-        if (renderedLayer)
-        {
-          renderedLayer.visible = true ;
-          group.add(renderedLayer);
-        }
+    // if (hasLayers)
+    // {      
+    //   this._layers.forEach( l => {
+    //     const renderedLayer = l.render();
+    //     if (renderedLayer)
+    //     {
+    //       renderedLayer.visible = true ;
+    //       group.add(renderedLayer);
+    //     }
         
-      })
-    }
+    //   })
+    // }
+
+    if(this.rotation != 0)
+      group.rotateZ(this.rotation);
+
+    group.position.set(this.position.x, this.position.y, this.position.z);
 
     if(this._generatedModel.layerIn !== undefined)
       group.visible = false ;
