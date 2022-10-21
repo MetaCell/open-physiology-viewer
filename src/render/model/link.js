@@ -36,7 +36,8 @@ export class Link extends objectBase
   updatePoints() {
     const source = this._reducer(this._generatedModel.source.id)
     const target = this._reducer(this._generatedModel.target.id)
-    this._points = [layoutToVector3(source.position), layoutToVector3(target.position)]
+    if (source && target)
+      this._points = [layoutToVector3(source.position), layoutToVector3(target.position)]
   }
 
   render() {

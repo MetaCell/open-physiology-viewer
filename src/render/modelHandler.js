@@ -99,7 +99,7 @@ export class modelHandler
     const nodes = this._createdObjects.filter( o => o._type === mainObjectTypes.nodes ).map( o => nodeFromGeneratedModel(o) );
     const links = this._createdObjects.filter( o => o._type === mainObjectTypes.links ).map( o => linkFromGeneratedModel(o) );
 
-    this._graph = new DirectedGraph(nodes, links);
+    this._graph = new DirectedGraph(nodes.filter ( o => o !== undefined), links.filter ( o => o !== undefined));
     this._graph.runLayout();
     this.updateCreatedObjectsLayout(); //now anything else is safe to be crated using the nodes position
 

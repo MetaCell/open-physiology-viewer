@@ -52,11 +52,13 @@ export class Lyph extends objectBase
         this.width    = link.width * 0.125 ;
         this.height   = link.width * 0.25 ;
         const source  = reducer(link._generatedModel.source.id)
-        const target  = reducer(link._generatedModel.target.id)      
-        this.position = getPointInBetweenByPerc(
-          layoutToVector3(source.position), 
-          layoutToVector3(target.position)
-          , 0.5) ;
+        const target  = reducer(link._generatedModel.target.id)   
+        const sourceVector = layoutToVector3(source.position) ;
+        const targetVector = layoutToVector3(target.position)
+        const midPoint = getPointInBetweenByPerc(sourceVector, targetVector, 0.5); 
+        const angle = sourceVector.angleTo(targetVector);
+        this.position = midPoint ;
+        this.rotation = angle ;
       }
     }
     this._autoArrangeLayers();
@@ -115,6 +117,7 @@ export class Lyph extends objectBase
     const geometry = ThreeDFactory.lyphShape([this._width, this._height, this._radius, ...this._radialTypes]) ;
     let mesh       = ThreeDFactory.createMeshWithBorder(geometry, params);
     mesh.position.set(this.position.x, this.position.y, this.position.z);
+    //mesh.rotateZ( this.rotation );
     group.add(mesh);
 
     if (hasLayers)
