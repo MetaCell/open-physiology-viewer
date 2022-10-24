@@ -35,12 +35,14 @@ export class Wire extends objectBase
     if (model.source)
     {
       const source = reducer(model.source.id, queryTypes.id);
-      this._start = source._position ;
+      if (source)
+        this._start = source._position ;
     }
     if (model.target)
     {
       const end = reducer(model.target.id, queryTypes.id);
-      this._end = end._position ;
+      if (end)
+        this._end = end._position ;
     }
     this._arcCenter = model.arcCenter ;
     this._curvature = model.curvature ;

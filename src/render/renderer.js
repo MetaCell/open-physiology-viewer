@@ -4,7 +4,7 @@ import { queryTypes } from "./query/reducer";
 import { nodeFromGeneratedModel, linkFromGeneratedModel, DirectedGraph } from "./graph/directedGraph";
 import { autoLayout } from "./autoLayout"
 
-export class modelHandler
+export class renderer
 {
   _model ;
   _createdObjects = [];
@@ -44,37 +44,40 @@ export class modelHandler
     return target ;
   }
 
-  parseScaffolds()
+  parseScaffolds(s, level)
   {
-    this._model.scaffolds?.forEach( (s, level) => {
-      const anchors = s.anchors ;
-      const wires = s.wires ;
-      //anchors with fixed position
-      anchors?.filter( a=> !a.hostedBy ).forEach((anchor)=>{
-        const createdObject = objectFactory.create(anchor.id, scaffoldTypes.anchors, this.queryGeneratedModel.bind(this), this.queryCreatedObjects.bind(this), level);
-        this._createdObjects.push(createdObject);
-      });
-      //wires with radius
-      wires?.filter( w=> w.radius ).forEach((wire)=>{
-        const createdObject = objectFactory.create(wire.id, scaffoldTypes.wires, this.queryGeneratedModel.bind(this), this.queryCreatedObjects.bind(this), level);
-        this._createdObjects.push(createdObject);
-      });
-      //anchors relative to wires
-      anchors?.filter( a=> a.hostedBy ).forEach((anchor)=>{
-        const createdObject = objectFactory.create(anchor.id, scaffoldTypes.anchors, this.queryGeneratedModel.bind(this), this.queryCreatedObjects.bind(this), level);
-        this._createdObjects.push(createdObject);
-      });
-      //wires without radius
-      wires?.filter( w=> !w.radius ).forEach((wire)=>{
-        const createdObject = objectFactory.create(wire.id, scaffoldTypes.wires, this.queryGeneratedModel.bind(this), this.queryCreatedObjects.bind(this), level);
-        this._createdObjects.push(createdObject);
-      });
-    })
+    //this._model.scaffolds?.forEach( (s, level) => {
+    const anchors = s.anchors ;
+    const wires = s.wires ;
+    //!!! WIRES WITH RADIUS and ANCHORS WITH position have well defined layout
+    //wires with radius
+    wires?.filter( w=> w.radius ).forEach((wire)=>{
+      const createdObject = objectFactory.create(wire.id, scaffoldTypes.wires, this.queryGeneratedModel.bind(this), this.queryCreatedObjects.bind(this), level);
+      this._createdObjects.push(createdObject);
+    });
+    //anchors with fixed position
+    anchors?.filter( a=> !a.hostedBy ).forEach((anchor)=>{
+      const createdObject = objectFactory.create(anchor.id, scaffoldTypes.anchors, this.queryGeneratedModel.bind(this), this.queryCreatedObjects.bind(this), level);
+      this._createdObjects.push(createdObject);
+    });
+
+    // //!!! ANYTHING ELSE (hostedBy, )
+    // //wires without radius
+    // wires?.filter( w=> !w.radius ).forEach((wire)=>{
+    //   const createdObject = objectFactory.create(wire.id, scaffoldTypes.wires, this.queryGeneratedModel.bind(this), this.queryCreatedObjects.bind(this), level);
+    //   this._createdObjects.push(createdObject);
+    // });
+    // //anchors relative to wires
+    // anchors?.filter( a=> a.hostedBy ).forEach((anchor)=>{
+    //   const createdObject = objectFactory.create(anchor.id, scaffoldTypes.anchors, this.queryGeneratedModel.bind(this), this.queryCreatedObjects.bind(this), level);
+    //   this._createdObjects.push(createdObject);
+    // });
+    //})
   }
 
   parse()
   {
-    this.parseScaffolds();
+    this.parseScaffolds(this._model, -1);
     //nodes 
     let children = this._model[mainObjectTypes.nodes];
     children?.forEach((node)=>{
@@ -104,7 +107,7 @@ export class modelHandler
     this.updateCreatedObjectsLayout(); //now anything else is safe to be crated using the nodes position
 
     const props = Object.getOwnPropertyNames(this._model);
-    const validObjNames = Object.getOwnPropertyNames(objectTypes);
+    const validObjNames = Object.getOwnPropertyNames(objectTypes).filter(n => !Object.keys(scaffoldTypes).includes(n)); //we dont want to re-parse scaffold types
 
     props.forEach((objType)=>{
       if (validObjNames.indexOf(objType) > -1)

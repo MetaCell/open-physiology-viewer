@@ -124,25 +124,25 @@ export class Lyph extends objectBase
     const geometry = ThreeDFactory.lyphShape([this._width, this._height, this._radius, ...this._radialTypes]) ;
     let mesh       = ThreeDFactory.createMeshWithBorder(geometry, params);
 
+    mesh.position.set(this.position.x, this.position.y, this.position.z);
+
     group.add(mesh);
 
-    // if (hasLayers)
-    // {      
-    //   this._layers.forEach( l => {
-    //     const renderedLayer = l.render();
-    //     if (renderedLayer)
-    //     {
-    //       renderedLayer.visible = true ;
-    //       group.add(renderedLayer);
-    //     }
+    if (hasLayers)
+    {      
+      this._layers.forEach( l => {
+        const renderedLayer = l.render();
+        if (renderedLayer)
+        {
+          renderedLayer.visible = true ;
+          group.add(renderedLayer);
+        }
         
-    //   })
-    // }
+      })
+    }
 
-    if(this.rotation != 0)
-      group.rotateZ(this.rotation);
-
-    group.position.set(this.position.x, this.position.y, this.position.z);
+    // if(this.rotation != 0)
+    //   group.rotateZ(this.rotation);
 
     if(this._generatedModel.layerIn !== undefined)
       group.visible = false ;

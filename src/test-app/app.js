@@ -34,8 +34,9 @@ import {
 } from '../model/index';
 
 import 'hammerjs';
-import initModel from '../../test/data/graph.json'
+//import initModel from '../../test/data/basicTemplateAsInternalLyphInLayer.json';
 //import initModel from '../../test/data/wbgkCardiac';
+import initModel from '../../test/data/too-map.json';
 
 import 'font-awesome/css/font-awesome.css';
 import 'jsoneditor/dist/jsoneditor.min.css';
