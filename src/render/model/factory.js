@@ -4,6 +4,7 @@ import { Wire } from './wire';
 import { objectTypes, mainObjectTypes, scaffoldTypes } from './types';
 import { Lyph } from './lyph';
 import { Anchor } from './anchor';
+import { Region } from './region';
 
 export default class factory
 {
@@ -22,6 +23,8 @@ export default class factory
       threeObj = new Wire(id, query, reducer, scaffold_index);
     } else if ( type === scaffoldTypes.anchors ) {
       threeObj = new Anchor(id, query, reducer, scaffold_index);
+    } else if ( type === scaffoldTypes.regions ) {
+      threeObj = new Region(id, query, reducer, scaffold_index);
     }
 
     return threeObj;

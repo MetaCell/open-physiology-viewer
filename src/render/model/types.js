@@ -12,5 +12,6 @@ export const mainObjectTypes = {
 }
 export const scaffoldTypes = { 
   anchors: 'anchors',
-  wires: 'wires'
+  wires: 'wires',
+  regions: 'regions'
 }

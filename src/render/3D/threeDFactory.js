@@ -59,6 +59,18 @@ export class ThreeDFactory {
       return shape;
   }
 
+  static regionShape(points) {
+    const shape = new THREE.Shape();
+    points.forEach( (p) => {
+      shape.lineTo(p.x, p.y);
+    })
+
+    if (points.length > 0) //close
+      shape.lineTo[points[0]];
+
+    return shape;
+  }
+
   layerShape(inner, outer) {
     const [innerThickness, innerHeight, innerRadius, innerTop, innerBottom] = inner;
     const [thickness, height, radius, top, bottom] = outer;

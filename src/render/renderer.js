@@ -48,7 +48,8 @@ export class renderer
   {
     //this._model.scaffolds?.forEach( (s, level) => {
     const anchors = s.anchors ;
-    const wires = s.wires ;
+    const wires   = s.wires ;
+    const regions = s.regions;
     //!!! WIRES WITH RADIUS and ANCHORS WITH position have well defined layout
     //wires with radius
     wires?.filter( w=> w.radius ).forEach((wire)=>{
@@ -63,15 +64,21 @@ export class renderer
 
     // //!!! ANYTHING ELSE (hostedBy, )
     // //wires without radius
-    // wires?.filter( w=> !w.radius ).forEach((wire)=>{
-    //   const createdObject = objectFactory.create(wire.id, scaffoldTypes.wires, this.queryGeneratedModel.bind(this), this.queryCreatedObjects.bind(this), level);
-    //   this._createdObjects.push(createdObject);
-    // });
+    wires?.filter( w=> !w.radius ).forEach((wire)=>{
+      const createdObject = objectFactory.create(wire.id, scaffoldTypes.wires, this.queryGeneratedModel.bind(this), this.queryCreatedObjects.bind(this), level);
+      this._createdObjects.push(createdObject);
+    });
     // //anchors relative to wires
-    // anchors?.filter( a=> a.hostedBy ).forEach((anchor)=>{
-    //   const createdObject = objectFactory.create(anchor.id, scaffoldTypes.anchors, this.queryGeneratedModel.bind(this), this.queryCreatedObjects.bind(this), level);
-    //   this._createdObjects.push(createdObject);
-    // });
+    anchors?.filter( a=> a.hostedBy ).forEach((anchor)=>{
+      const createdObject = objectFactory.create(anchor.id, scaffoldTypes.anchors, this.queryGeneratedModel.bind(this), this.queryCreatedObjects.bind(this), level);
+      this._createdObjects.push(createdObject);
+    });
+
+    //last but not least, REGIONS with anchors
+    regions?.filter( r=> r.borderAnchors?.length > 0 ).forEach((anchor)=>{
+      const createdObject = objectFactory.create(anchor.id, scaffoldTypes.regions, this.queryGeneratedModel.bind(this), this.queryCreatedObjects.bind(this), level);
+      this._createdObjects.push(createdObject);
+    });
     //})
   }
 

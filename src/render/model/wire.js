@@ -34,13 +34,13 @@ export class Wire extends objectBase
     this._geometry  = model.geometry ;
     if (model.source)
     {
-      const source = reducer(model.source.id, queryTypes.id);
+      const source = query(model.source.id, queryTypes.id);
       if (source)
         this._start = source._position ;
     }
     if (model.target)
     {
-      const end = reducer(model.target.id, queryTypes.id);
+      const end = query(model.target.id, queryTypes.id);
       if (end)
         this._end = end._position ;
     }
@@ -97,7 +97,7 @@ export class Wire extends objectBase
     let material;
     const stroke    = this.model.stroke?.toUpperCase() ;
     const color     = this.model.color ;
-    const linewidth = this.model.lineWidth ;
+    const linewidth = this.model.lineWidth * 50;
     if (stroke === EDGE_STROKE.DASHED) {
       material = MaterialFactory.createLineDashedMaterial({color: color});
     } else {
@@ -118,7 +118,7 @@ export class Wire extends objectBase
     }
 
     const geometry =  this._geometry.getPoints ? new THREE.BufferGeometry().setFromPoints( this._points ) : this._geometry ;
-    const mesh = new THREE.Mesh(geometry, material);
+    const mesh = new THREE.Line(geometry, material );
 
     return mesh; 
   }
