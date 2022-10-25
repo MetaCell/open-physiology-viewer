@@ -63,14 +63,16 @@ export class renderer
     });
 
     // //!!! ANYTHING ELSE (hostedBy, )
+
+    // //anchors relative to wires TODO check some bad positioning
+    anchors?.filter( a=> a.hostedBy ).forEach((anchor)=>{
+      const createdObject = objectFactory.create(anchor.id, scaffoldTypes.anchors, this.queryGeneratedModel.bind(this), this.queryCreatedObjects.bind(this), level);
+      this._createdObjects.push(createdObject);
+    });
+
     // //wires without radius
     wires?.filter( w=> !w.radius ).forEach((wire)=>{
       const createdObject = objectFactory.create(wire.id, scaffoldTypes.wires, this.queryGeneratedModel.bind(this), this.queryCreatedObjects.bind(this), level);
-      this._createdObjects.push(createdObject);
-    });
-    // //anchors relative to wires
-    anchors?.filter( a=> a.hostedBy ).forEach((anchor)=>{
-      const createdObject = objectFactory.create(anchor.id, scaffoldTypes.anchors, this.queryGeneratedModel.bind(this), this.queryCreatedObjects.bind(this), level);
       this._createdObjects.push(createdObject);
     });
 

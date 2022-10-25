@@ -61,12 +61,19 @@ export class ThreeDFactory {
 
   static regionShape(points) {
     const shape = new THREE.Shape();
-    points.forEach( (p) => {
-      shape.lineTo(p.x, p.y);
-    })
+    const l = points.length  ;
 
-    if (points.length > 0) //close
-      shape.lineTo[points[0]];
+    if (points.length > 0)
+    {
+      const origin = points[0];
+      shape.lineTo(origin.x, origin.y);
+
+      for (var i =1 ; i < l; i++)
+        shape.lineTo(points[i].x, points[i].y);
+  
+      if (points.length > 0) //close
+        shape.lineTo(origin.x, origin.y);
+    }
 
     return shape;
   }

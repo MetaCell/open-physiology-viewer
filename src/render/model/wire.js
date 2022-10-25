@@ -34,13 +34,13 @@ export class Wire extends objectBase
     this._geometry  = model.geometry ;
     if (model.source)
     {
-      const source = query(model.source.id, queryTypes.id);
+      const source = reducer(model.source.id, queryTypes.id);
       if (source)
         this._start = source._position ;
     }
     if (model.target)
     {
-      const end = query(model.target.id, queryTypes.id);
+      const end = reducer(model.target.id, queryTypes.id);
       if (end)
         this._end = end._position ;
     }
@@ -51,9 +51,10 @@ export class Wire extends objectBase
     if ( !this._end && model.radius )
       this._end = model.radius
 
-    this._geometry = this.geometry();
-    if ( this._geometry.getPoints ) //proper check
-      this._points = this._geometry.getPoints(150);
+    const geometry = this.geometry();
+    if ( geometry.getPoints ) //proper check
+      this._points = geometry.getPoints(150);
+    this._geometry = geometry ;
   }
 
   geometry() {
@@ -117,9 +118,17 @@ export class Wire extends objectBase
       }
     }
 
-    const geometry =  this._geometry.getPoints ? new THREE.BufferGeometry().setFromPoints( this._points ) : this._geometry ;
-    const mesh = new THREE.Line(geometry, material );
-
+    //const geometry =  this._geometry.getPoints ? new THREE.BufferGeometry().setFromPoints( this._points ) : this._geometry ;
+    //const mesh = new THREE.Line(geometry, material );
+    let mesh = undefined ;
+    if (this._geometry.getPoints) {
+      const geometry =  new THREE.BufferGeometry().setFromPoints( this._points ) ;
+      mesh = new THREE.Line(geometry, material );
+    }
+    // else {
+    //   if(this._geometry)
+    //     mesh = new THREE.Line(this._geometry, material );
+    // }
     return mesh; 
   }
 }
