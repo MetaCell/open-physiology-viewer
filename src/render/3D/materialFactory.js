@@ -25,9 +25,9 @@ const colorStr2Hex = str => isNaN(str) ? parseInt(tinycolor(str).toHex(), 16) : 
  */
 export class MaterialFactory {
     static createLine2Material(params = {}){
-        let p       = defaultParams::clone()::merge(params);
+        let p       = Object.assign(defaultParams, params);
         p.color     = colorStr2Hex(p.color);
-        p.linewidth = p.lineWidth || 0.003;
+        p.linewidth = p.linewidth || 0.003;
         return new THREE.LineBasicMaterial(p);
     }
 
@@ -37,7 +37,7 @@ export class MaterialFactory {
     }
 
     static createLineDashedMaterial(params = {}) {
-        let p = defaultParams::clone()::merge(params);
+        let p = Object.assign(defaultParams, params);
         p.color = colorStr2Hex(p.color);
         p.scale    = p.scale    || 1;
         p.gapSize  = p.gapSize  || 2;
@@ -46,13 +46,13 @@ export class MaterialFactory {
     }
 
     static createMeshBasicMaterial(params = {}){
-        let p   = defaultParams::clone()::merge(params);
+        let p   = Object.assign(defaultParams, params);
         p.color = colorStr2Hex(p.color);
         return new THREE.MeshBasicMaterial(p);
     }
 
     static createMeshLambertMaterial(params = {}){
-        let p   = defaultParams::clone()::merge(params);
+        let p   = Object.assign(defaultParams, params);
         p.color = colorStr2Hex(p.color);
         return new THREE.MeshLambertMaterial(p);
     }

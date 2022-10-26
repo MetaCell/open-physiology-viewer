@@ -65,12 +65,12 @@ export class Wire extends objectBase
           let start  = extractCoords(this._start);
           const end    = extractCoords(this._end) ;
           const center = extractCoords(this._arcCenter.layout)
-          if ( vectorEquals(start, end ) )
-          {
-            const aux = start.clone();
-            aux.x *= -1; 
-            start = aux ;
-          }
+          // if ( vectorEquals(start, end ) )
+          // {
+          //   const aux = start.clone();
+          //   aux.x *= -1; 
+          //   start = aux ;
+          // }
           return arcCurve( start, end, center );
         }
       case renderConsts.EDGE_GEOMETRY.SEMICIRCLE:
@@ -107,7 +107,7 @@ export class Wire extends objectBase
         // Line 2 method: draws thick lines
         material = MaterialFactory.createLine2Material({
           color: color,
-          lineWidth: linewidth,
+          linewidth: linewidth,
           polygonOffsetFactor: this._polygonOffsetFactor
         });
       } else {

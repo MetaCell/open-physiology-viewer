@@ -14,14 +14,24 @@ export class Region extends objectBase
     super(model, Region.type, reducer);
     const anchors = model.borderAnchors ;
     this._points = [];
-    anchors.forEach( a => {
-      const p = reducer(a.id, queryTypes.id);
-      if (p?.position)
-        this._points.push(p.position);
-    })
+    if (anchors.length == 4)
+    {
+      anchors.forEach( a => {
+        if ( a.layout)
+          this._points.push(a.layout);
+        else {
+          const p = reducer(a.id, queryTypes.id);
+          if (p?.position)
+            this._points.push(p.position);
+        }
+      })
+    }
   }
 
   render() {
+    if (this._points.length == 0)
+      return ;
+
     var shape = ThreeDFactory.regionShape(this._points);
 
     const material = MaterialFactory.createLineBasicMaterial({

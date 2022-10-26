@@ -233,6 +233,11 @@ export function arcCurve(startV, endV, centerV = new THREE.Vector3()){
     if (q.y < 0){
         tAngle = 2*Math.PI - tAngle;
     }
+    if (sAngle == tAngle) //if they are equal complete ellipse
+    {
+      sAngle = 0 ;
+      tAngle = 2 * Math.PI ;
+    }
     return new THREE.EllipseCurve(centerV.x, centerV.y, Math.sqrt(a2), Math.sqrt(b2), sAngle, tAngle, false);
 }
 

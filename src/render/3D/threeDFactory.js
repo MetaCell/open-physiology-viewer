@@ -66,7 +66,7 @@ export class ThreeDFactory {
     if (points.length > 0)
     {
       const origin = points[0];
-      shape.lineTo(origin.x, origin.y);
+      shape.moveTo(origin.x, origin.y);
 
       for (var i =1 ; i < l; i++)
         shape.lineTo(points[i].x, points[i].y);
