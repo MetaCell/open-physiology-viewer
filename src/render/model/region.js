@@ -24,16 +24,13 @@ export class Region extends objectBase
   render() {
     var shape = ThreeDFactory.regionShape(this._points);
 
-    if(shape.curves == 4)
-    {
-      const material = MaterialFactory.createLineBasicMaterial({
-          color: this.color,
-          polygonOffsetFactor: this._polygonOffsetFactor
-      });
+    const material = MaterialFactory.createLineBasicMaterial({
+        color: this.color,
+        polygonOffsetFactor: this._polygonOffsetFactor
+    });
 
-      const geometry = new THREE.ShapeGeometry( shape );
+    const geometry = new THREE.ShapeGeometry( shape );
 
-      return new THREE.Mesh( geometry, material );
-    }
+    return new THREE.Mesh( geometry, material );
   }
 }

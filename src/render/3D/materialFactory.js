@@ -27,7 +27,7 @@ export class MaterialFactory {
     static createLine2Material(params = {}){
         let p       = defaultParams::clone()::merge(params);
         p.color     = colorStr2Hex(p.color);
-        p.lineWidth = p.lineWidth || 0.003;
+        p.linewidth = p.lineWidth || 0.003;
         return new THREE.LineBasicMaterial(p);
     }
 

@@ -83,7 +83,7 @@ export class objectBase
 
   _render(geometry, material) { //implemented on child
     if (this._position)
-      geometry.translate(this._position.x, this._position.y, this._position.z);
+      geometry.translate(this._position.x || 0, this._position.y || 0, this._position.z || 0);
       
     const mesh = new THREE.Mesh(geometry, material);
     return mesh ;

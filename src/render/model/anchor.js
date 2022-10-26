@@ -16,7 +16,10 @@ export class Anchor extends objectBase
     {
       const hostingWire = reducer(model.hostedBy.id, queryTypes.id)
       if(hostingWire)
-        this._position = hostingWire.position(model.offset);
+      {
+        const relpos = hostingWire.position(model.offset);
+        this._position = relpos ;
+      }
     }
   }
 
