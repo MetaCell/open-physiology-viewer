@@ -77,10 +77,10 @@ export class renderer
     });
 
     //last but not least, REGIONS with anchors
-    // regions?.filter( r=> r.borderAnchors?.length > 0 ).forEach((anchor)=>{
-    //   const createdObject = objectFactory.create(anchor.id, scaffoldTypes.regions, this.queryGeneratedModel.bind(this), this.queryCreatedObjects.bind(this), level);
-    //   this._createdObjects.push(createdObject);
-    // });
+    regions?.filter( r=> r.borderAnchors?.length > 0 ).forEach((anchor)=>{
+      const createdObject = objectFactory.create(anchor.id, scaffoldTypes.regions, this.queryGeneratedModel.bind(this), this.queryCreatedObjects.bind(this), level);
+      this._createdObjects.push(createdObject);
+    });
     //})
   }
 

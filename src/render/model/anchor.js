@@ -17,7 +17,9 @@ export class Anchor extends objectBase
       const hostingWire = reducer(model.hostedBy.id, queryTypes.id)
       if(hostingWire)
       {
-        const relpos = hostingWire.position(model.offset);
+        let relpos = hostingWire.position(model.offset);
+        if (relpos.isVector2)
+          relpos = new THREE.Vector3(relpos.x,relpos.y,0)
         this._position = relpos ;
       }
     }

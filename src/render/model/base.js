@@ -82,6 +82,11 @@ export class objectBase
   }
 
   _render(geometry, material) { //implemented on child
+    if (isNaN(this._position.x) || isNaN(this._position.y) || isNaN(this._position.z) )
+    {
+      console.log('Invalid positioning while rendering')
+      console.log(this);
+    }
     if (this._position)
       geometry.translate(this._position.x || 0, this._position.y || 0, this._position.z || 0);
       
