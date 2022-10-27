@@ -29,6 +29,7 @@ export class Wire extends objectBase
 
   constructor(id, query, reducer, scaffold_index)
   {
+
     const model = query(id, Wire.type, scaffold_index)
     super(model, Wire.type, reducer);
     this._geometry  = model.geometry ;
