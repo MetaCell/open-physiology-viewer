@@ -18,15 +18,15 @@ export class Anchor extends objectBase
       if(hostingWire)
       {
         let relpos = hostingWire.position(model.offset);
-        // if (relpos)
-        // {
-        //   if (relpos.isVector2)
-        //     relpos = new THREE.Vector3(relpos.x,relpos.y,0)
-        //   this._position = relpos ;
-        // }
-        if (relpos.isVector2)
-          relpos = new THREE.Vector3(relpos.x,relpos.y,0)
-        this._position = relpos ;
+        if (relpos)
+        {
+          if (relpos.isVector2)
+            relpos = new THREE.Vector3(relpos.x,relpos.y,0)
+          this._position = relpos ;
+        }
+        // if (relpos.isVector2)
+        //   relpos = new THREE.Vector3(relpos.x,relpos.y,0)
+        // this._position = relpos ;
       }
     }
   }

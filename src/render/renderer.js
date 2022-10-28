@@ -81,7 +81,7 @@ export class renderer
     });
 
     // //wires without radius
-    wires?.filter( w=> !w.radius && createdAnchors.indexOf(w.source.id) > -1 && createdAnchors.indexOf(w.target.id) > -1 && createdWires.indexOf(w.id) == -1 ).forEach((wire)=>{
+    wires?.filter( w=> !w.radius && createdAnchors.indexOf(w.source?.id) > -1 && createdAnchors.indexOf(w.target?.id) > -1 && createdWires.indexOf(w.id) == -1 ).forEach((wire)=>{
       const createdObject = objectFactory.create(wire.id, scaffoldTypes.wires, this.queryGeneratedModel.bind(this), this.queryCreatedObjects.bind(this), level);
       this._createdObjects.push(createdObject);
       createdWires.push(wire.id);
@@ -94,7 +94,7 @@ export class renderer
     });
 
     // //wires without radius
-    wires?.filter( w=> !w.radius && createdAnchors.indexOf(w.source.id) > -1 && createdAnchors.indexOf(w.target.id) > -1 && createdWires.indexOf(w.id) == -1 ).forEach((wire)=>{
+    wires?.filter( w=> !w.radius && createdAnchors.indexOf(w.source?.id) > -1 && createdAnchors.indexOf(w.target?.id) > -1 && createdWires.indexOf(w.id) == -1 ).forEach((wire)=>{
       const createdObject = objectFactory.create(wire.id, scaffoldTypes.wires, this.queryGeneratedModel.bind(this), this.queryCreatedObjects.bind(this), level);
       this._createdObjects.push(createdObject);
       createdWires.push(wire.id);
