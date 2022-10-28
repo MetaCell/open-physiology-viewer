@@ -1,8 +1,8 @@
 import { objectBase, renderConsts } from './base';
 import { scaffoldTypes } from './types';
-import { ThreeDFactory } from '../3D/threeDFactory'; 
 import { MaterialFactory } from '../3D/materialFactory';
 import { queryTypes } from "../query/reducer";
+import { getPointInBetweenByPerc } from '../autoLayout/objects';
 
 import {
   extractCoords,
@@ -29,7 +29,6 @@ export class Wire extends objectBase
 
   constructor(id, query, reducer, scaffold_index)
   {
-
     const model = query(id, Wire.type, scaffold_index)
     super(model, Wire.type, reducer);
     this._geometry  = model.geometry ;
@@ -87,9 +86,17 @@ export class Wire extends objectBase
   }
 
   position(offset) {
-    const len = this._points.length ;
-    const index = Math.floor(len * offset);
-    return this._points[index];
+    if (this._points?.length > 0)
+    {
+      const len = this._points.length ;
+      const index = Math.floor(len * offset);
+      return this._points[index];
+    }
+    else {
+      const start = this._start ;
+      const end   = this._end ;
+      return getPointInBetweenByPerc(start, end, offset);
+    }
   }
 
   render() {
