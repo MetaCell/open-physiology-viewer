@@ -41,6 +41,8 @@ export class Region extends objectBase
 
     const geometry = new THREE.ShapeGeometry( shape );
 
-    return new THREE.Mesh( geometry, material );
+    const mesh = new THREE.Mesh( geometry, material );
+    mesh.userData = this._generatedModel ;
+    return mesh ;
   }
 }

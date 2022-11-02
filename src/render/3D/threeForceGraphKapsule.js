@@ -8,6 +8,7 @@ import {
 import {select as d3Select } from 'd3-selection';
 import {drag as d3Drag } from 'd3-drag';
 import { renderer } from "../renderer"
+import { autoLayout } from "../autoLayout"
 
 import Kapsule from 'kapsule';
 //import {modelClasses} from '../model/index';
@@ -259,6 +260,7 @@ export default Kapsule({
       function layoutTick() {
         if (this._renderer)
           this._renderer.render();
+        autoLayout(state.graphScene, state.graphData, state.showLabelWires);
       }
   }
 });

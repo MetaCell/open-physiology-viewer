@@ -2,7 +2,6 @@ import { objectTypes, mainObjectTypes, scaffoldTypes } from "./model/types"
 import objectFactory from "./model/factory"
 import { queryTypes } from "./query/reducer";
 import { nodeFromGeneratedModel, linkFromGeneratedModel, DirectedGraph } from "./graph/directedGraph";
-import { autoLayout } from "./autoLayout"
 
 export class renderer
 {
@@ -180,7 +179,7 @@ export class renderer
   render()
   {
     this._renderedObjects = [];
-    while (this._scene.children.length) { this._scene.remove(this._scene.children[0]) } // Clear the place
+    //while (this._scene.children.length) { this._scene.remove(this._scene.children[0]) } // Clear the place
 
     //TODO handle THREEJS Groups
     this._createdObjects?.forEach(o =>{
@@ -195,7 +194,7 @@ export class renderer
 
     this._renderedObjects.forEach(o => this._scene.add(o));
     
-    autoLayout(this._scene, this._model, false);
+    //autoLayout(this._scene, this._model, false);
   }
 
   clearCreatedObjects()
