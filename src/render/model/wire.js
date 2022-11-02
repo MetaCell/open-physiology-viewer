@@ -137,6 +137,10 @@ export class Wire extends objectBase
     //   if(this._geometry)
     //     mesh = new THREE.Line(this._geometry, material );
     // }
-    return mesh; 
+    if(mesh)
+    {
+      mesh.userData = this._generatedModel ;
+      return mesh; 
+    }
   }
 }

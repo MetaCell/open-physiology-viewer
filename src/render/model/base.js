@@ -91,6 +91,7 @@ export class objectBase
       geometry.translate(this._position.x || 0, this._position.y || 0, this._position.z || 0);
       
     const mesh = new THREE.Mesh(geometry, material);
+    mesh.userData = this._generatedModel ;
     return mesh ;
   }
 

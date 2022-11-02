@@ -76,6 +76,7 @@ export class Link extends objectBase
     }
     // Edge bundling breaks a link into 66 points
     this._pointLength = (!this.geometry || this.geometry === EDGE_GEOMETRY.LINK)? 2 : (this.geometry === EDGE_GEOMETRY.PATH)? 67 : state.edgeResolution;
+    obj.userData = this._generatedModel ;
 
     return obj ;
   }
