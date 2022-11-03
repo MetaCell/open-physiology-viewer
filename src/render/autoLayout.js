@@ -17,7 +17,8 @@ import { clearByObjectType
   , removeEntity
   , setMeshPos } from "./autoLayout/objects";
 
-import { trasverseHostedBy
+import { trasverseHostedByLyphs
+  , trasverseHostedBy
   , trasverseSceneChildren
   , trasverseInternalLyphs
   , traverseMeshParent } from "./autoLayout/trasverse";
@@ -396,7 +397,6 @@ function autoLayoutChains(scene, graphData, links){
 }
 
 export function autoLayout(scene, graphData, showLabelWires) {
-
   let lyphs = {};
   scene.children.forEach( child => {
     if ( lyphs[child.userData?.id] ){
@@ -410,8 +410,11 @@ export function autoLayout(scene, graphData, showLabelWires) {
   //clearByObjectType(scene, "Node");
   let hostLyphRegionDic = {}, lyphDic = {};
   
-  trasverseHostedBy(graphData, hostLyphRegionDic);
-  layoutLyphs(scene, hostLyphRegionDic, lyphDic, false);
+  if(graphData.lyphs)
+  {
+    trasverseHostedBy(graphData.lyphs, hostLyphRegionDic);
+    layoutLyphs(scene, hostLyphRegionDic, lyphDic, false);
+  }
 
   let hostLyphLyphDic = {};
   if(graphData.lyphs)

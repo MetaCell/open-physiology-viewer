@@ -6,39 +6,28 @@ export function trasverseSceneChildren(children, all) {
   });
 }
 
-
-export function trasverseHostedBy(graphData, dict) {
-  Object.keys(graphData).forEach((k) => {
-    const val = graphData[k];
-    if (Array.isArray(val)) {
-      val.forEach((child)=>{
-        const hostKey = child.hostedBy?.id || child.internalLyphs?.id;
-        if (hostKey)
-        {
-          if (dict[hostKey])
-            dict[hostKey].push(child.id)
-          else
-            dict[hostKey] = [child.id]; //init
-        }
-      })
+export function trasverseHostedBy(children, dict) {
+  children.forEach((child) => {
+    const hostKey = child.conveys?.levelIn ? child.conveys?.levelIn[0]?.hostedBy : null; ;
+    if (hostKey)
+    {
+      if (dict[hostKey])
+        dict[hostKey].push(child.id)
+      else
+        dict[hostKey] = [child.id]; //init
     }
   })
 }
 
-export function traverseWiredTo(graphData, dict) {
-  Object.keys(graphData).forEach((k) => {
-    const val = graphData[k];
-    if (Array.isArray(val)) {
-      val.forEach((child)=>{
-        const hostKey = child.wiredTo?.id ;
-        if (hostKey)
-        {
-          if (dict[hostKey])
-            dict[hostKey].push(child.id)
-          else
-            dict[hostKey] = [child.id]; //init
-        }
-      })
+export function trasverseWiredTo(children, dict) {
+  children.forEach((child) => {
+    const hostKey = child.conveys?.levelIn ? child.conveys?.levelIn[0]?.wiredTo : null; ;
+    if (hostKey)
+    {
+      if (dict[hostKey])
+        dict[hostKey].push(child.id)
+      else
+        dict[hostKey] = [child.id]; //init
     }
   })
 }
