@@ -260,7 +260,7 @@ export default Kapsule({
       function layoutTick() {
         if (this._renderer)
           this._renderer.render();
-        autoLayout(state.graphScene, state.graphData, state.showLabelWires);
+        //autoLayout(state.graphScene, state.graphData, state.showLabelWires);
       }
   }
 });

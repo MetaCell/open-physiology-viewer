@@ -2,6 +2,7 @@ import { objectTypes, mainObjectTypes, scaffoldTypes } from "./model/types"
 import objectFactory from "./model/factory"
 import { queryTypes } from "./query/reducer";
 import { nodeFromGeneratedModel, linkFromGeneratedModel, DirectedGraph } from "./graph/directedGraph";
+import { autoLayout } from "./autoLayout";
 
 export class renderer
 {
@@ -194,7 +195,7 @@ export class renderer
 
     this._renderedObjects.forEach(o => this._scene.add(o));
     
-    //autoLayout(this._scene, this._model, false);
+    autoLayout(this._scene, this._model, false);
   }
 
   clearCreatedObjects()
