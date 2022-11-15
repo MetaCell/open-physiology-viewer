@@ -1,0 +1,156 @@
+import { objectBase } from './base';
+import { objectTypes } from './types';
+import { ThreeDFactory } from '../3D/threeDFactory'; 
+import { _clone, _cloneDeep } from 'lodash-bound';
+import { getPointInBetweenByPerc } from '../autoLayout/objects';
+import { layoutToVector3 } from '../autoLayout/objects';
+import angle from '../autoLayout/curve'
+
+const LYPH_TOPOLOGY = Object.freeze({
+  CYST: 'DASHED',
+  BAG: 'THICK',
+  BAG2: 'LINK'
+})
+
+export function angleBetween(v1, v2){
+  let dot = v1.dot(v2);
+  return Math.acos( dot / (v1.length() * v2.length()) );
+}
+
+export class Lyph extends objectBase
+{
+  _layers = [];
+  _topology ;
+  _radialTypes = [false, false];
+  _isTemplate  = false ;
+  _superType   = undefined ;
+
+  _query   = undefined
+  _reducer = undefined ;
+  static type    = objectTypes.lyphs; 
+
+  constructor(id, query, reducer, props)
+  {
+    const model = props ? Object.assign(query(id, Lyph.type), props) : query(id, Lyph.type) ; 
+    super(model, objectTypes.lyphs, reducer);
+    this.color       = model.color ;
+    this.width       = model.scale?.width ;
+    this.height      = model.scale?.height ;
+    this.radius      = model.radius || ( this.height / 8 ) ;
+    this._topology   = LYPH_TOPOLOGY.BAG || this.model.topology;
+    this._groupped   = true ;
+    this._isTemplate = model.isTemplate ;
+    this._superType  = model.supertype ;
+
+    this._query = query ;
+    this._reducer = reducer ;
+
+    //this.initRadialTypes(); TODO for some reason this doesn't match model
+    //layout based positioning and sizing
+    if(model.layout)
+      this.position = model.layout ;
+    else {
+      //link based positioning and sizing
+      const linkId = model.conveys?.id ;
+      if (linkId)
+      {
+        const link    = reducer(linkId);
+        this.width    = link.width * 0.125 ;
+        this.height   = link.width * 0.25 ;
+        const source  = reducer(link._generatedModel.source.id)
+        const target  = reducer(link._generatedModel.target.id)   
+        const sourceVector = layoutToVector3(source.position) ;
+        const targetVector = layoutToVector3(target.position)
+        const midPoint = getPointInBetweenByPerc(sourceVector, targetVector, 0.5); 
+        const a = angleBetween(sourceVector, targetVector);
+        console.log(a);
+        this.position = midPoint ;
+        this.rotation = a ;
+      }
+    }
+    this._autoArrangeLayers();
+  }
+
+  get layers() { return this._layers ; }
+
+  initRadialTypes() {
+    switch (this._topology) {
+      case LYPH_TOPOLOGY.CYST   : this._radialTypes [true, true]; break;
+      case LYPH_TOPOLOGY.BAG    : this._radialTypes[0] = true; break;
+      case LYPH_TOPOLOGY.BAG2   : this._radialTypes[1] = true; break;
+      case LYPH_TOPOLOGY["BAG-"]: this._radialTypes[0] = true; break;
+      case LYPH_TOPOLOGY["BAG+"]: this._radialTypes[1] = true; break;
+    }
+  }
+
+  clone() {
+    const cloned = new Lyph(this._id, this._query, this._reducer, props);
+    cloned._layers = this._layers ;
+    cloned._isTemplate = false ;
+    return cloned ;
+  }
+
+  _autoArrangeLayers()
+  {
+    const totalLayers = this.model.layers?.length ; 
+    if( totalLayers > 0)
+    {
+      this.model.layers.forEach((layer, i)=>{
+        const width  = this._width  / totalLayers;
+        const height = this._height ;
+        const radius = height / 8 ;
+        const color  = layer.color ;
+        const scale  = { width, height, radius }
+        const x = this.position.x + i * width;
+        const y = this.position.y ;
+        const z = 0.1 ;
+        const id = layer.id ;
+        const layout = { x, y, z }
+        const innerLayer = new Lyph(id, this._query, this._reducer, { scale, layout, color })
+        this._layers.push(innerLayer);
+      })
+    }
+  }
+
+  render() {
+    if (!this._shouldRender)
+      return null ;
+
+    const group     = new THREE.Group();
+    const hasLayers = this._layers.length > 0 ;
+
+    const params   = { color: this._color, polygonOffsetFactor: this._polygonOffsetFactor} ;
+    //thickness, height, radius, top, bottom
+    const geometry = ThreeDFactory.lyphShape([this._width, this._height, this._radius, ...this._radialTypes]) ;
+    let mesh       = ThreeDFactory.createMeshWithBorder(geometry, params);
+
+    mesh.position.set(this.position.x, this.position.y, this.position.z);
+
+    group.add(mesh);
+
+    if (hasLayers)
+    {      
+      this._layers.forEach( l => {
+        const renderedLayer = l.render();
+        if (renderedLayer)
+        {
+          renderedLayer.visible = true ;
+          group.add(renderedLayer);
+        }
+        
+      })
+    }
+
+    // if(this.rotation != 0)
+    //   group.rotateZ(this.rotation);
+
+    if(this._generatedModel.layerIn !== undefined)
+      group.visible = false ;
+
+    group.userData = this._generatedModel ;
+
+    this._cache = group ;
+    
+    return this._cache ;
+  }
+}
