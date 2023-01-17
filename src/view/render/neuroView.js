@@ -1,6 +1,8 @@
 import {flatten } from "lodash-bound";
 import { autoSizeLyph } from "./autoLayout"
 import {modelClasses} from "../../model";
+import { CytoGraph } from "./helper/cytoGraph";
+
 const {Edge} = modelClasses;
 
 
@@ -381,4 +383,25 @@ export function getHouseLyph(lyph) {
   }
 
   return housingLyph;
+}
+
+export function applyOrthogonalLayout(scene) {
+  //set initial location for nodes and links
+  const nodes = scene.filter( o => o._type === mainObjectTypes.nodes ).map( o => nodeFromGeneratedModel(o) );
+  const links = scene.filter( o => o._type === mainObjectTypes.links ).map( o => linkFromGeneratedModel(o) );
+
+  //re run when?
+  const graph = new DirectedGraph(nodes.filter ( o => o !== undefined), links.filter ( o => o !== undefined));
+  graph.runLayout();
+  updateCreatedObjectsLayout(scene, graph);
+
+}
+
+updateCreatedObjectsLayout(graph, scene)
+{
+  const elements = graph._graph._private.elements ;
+  scene.filter( o => o._type === 'node' )
+  .forEach( node => {
+
+  })
 }
