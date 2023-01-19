@@ -17,7 +17,7 @@ import {MatIconModule} from '@angular/material/icon';
 import {MatButtonModule} from '@angular/material/button';
 import {MatExpansionModule} from '@angular/material/expansion';
 import {ResourceVisibility} from "./gui/resourceVisibility";
-import { buildNeurulatedTriplets, autoLayoutNeuron, toggleScaffoldsNeuroview, findHousingLyphsGroups, handleNeurulatedGroup, toggleWire } from "../view/render/neuroView";
+import { buildNeurulatedTriplets, autoLayoutNeuron, toggleScaffoldsNeuroview, findHousingLyphsGroups, handleNeurulatedGroup, toggleWire, applyOrthogonalLayout } from "../view/render/neuroView";
 
 /**
  * @ignore
@@ -1430,10 +1430,12 @@ export class SettingsPanel {
     // clear array keeping track of manipulated groups
     this.activeNeurulatedGroups = [];
     // Update rendered scafoold components
-    this.updateRenderedResources();
     this.config.layout.neuroviewEnabled = visible;
     // Toggle layers on or off
     this.config.layout.showLayers && this.toggleLayout("showLayers");
+
+    applyOrthogonalLayout(this.graphData.nodes, this.graphData.links);
+    this.updateRenderedResources();
   };
 
   search(value, filterOptions, allOptions) {
