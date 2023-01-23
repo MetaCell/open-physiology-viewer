@@ -1,6 +1,6 @@
 import ELK from 'elkjs/lib/elk.bundled.js'
 
-export function initELK(nodes, links)
+export function elkLayout(nodes, links)
 {
   const elk = new ELK({
     workerUrl: './elk-worker.min.js'
