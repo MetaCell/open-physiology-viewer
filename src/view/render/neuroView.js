@@ -1,7 +1,7 @@
 import {flatten } from "lodash-bound";
 import { autoSizeLyph } from "./autoLayout"
 import {modelClasses} from "../../model";
-import { elkLayout } from "./neuroViewHelper";
+import { orthogonalLayout } from "./neuroViewHelper";
 import node from "jsonld/dist/node6/lib/documentLoaders/node";
 
 const {Edge} = modelClasses;
@@ -387,11 +387,15 @@ export function getHouseLyph(lyph) {
 }
 
 export async function applyOrthogonalLayout(nodes, links) {
-  const layout = await elkLayout(nodes,links);
-  nodes.forEach( (node, i) => {
-    node['layout'] = { x: layout.children[i].x, y: layout.children[i].y }
-  })
-  links.forEach( (link, i) => {
-    link['layout'] = { sections: layout.edges[i].layout }
-  })
+  const layout = await orthogonalLayout(nodes, links);
+  if (layout)
+  {
+    
+  }
+  // nodes.forEach( (node, i) => {
+  //   node['orthogonalLayout'] = { x: layout.children[i].x, y: layout.children[i].y }
+  // })
+  // links.forEach( (link, i) => {
+  //   link['orthogonalLayout'] = { sections: layout.edges[i].sections }
+  // })
 }

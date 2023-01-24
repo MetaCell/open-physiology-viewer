@@ -1349,7 +1349,6 @@ export class SettingsPanel {
       // V1 : Step1
       // Step 1 Handle Neuro view initial settings. Turns OFF groups and scaffolds
       this.handleNeuroView(true);
-
       // V1 : Steps 3 -5 
       // Find housing lyphs of neuron, also links and chains.
       let neuronTriplets = buildNeurulatedTriplets(group);
@@ -1372,6 +1371,8 @@ export class SettingsPanel {
         // Run auto layout code to position lyphs on their regions and wires
         autoLayoutNeuron(neuronTriplets.y); 
         autoLayoutNeuron(neuronTriplets.y);
+        applyOrthogonalLayout(group.nodes, group.links);
+
       });
     } else {
       this.onToggleGroup.emit(group);
@@ -1434,7 +1435,7 @@ export class SettingsPanel {
     // Toggle layers on or off
     this.config.layout.showLayers && this.toggleLayout("showLayers");
 
-    applyOrthogonalLayout(this.graphData.nodes, this.graphData.links);
+
     this.updateRenderedResources();
   };
 
