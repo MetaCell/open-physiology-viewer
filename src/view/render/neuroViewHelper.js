@@ -3,7 +3,7 @@ import orthogonalConnector2 from "./orthogonalConnector2";
 export function orthogonalLayout(nodes, links)
 {
   const paths = {};
-  if ( nodes[0].x !== undefined ) //TODO: better check for layout
+  if ( links[0].source.x !== undefined ) //TODO: better check for layout
   {
     links.forEach( link => {
 

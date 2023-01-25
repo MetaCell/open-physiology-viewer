@@ -292,9 +292,13 @@ export function autoLayoutSegments(orthogonalSegments, links)
 {
   const link_ids = Object.keys(orthogonalSegments);
   link_ids.forEach( orthogonal_link_id => {
-    let link_model = links.find( l => {l.id == orthogonal_link_id });
+    const link_model = links.find( l => l.id == orthogonal_link_id );
     if (link_model) 
-      link_model.regenerateFromSegments(orthogonal_link);
+    {
+      const links = orthogonalSegments[orthogonal_link_id];
+      if (links.length > 0)
+        link_model.regenerateFromSegments(links);
+    }
   });
 }
 

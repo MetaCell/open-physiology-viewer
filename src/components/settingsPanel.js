@@ -1373,7 +1373,10 @@ export class SettingsPanel {
         autoLayoutNeuron(neuronTriplets.y);
         const orthogonalSegments = applyOrthogonalLayout(group.nodes, group.links)
         if (orthogonalSegments)
-          autoLayoutSegments(orthogonalSegments, group.nodes, group.links);
+        {
+          console.log("Orthogonal segments Information : ", orthogonalSegments);
+          autoLayoutSegments(orthogonalSegments, group.links);
+        }
       });
     } else {
       this.onToggleGroup.emit(group);
