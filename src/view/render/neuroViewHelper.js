@@ -1,4 +1,4 @@
-import { OrthogonalConnector } from "./orthogonalConnector";
+import orthogonalConnector2 from "./orthogonalConnector2";
 
 export function orthogonalLayout(nodes, links)
 {
@@ -20,7 +20,7 @@ export function orthogonalLayout(nodes, links)
         , height: 10
       }  
       
-      const paths = OrthogonalConnector.route({
+      const link_paths = orthogonalConnector2.route({
         pointA: {shape: start, side: 'bottom', distance: 0.5},
         pointB: {shape: end, side: 'right',  distance: 0.5},
         shapeMargin: 0,
@@ -28,7 +28,7 @@ export function orthogonalLayout(nodes, links)
         globalBounds: {left: 0, top: 0, width: 15000, height: 15000},
       });
     
-      paths[link.id] = paths ;
+      paths[link.id] = link_paths ;
     })
   
     return paths ;
