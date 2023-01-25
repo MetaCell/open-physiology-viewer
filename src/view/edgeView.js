@@ -153,6 +153,10 @@ Link.prototype.getCurve = function(start, end){
     return curve;
 };
 
+Link.prototype.regenerateFromSegments = function(segments) {
+  console.log(segments)
+}
+
 /**
  * Update visual objects for a link
  */

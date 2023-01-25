@@ -17,7 +17,7 @@ import {MatIconModule} from '@angular/material/icon';
 import {MatButtonModule} from '@angular/material/button';
 import {MatExpansionModule} from '@angular/material/expansion';
 import {ResourceVisibility} from "./gui/resourceVisibility";
-import { buildNeurulatedTriplets, autoLayoutNeuron, toggleScaffoldsNeuroview, findHousingLyphsGroups, handleNeurulatedGroup, toggleWire, applyOrthogonalLayout } from "../view/render/neuroView";
+import { buildNeurulatedTriplets, autoLayoutNeuron, autoLayoutSegments, toggleScaffoldsNeuroview, findHousingLyphsGroups, handleNeurulatedGroup, toggleWire, applyOrthogonalLayout } from "../view/render/neuroView";
 
 /**
  * @ignore
@@ -1371,8 +1371,9 @@ export class SettingsPanel {
         // Run auto layout code to position lyphs on their regions and wires
         autoLayoutNeuron(neuronTriplets.y); 
         autoLayoutNeuron(neuronTriplets.y);
-        applyOrthogonalLayout(group.nodes, group.links);
-
+        const orthogonalSegments = applyOrthogonalLayout(group.nodes, group.links)
+        if (orthogonalSegments)
+          autoLayoutSegments(orthogonalSegments, group.nodes, group.links);
       });
     } else {
       this.onToggleGroup.emit(group);

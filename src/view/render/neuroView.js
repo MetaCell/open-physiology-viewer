@@ -288,6 +288,16 @@ export function autoLayoutNeuron(lyphs) {
   });
 }
 
+export function autoLayoutSegments(orthogonalSegments, links)
+{
+  const link_ids = Object.keys(orthogonalSegments);
+  link_ids.forEach( orthogonal_link_id => {
+    let link_model = links.find( l => {l.id == orthogonal_link_id });
+    if (link_model) 
+      link_model.regenerateFromSegments(orthogonal_link);
+  });
+}
+
 /**
  * 
  * @param {*} event 
@@ -386,16 +396,6 @@ export function getHouseLyph(lyph) {
   return housingLyph;
 }
 
-export async function applyOrthogonalLayout(nodes, links) {
-  const layout = await orthogonalLayout(nodes, links);
-  if (layout)
-  {
-    
-  }
-  // nodes.forEach( (node, i) => {
-  //   node['orthogonalLayout'] = { x: layout.children[i].x, y: layout.children[i].y }
-  // })
-  // links.forEach( (link, i) => {
-  //   link['orthogonalLayout'] = { sections: layout.edges[i].sections }
-  // })
+export function applyOrthogonalLayout(nodes, links) {
+  return orthogonalLayout(nodes, links);
 }
