@@ -400,6 +400,6 @@ export function getHouseLyph(lyph) {
   return housingLyph;
 }
 
-export function applyOrthogonalLayout(nodes, links) {
-  return orthogonalLayout(nodes, links);
+export function applyOrthogonalLayout(links, width, height) {
+  return orthogonalLayout(links, width, height);
 }

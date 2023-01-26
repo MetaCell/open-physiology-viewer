@@ -1371,7 +1371,7 @@ export class SettingsPanel {
         // Run auto layout code to position lyphs on their regions and wires
         autoLayoutNeuron(neuronTriplets.y); 
         autoLayoutNeuron(neuronTriplets.y);
-        const orthogonalSegments = applyOrthogonalLayout(group.nodes, group.links)
+        const orthogonalSegments = applyOrthogonalLayout(group.links, 14260, 10010)
         if (orthogonalSegments)
         {
           console.log("Orthogonal segments Information : ", orthogonalSegments);

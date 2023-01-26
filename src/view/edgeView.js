@@ -154,13 +154,29 @@ Link.prototype.getCurve = function(start, end){
 };
 
 Link.prototype.regenerateFromSegments = function(segments) {
-  console.log(segments)
+  this.viewObjects['linkSegments'] = segments ;
 }
 
 /**
  * Update visual objects for a link
  */
 Link.prototype.updateViewObjects = function(state) {
+  if ( this.viewObjects['linkSegments'] ) {
+    
+    const points = []
+    this.viewObjects['linkSegments'].forEach( segment => {
+      points.push( new THREE.Vector3( segment.x, segment.y, 0 ) );
+    })
+    const material = new THREE.LineBasicMaterial({
+      color: 0x0000ff
+    });
+    
+    const geometry = new THREE.BufferGeometry().setFromPoints( points );
+    const line = new THREE.Line( geometry, material );
+
+    this.viewObjects["main"] = line ;
+  }else{
+
     state && Edge.prototype.updateViewObjects.call(this, state);
 
     const obj = this.viewObjects["main"];
@@ -256,6 +272,7 @@ Link.prototype.updateViewObjects = function(state) {
         this.updateLabels( this.center.clone().addScalar(this.state.labelOffset.Edge));
         
     }
+  }
 };
 
 Object.defineProperty(Link.prototype, "polygonOffsetFactor", {
