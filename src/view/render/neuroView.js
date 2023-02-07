@@ -401,5 +401,7 @@ export function getHouseLyph(lyph) {
 }
 
 export function applyOrthogonalLayout(links, width, height) {
-  return orthogonalLayout(links, width, height);
+  const segments = orthogonalLayout(links, width, height);
+  const keys = Object.keys(segments).filter( k => segments[k].length > 0 );
+  return Object.fromEntries(Object.entries(segments).filter(([key]) => keys.indexOf(key) > - 1));
 }

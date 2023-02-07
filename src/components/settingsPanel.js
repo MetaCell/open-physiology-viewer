@@ -1136,6 +1136,8 @@ export class SettingsPanel {
 
   @Input() dynamicGroups;
 
+  @Input() viewPortSize; 
+
   @Input("scaffolds") set scaffolds(newScaffolds) {
     this._scaffolds = newScaffolds;
     this.updateRenderedResources();
@@ -1371,7 +1373,7 @@ export class SettingsPanel {
         // Run auto layout code to position lyphs on their regions and wires
         autoLayoutNeuron(neuronTriplets.y); 
         autoLayoutNeuron(neuronTriplets.y);
-        const orthogonalSegments = applyOrthogonalLayout(group.links, 14260, 10010)
+        const orthogonalSegments = applyOrthogonalLayout(group.links, this.viewPortSize.width, this.viewPortSize.height)
         if (orthogonalSegments)
         {
           console.log("Orthogonal segments Information : ", orthogonalSegments);
