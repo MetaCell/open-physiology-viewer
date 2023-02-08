@@ -310,8 +310,8 @@ export default Kapsule({
           } else { layout['tick'](); }
 
           state.graphData.updateViewObjects(state);
-          //const event2 = new CustomEvent('doneUpdating');
-          //window.dispatchEvent(event2);
+          const event2 = new CustomEvent('doneUpdating');
+          window.dispatchEvent(event2);
           //autoLayout(state.graphScene, state.graphData);
         }
     }
