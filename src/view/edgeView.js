@@ -48,6 +48,7 @@ Edge.prototype.getViewObject = function (state){
             //Normal lines
             material = MaterialFactory.createLineBasicMaterial({
                 color: this.color,
+                lineWidth: 1,
                 polygonOffsetFactor: this.polygonOffsetFactor
             });
         }
@@ -70,6 +71,7 @@ Edge.prototype.getViewObject = function (state){
          geometry.setAttribute('position', new THREE.BufferAttribute(new Float32Array(this.pointLength * 3), 3));
     }
     obj.visible = !this.inactive;
+    obj.position.z = DIMENSIONS.LINK_MIN_Z;
     return obj;
 }
 
@@ -227,6 +229,7 @@ Link.prototype.updateViewObjects = function(state) {
             let coordArray = [];
             this.points.forEach(p => coordArray.push(p.x, p.y, p.z));
             obj.geometry.setPositions(coordArray);
+            obj.material.lineWidth = .1;
         } else {
             if (obj && this.stroke === Link.EDGE_STROKE.DASHED) {
                 obj.geometry.setFromPoints(this.points);
@@ -240,7 +243,6 @@ Link.prototype.updateViewObjects = function(state) {
                     this.points.forEach((p, i) => ["x", "y", "z"].forEach((dim,j) => linkPos.array[3 * i + j] = p[dim]));
                     obj.geometry.attributes.position.needsUpdate = true;
                     obj.position.z = DIMENSIONS.LINK_MIN_Z;
-                    obj.material.lineWidth = DIMENSIONS.LINK_MIN_Z * 2;
                     obj.geometry.verticesNeedUpdate = true;
                     obj.geometry.computeBoundingBox();
                     obj.geometry.computeBoundingSphere();
