@@ -1,5 +1,8 @@
 import {flatten } from "lodash-bound";
 import {modelClasses} from "../../model";
+import { orthogonalLayout } from "./neuroViewHelper";
+import node from "jsonld/dist/node6/lib/documentLoaders/node";
+
 const {Edge} = modelClasses;
 
 /**
@@ -309,6 +312,20 @@ export function autoLayoutNeuron(triplets, group) {
   });
 }
 
+export function autoLayoutSegments(orthogonalSegments, links)
+{
+  const link_ids = Object.keys(orthogonalSegments);
+  link_ids.forEach( orthogonal_link_id => {
+    const link_model = links.find( l => l.id == orthogonal_link_id );
+    if (link_model) 
+    {
+      const links = orthogonalSegments[orthogonal_link_id];
+      if (links.length > 0)
+        link_model.regenerateFromSegments(links);
+    }
+  });
+}
+
 /**
  * 
  * @param {*} event 
@@ -422,4 +439,10 @@ export function getNodeLyph(lyph) {
   }
 
   return housingLyph;
+}
+
+export function applyOrthogonalLayout(links, left, top, width, height) {
+  const segments = orthogonalLayout(links, left, top, width, height);
+  const keys = Object.keys(segments).filter( k => segments[k].length > 0 );
+  return Object.fromEntries(Object.entries(segments).filter(([key]) => keys.indexOf(key) > - 1));
 }
