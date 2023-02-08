@@ -1373,11 +1373,12 @@ export class SettingsPanel {
         // Run auto layout code to position lyphs on their regions and wires
         autoLayoutNeuron(neuronTriplets.y); 
         autoLayoutNeuron(neuronTriplets.y);
-        const orthogonalSegments = applyOrthogonalLayout(group.links, this.viewPortSize.width, this.viewPortSize.height)
+        const visibleLinks = group.links.filter( l => !l.hidden && !l.inactive );
+        const orthogonalSegments = applyOrthogonalLayout(visibleLinks, this.viewPortSize.left, this.viewPortSize.top, this.viewPortSize.width, this.viewPortSize.height)
         if (orthogonalSegments)
         {
           console.log("Orthogonal segments Information : ", orthogonalSegments);
-          autoLayoutSegments(orthogonalSegments, group.links);
+          //autoLayoutSegments(orthogonalSegments, visibleLinks;
         }
       });
     } else {

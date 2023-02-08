@@ -161,6 +161,7 @@ Link.prototype.regenerateFromSegments = function(segments) {
  * Update visual objects for a link
  */
 Link.prototype.updateViewObjects = function(state) {
+
   if ( this.viewObjects['linkSegments'] ) {
     
     const points = []

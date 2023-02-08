@@ -1,6 +1,6 @@
 import orthogonalConnector2 from "./orthogonalConnector2";
 
-export function orthogonalLayout(links, width, height)
+export function orthogonalLayout(links, left, top, width, height)
 {
   const paths = {};
   if ( links[0].source.x !== undefined ) //TODO: better check for layout
@@ -25,7 +25,7 @@ export function orthogonalLayout(links, width, height)
         pointB: {shape: end, side: 'right',  distance: 0.5},
         shapeMargin: 0,
         globalBoundsMargin: 0,
-        globalBounds: {left: 0, top: 0, width: width, height: height},
+        globalBounds: { left, top, width, height },
       });
     
       paths[link.id] = link_paths ;
