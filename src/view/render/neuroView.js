@@ -1,11 +1,9 @@
 import {flatten } from "lodash-bound";
-import { autoSizeLyph } from "./autoLayout"
 import {modelClasses} from "../../model";
 import { orthogonalLayout } from "./neuroViewHelper";
 import node from "jsonld/dist/node6/lib/documentLoaders/node";
 
 const {Edge} = modelClasses;
-
 
 /**
  * Build dictionary keeping tracks of housing lyphs, hosted regions, wires.
@@ -31,14 +29,14 @@ export function buildNeurulatedTriplets(group) {
   hostedLinks.forEach((l) => { 
     // Avoid duplicate housing lyphs
     if (!housingLyphs.includes(l.fasciculatesIn) &&  (l.fasciculatesIn ) ) {
-      housingLyphs.push(l.fasciculatesIn);
+      l.fasciculatesIn?.layerIn == undefined && housingLyphs.push(l.fasciculatesIn);
     }
     if (!housingLyphs.includes(l.endsIn) &&  (l.endsIn ) ) {
-      housingLyphs.push(l.endsIn);
+      l.endsIn?.layerIn == undefined && housingLyphs.push(l.endsIn);
     }
 
     if ( l.levelIn ) {
-      l.levelIn?.forEach( ll =>  ll.housingLyphs?.forEach( lyph => (!housingLyphs.includes(lyph) && housingLyphs.push(lyph))));
+      l.levelIn?.forEach( ll =>  ll.housingLyphs?.forEach( lyph => (!housingLyphs.includes(lyph) && lyph?.layerIn == undefined && housingLyphs.push(lyph))));
     }
   });
   console.log("housingLyphs ", housingLyphs);
@@ -64,7 +62,16 @@ export function buildNeurulatedTriplets(group) {
     ...new Set(housingLyphsInChains.map((h) => h?.axis?.levelIn)::flatten()),
   ]; // lyphs -> links -> chains, each link can be part of several chains, hence levelIn gives an array that we need to flatten
   console.log("housingChains ", housingChains);
+
+  housingChains = [];
+  group.links.filter( l => l.levelIn?.forEach( ll => !housingChains.find( c => c.id == ll.id ) && housingChains.push(ll) ));
+  console.log("housingChains from Links ", housingChains);
   neuronTriplets.chains = housingChains;
+
+  let links = [];
+  housingChains.forEach( chain => chain.levels.forEach( level => !links.find( c => c.id == level.id ) && links.push(level)));
+  console.log("housingChains Links ", links);
+  neuronTriplets.links = links;
 
   let wiredHousingChains = housingChains
     .filter((c) => c.wiredTo)
@@ -102,23 +109,6 @@ export function buildNeurulatedTriplets(group) {
   return neuronTriplets;
 }
 
-/**
- * Toggle Lyph inner properties, to show/hide inner components.
- * @param {*} lyph 
- * @param {*} checked 
- * @param {*} neuronMatches 
- */
-export function toggleNeurulatedLyph(lyph, checked, neuronMatches) {
-  lyph.hidden = checked;
-  // Toggle visibility for links not part of the neurulated neuron
-  if ( !neuronMatches?.links?.find( l => l.id === lyph.conveys?.id ) ) {
-    lyph.conveys.inactive = checked;
-    lyph.conveys.hidden = checked;
-    lyph.conveys?.source ? (lyph.conveys.source.inactive = checked) : null;
-    lyph.conveys?.target ? (lyph.conveys.target.inactive = checked) : null;
-  }
-}
-
 function traverseWires(component, checked){
   if (component)  { 
     component.inactive = !checked;
@@ -151,10 +141,26 @@ export function handleNeurulatedGroup(checked, groupMatched, neurulatedMatches) 
   groupMatched.lyphs.forEach((lyph) => {
     if ( neurulatedMatches?.y?.find( l => l.id === lyph.id ) ) {
       lyph.hidden = !checked;
-      if (checked) lyph.inactive = !checked;
+      lyph.layers?.forEach( layer => {
+        layer.hidden = !checked;
+      });
+      if (checked) { 
+        lyph.inactive = !checked;
+        lyph.layers?.forEach( layer => {
+          layer.inactive = !checked;
+        });
+      }
     } else {
       lyph.hidden = checked;
-      if (checked) lyph.inactive = checked;
+      lyph.layers?.forEach( layer => {
+        layer.hidden = checked;
+      });
+      if (checked) { 
+        lyph.inactive = checked;
+        lyph.layers?.forEach( layer => {
+          layer.inactive = checked;
+        });
+      }
     }
   });
 }
@@ -282,9 +288,27 @@ export function toggleScaffoldsNeuroview ( scaffoldsList, neuronTriplets, checke
  * Loops through housing neurons and call auto placement function
  * @param {*} neuronTriplets 
  */
-export function autoLayoutNeuron(lyphs) {
-  lyphs.forEach((m) => {
+export function autoLayoutNeuron(triplets, group) {
+  triplets?.y?.forEach((m) => {
     m.autoSize();
+  });
+
+  group?.lyphs?.forEach( m => {
+    let l = getNodeLyph(m);
+    l.internalLyphs = []
+  });
+
+  group?.lyphs?.forEach( m => {
+    let l = getNodeLyph(m);
+    l?.internalLyphs
+    ? l.internalLyphs?.includes(m)
+      ? null
+      : l.internalLyphs?.push(m)
+    : (l.internalLyphs = [m]);
+  });
+  
+  group?.lyphs?.forEach((lyph) => {
+    lyph.autoSize();
   });
 }
 
@@ -381,20 +405,37 @@ function updateLyphsHosts(matches,neuronTriplets){
  */
 export function getHouseLyph(lyph) {
   let housingLyph = lyph;
-
-  if (housingLyph.internalIn || housingLyph?.layerIn || housingLyph.hostedBy || housingLyph.onBorder || housingLyph.host || housingLyph.onBorder) {
-    let tempParent = housingLyph.internalIn || housingLyph?.layerIn || housingLyph.hostedBy || housingLyph.onBorder || housingLyph.host;
+  if (housingLyph.internalIn || housingLyph?.layerIn || housingLyph.hostedBy || housingLyph.housingLyph || housingLyph.onBorder || housingLyph.host || housingLyph.onBorder) {
+    let tempParent = housingLyph.internalIn || housingLyph?.layerIn || housingLyph.hostedBy || housingLyph.housingLyph || housingLyph.onBorder || housingLyph.host;
     if ( tempParent.class != "Region" && tempParent.class != "Wire" ){
-      housingLyph =housingLyph.internalIn || housingLyph?.layerIn ||  housingLyph.hostedBy || housingLyph.onBorder || housingLyph.host;
-      while ( housingLyph.internalIn || housingLyph?.layerIn || housingLyph?.hostedBy || housingLyph?.onBorder || housingLyph.host) {
-        let tempParent = housingLyph.internalIn || housingLyph?.layerIn || housingLyph.hostedBy || housingLyph.onBorder || housingLyph.host;
+      housingLyph =housingLyph.internalIn || housingLyph?.layerIn ||  housingLyph.hostedBy || housingLyph.housingLyph || housingLyph.onBorder || housingLyph.host;
+      while ( housingLyph.internalIn || housingLyph?.layerIn || housingLyph?.hostedBy || housingLyph.housingLyph || housingLyph?.onBorder || housingLyph.host) {
+        let tempParent = housingLyph.internalIn || housingLyph?.layerIn || housingLyph.hostedBy || housingLyph.housingLyph || housingLyph.onBorder || housingLyph.host;
         if ( tempParent.class != "Region" && tempParent.class != "Wire" ){
-          housingLyph = housingLyph.internalIn || housingLyph?.layerIn || housingLyph.hostedBy || housingLyph.onBorder || housingLyph.host;
+          housingLyph = housingLyph.internalIn || housingLyph?.layerIn || housingLyph.hostedBy || housingLyph.housingLyph || housingLyph.onBorder || housingLyph.host;
         } else {
           break;
         }
       }
     }
+  }
+
+  return housingLyph;
+}
+
+export function getNodeLyph(lyph) {
+  let housingLyph = lyph;
+  if (housingLyph.internalIn || housingLyph.hostedBy || housingLyph.onBorder || housingLyph.host || housingLyph.onBorder) {
+    let tempParent = housingLyph.internalIn || housingLyph.hostedBy || housingLyph.onBorder || housingLyph.host;
+      housingLyph =housingLyph.internalIn || housingLyph.hostedBy || housingLyph.onBorder || housingLyph.host;
+      while ( housingLyph.internalIn || housingLyph?.hostedBy || housingLyph?.onBorder || housingLyph.host) {
+        let tempParent = housingLyph.internalIn || housingLyph.hostedBy || housingLyph.onBorder || housingLyph.host;
+        if ( tempParent.class != "Region" && tempParent.class != "Wire" ){
+          housingLyph = housingLyph.internalIn || housingLyph.hostedBy || housingLyph.onBorder || housingLyph.host;
+        } else {
+          break;
+        }
+      }
   }
 
   return housingLyph;

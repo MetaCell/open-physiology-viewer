@@ -17,7 +17,8 @@ import {MatIconModule} from '@angular/material/icon';
 import {MatButtonModule} from '@angular/material/button';
 import {MatExpansionModule} from '@angular/material/expansion';
 import {ResourceVisibility} from "./gui/resourceVisibility";
-import { buildNeurulatedTriplets, autoLayoutNeuron, autoLayoutSegments, toggleScaffoldsNeuroview, findHousingLyphsGroups, handleNeurulatedGroup, toggleWire, applyOrthogonalLayout } from "../view/render/neuroView";
+import { buildNeurulatedTriplets, autoLayoutNeuron, toggleScaffoldsNeuroview, findHousingLyphsGroups, handleNeurulatedGroup, toggleWire, getHouseLyph, applyOrthogonalLayout } from "../view/render/neuroView";
+
 
 /**
  * @ignore
@@ -1321,7 +1322,7 @@ export class SettingsPanel {
 
   hideVisibleGroups = (visible) => {
     // Hide all visible
-    let allVisible = this.dynamicGroups.filter((g) => g.hidden == false );
+    let allVisible = this.filteredDynamicGroups.filter((g) => g.hidden == false );
     allVisible.forEach((g) => {
       g.lyphs.forEach((lyph) => {
         lyph.hidden = true;
@@ -1347,16 +1348,18 @@ export class SettingsPanel {
   };
 
   toggleGroup = (event, group) => {
+    
+    let neuronTriplets = buildNeurulatedTriplets(group);
     if (this.neuroViewEnabled) {
       // V1 : Step1
       // Step 1 Handle Neuro view initial settings. Turns OFF groups and scaffolds
       this.handleNeuroView(true);
       // V1 : Steps 3 -5 
       // Find housing lyphs of neuron, also links and chains.
-      let neuronTriplets = buildNeurulatedTriplets(group);
       console.log("Neuron Information : ", neuronTriplets);
 
       this.activeNeurulatedGroups.push(group);
+
       // V1 Step 5 :Identify TOO Map components and turn them ON/OFF
       const matchScaffolds = toggleScaffoldsNeuroview(this.scaffolds,neuronTriplets,event.checked);
       matchScaffolds?.forEach((scaffold) => this.onToggleGroup.emit(scaffold));
@@ -1371,18 +1374,39 @@ export class SettingsPanel {
       });
       window.addEventListener("doneUpdating", () => { 
         // Run auto layout code to position lyphs on their regions and wires
-        autoLayoutNeuron(neuronTriplets.y); 
-        autoLayoutNeuron(neuronTriplets.y);
-        const visibleLinks = group.links.filter( l => !l.hidden && !l.inactive );
-        const orthogonalSegments = applyOrthogonalLayout(visibleLinks, this.viewPortSize.left, this.viewPortSize.top, this.viewPortSize.width, this.viewPortSize.height)
-        if (orthogonalSegments)
-        {
-          console.log("Orthogonal segments Information : ", orthogonalSegments);
-          //autoLayoutSegments(orthogonalSegments, visibleLinks;
+        if ( group.neurulated ) {
+          autoLayoutNeuron(neuronTriplets, group);
+          autoLayoutNeuron(neuronTriplets, group);
+          const visibleLinks = group.links.filter( l => !l.hidden && !l.inactive );
+          const orthogonalSegments = applyOrthogonalLayout(visibleLinks, this.viewPortSize.left, this.viewPortSize.top, this.viewPortSize.width, this.viewPortSize.height)
+          if (orthogonalSegments)
+          {
+            console.log("Orthogonal segments Information : ", orthogonalSegments);
+            //autoLayoutSegments(orthogonalSegments, visibleLinks;
+          }
         }
       });
+      group.neurulated = true;
+
+      const newGroupName = group.name + " - Neurulated";
+
+      if ( this.filteredDynamicGroups.filter(g => g.id == group.id ).length <= 1 ) {
+        let groupClone = Object.assign(Object.create(Object.getPrototypeOf(group)), group)
+        groupClone.name = newGroupName;
+        groupClone.links = [];
+        groupClone.nodes = [];
+        groupClone.lyphs = neuronTriplets.y;
+        this.filteredDynamicGroups.push(groupClone);
+      } else if ( this.filteredDynamicGroups.find(g => g.name == newGroupName ) ) {
+        // Handle each group individually. Turn group's lyph on or off depending if they are housing lyphs
+        const groupMatched = this.filteredDynamicGroups.find(g => g.name == newGroupName );
+        groupMatched.hidden = !event.checked;
+      } 
     } else {
       this.onToggleGroup.emit(group);
+      window.addEventListener("doneUpdating", () => { 
+          autoLayoutNeuron(neuronTriplets, group);
+      });
     }
   };
 
@@ -1412,7 +1436,7 @@ export class SettingsPanel {
     if ( visible ) {
       this.hideVisibleGroups(visible);
     } else {
-      let visibleGroups = this.dynamicGroups.filter( dg => !dg.hidden );
+      let visibleGroups = this.filteredDynamicGroups.filter( dg => !dg.hidden );
       visibleGroups?.forEach(group => { 
         group.lyphs.forEach( lyph => {
           lyph.hidden = false;

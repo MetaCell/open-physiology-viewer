@@ -1,7 +1,7 @@
 import {copyCoords, extractCoords, getCenterOfMass, THREE} from "./utils";
 import {MaterialFactory} from "./materialFactory";
 import {modelClasses} from "../model";
-import { getHouseLyph } from "./render/neuroView";
+import { getHouseLyph, getNodeLyph } from "./render/neuroView";
 import { getWorldPosition } from "./render/autoLayout/objects";
 
 const {VisualResource, Vertice, Node, Anchor} = modelClasses;
@@ -74,39 +74,35 @@ Node.prototype.updateViewObjects = function(state) {
         }
         else if (this.controlNodes) {
             copyCoords(this, getCenterOfMass(this.controlNodes));
-        }
-        else if ( this.internalIn ) {
-            let housingLyph = this.internalIn;
-            if ( housingLyph?.class != "Lyph" || housingLyph?.layerIn ){
-                housingLyph = getHouseLyph(this.internalIn);
-            }
-            copyCoords(this, housingLyph);
         } else if (this.cloneOf) {
-            copyCoords(this, this.cloneOf);
-        } else if (this.hostedBy) {
-            let housingLyph = getHouseLyph(this.hostedBy);
-            copyCoords(this, housingLyph);
+            let housingLyph = this.cloneOf?.sourceOf[0]?.conveyingLyph;
+            housingLyph ? null : housingLyph = this.cloneOf?.targetOf[0]?.conveyingLyph;
+            let position = getWorldPosition(housingLyph?.viewObjects["main"]);
+            copyCoords(this, position);
+        } else if ( this.sourceOf ){
+            let housingLyph = this.sourceOf[0]?.conveyingLyph;
+            housingLyph ? null : housingLyph = this.targetOf[0]?.conveyingLyph;
+            let position = getWorldPosition(housingLyph?.viewObjects["main"]);
+            copyCoords(this, position);
         } else if ( this.targetOf ){
-            this.targetOf?.forEach( link => {
-                let sourceLyph = undefined;
-                link.source?.clones?.forEach( clone => {
-                    sourceLyph = clone;
-                });
-
-                let targetLyph = undefined;
-                link.target?.clones?.forEach( clone => {
-                    targetLyph = clone;
-                });
-                    
-                sourceLyph !== undefined ? sourceLyph = getHouseLyph(sourceLyph) : null;
-                targetLyph !== undefined ? targetLyph = getHouseLyph(targetLyph) : null;
-                let usedHousingLyph = sourceLyph || targetLyph;
-                let housingLyph = undefined;
-                link.levelIn?.forEach( chain => {
-                    housingLyph = chain.housingLyphs?.find( lyph => lyph.id !== usedHousingLyph?.id);
-                })
-                copyCoords(this, housingLyph);
-            })
+            let housingLyph = this.targetOf[0]?.conveyingLyph;
+            housingLyph ? null : housingLyph = this.sourceOf[0]?.conveyingLyph;
+            let position = getWorldPosition(housingLyph?.viewObjects["main"]);
+            copyCoords(this, position);
+        } else if ( this.internalIn ) {
+            let housingLyph = this.internalIn;
+            if ( housingLyph?.class != "Lyph" ){
+                housingLyph = getNodeLyph(housingLyph);
+            } else if ( housingLyph?.layerIn ){
+                housingLyph = housingLyph;
+            }
+            let position = getWorldPosition(housingLyph?.viewObjects["main"]);
+            copyCoords(this, position);
+        } else if (this.hostedBy) {
+            let housingLyph = this.sourceOf[0]?.conveyingLyph;
+            housingLyph ? null : housingLyph = this.targetOf[0]?.conveyingLyph;
+            let position = getWorldPosition(housingLyph?.viewObjects["main"]);
+            copyCoords(this, position);
         }
     }
     state && Vertice.prototype.updateViewObjects.call(this, state);

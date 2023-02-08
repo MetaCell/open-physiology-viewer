@@ -15,6 +15,7 @@ import {
     THREE
 } from "./utils";
 import { fitToTargetRegion, LYPH_H_PERCENT_MARGIN, maxLyphSize, DIMENSIONS, placeLyphInWire, placeLyphInHost } from "./render/autoLayout";
+import { getHouseLyph, getNodeLyph } from "./render/neuroView";
 import { getBoundingBoxSize, getWorldPosition } from "./render/autoLayout/objects";
 
 const {Region, Lyph, Border, Wire, VisualResource, Shape} = modelClasses;
@@ -152,18 +153,38 @@ Lyph.prototype.autoSize = function(){
     // Continue if there's a THREE object
     if (this.viewObjects["main"]) {
         // Get the host, usually a region or another lyph
-        let hostMesh = this.hostedBy?.viewObjects["main"] || this.housingLyph?.viewObjects["main"];
+        let hostMesh = this.hostedBy?.viewObjects["main"] || this.housingLyph?.viewObjects["main"] || this.internalIn?.viewObjects["main"];
         if ( hostMesh ) {
             // Place and scale lyph inside host region or lyph
-            placeLyphInHost(this)
+            placeLyphInHost(this);
         } else {
             let wiredTo = this.wiredTo?.viewObjects["main"];
             // If lyph is attach to the wire
             if ( wiredTo ) {
                 // Place and scale lyph along wire
-                placeLyphInWire(this)
+                placeLyphInWire(this);
             }
         }
+
+        let that = this;
+        this?.layers?.forEach((layer,index) => { 
+            const house = getHouseLyph(layer)
+            let obj = layer?.viewObjects["main"]
+            let hostMeshPosition = obj.position;
+            if ( house?.viewObjects["main"] ) {
+                const houseDim = getBoundingBoxSize(house?.viewObjects["main"]);
+                const size = houseDim.y / that.layers.length 
+                let y = (0 - houseDim.x/2) + ( (size/2) * (index + 0 ));
+                hostMeshPosition = new THREE.Vector3(y,0,DIMENSIONS.LYPH_MIN_Z);
+            }
+            obj.position.x = hostMeshPosition.x;
+            obj.position.y = hostMeshPosition.y;
+            obj.position.z = DIMENSIONS.LAYER_MIN_Z;;
+                
+            obj.geometry.center();
+                
+            copyCoords(layer, obj.position);
+        });
         // save position into object
         copyCoords(this, this.viewObjects["main"]?.position);  
         this.updateLabels(this.viewObjects["main"].position.clone().addScalar(this.state.labelOffset.Lyph));       
@@ -277,7 +298,7 @@ Lyph.prototype.createViewObjects = function(state) {
         });
     }
     //Do not create labels for layers and nested lyphs
-    if (this.layerIn || this.internalIn) { return; }
+    if (this.layerIn) { return; }
     this.createLabels();
 };
 
@@ -439,6 +460,7 @@ Region.prototype.updateViewObjects = function(state) {
     state && this.border.updateViewObjects(state);
     state && this.updateLabels(this.center.clone().addScalar(this.state.labelOffset.Region));
 
+    // this.hostedLyphs = this.hostedLyphs?.sort((a, b) => -1 * a.id.localeCompare(b.id));
     if ( this.hostedLyphs?.length > 0 && obj ) {
         this.hostedLyphs?.forEach( lyph => {
             if ( !lyph.hidden && lyph.viewObjects["main"] ) {
@@ -460,7 +482,6 @@ Region.prototype.updateViewObjects = function(state) {
                 
                 lyphMesh.position.x = targetX ;
                 lyphMesh.position.y = targetY ;
-                lyphMesh.position.z = DIMENSIONS.REGION_MIN_Z;
                 copyCoords(lyph, lyphMesh.position);         
             }
         })
