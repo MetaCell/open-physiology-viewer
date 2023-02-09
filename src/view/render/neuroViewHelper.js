@@ -7,16 +7,16 @@ export function orthogonalLayout(links, left, top, width, height)
   links.forEach( link => {
 
     const start = { 
-      left: link.source.x
-      , top: link.source.y
-      , width: 2
-      , height: 2
+      left: link.points[0].x 
+      , top: link.points[0].y 
+      , width: 0
+      , height: 0
     }  
     const end = { 
-      left: link.target.x
-      , top: link.target.y
-      , width: 2
-      , height: 2
+      left: link.points[link.points.length-1].x 
+      , top: link.points[link.points.length-1].y
+      , width: 0
+      , height: 0
     }  
     
     const link_paths = orthogonalConnector2.route({

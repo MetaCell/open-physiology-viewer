@@ -1372,15 +1372,22 @@ export class SettingsPanel {
       this.activeNeurulatedGroups.forEach((g) => {
         handleNeurulatedGroup(event.checked, g, neuronTriplets);
       });
-      window.addEventListener("doneUpdating", () => { 
+      window.addEventListener("updateTick", () => { 
         // Run auto layout code to position lyphs on their regions and wires
         if ( group.neurulated ) {
           autoLayoutNeuron(neuronTriplets, group);
           autoLayoutNeuron(neuronTriplets, group);
+        }
+      });
+
+      window.addEventListener("doneUpdating", () => { 
+        // Run auto layout code to position lyphs on their regions and wires
+        if ( group.neurulated ) {
           const visibleLinks = group.links.filter( l => !l.hidden && !l.inactive );
           const orthogonalSegments = applyOrthogonalLayout(visibleLinks, this.viewPortSize.left, this.viewPortSize.top, this.viewPortSize.width, this.viewPortSize.height)
           if (orthogonalSegments)
           {
+            console.log("Visible links: ", visibleLinks);
             console.log("Orthogonal segments Information : ", orthogonalSegments);
             autoLayoutSegments(orthogonalSegments, visibleLinks);
           }

@@ -168,7 +168,7 @@ Link.prototype.updateViewObjects = function(state) {
     
     const points = []
     this.viewObjects['linkSegments'].forEach( segment => {
-      points.push( new THREE.Vector3( segment.x, segment.y, 0 ) );
+      points.push( new THREE.Vector3( segment.x, segment.y, 1 ) );
     })
     const material = new THREE.LineBasicMaterial({
       color: 0x0000ff
