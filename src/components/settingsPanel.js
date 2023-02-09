@@ -17,7 +17,7 @@ import {MatIconModule} from '@angular/material/icon';
 import {MatButtonModule} from '@angular/material/button';
 import {MatExpansionModule} from '@angular/material/expansion';
 import {ResourceVisibility} from "./gui/resourceVisibility";
-import { buildNeurulatedTriplets, autoLayoutNeuron, toggleScaffoldsNeuroview, findHousingLyphsGroups, handleNeurulatedGroup, toggleWire, getHouseLyph, applyOrthogonalLayout } from "../view/render/neuroView";
+import { buildNeurulatedTriplets, autoLayoutNeuron, toggleScaffoldsNeuroview, findHousingLyphsGroups, handleNeurulatedGroup, toggleWire, getHouseLyph, applyOrthogonalLayout, autoLayoutSegments } from "../view/render/neuroView";
 
 
 /**
@@ -1382,7 +1382,7 @@ export class SettingsPanel {
           if (orthogonalSegments)
           {
             console.log("Orthogonal segments Information : ", orthogonalSegments);
-            //autoLayoutSegments(orthogonalSegments, visibleLinks;
+            autoLayoutSegments(orthogonalSegments, visibleLinks);
           }
         }
       });

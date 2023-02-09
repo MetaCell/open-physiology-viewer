@@ -9,14 +9,14 @@ export function orthogonalLayout(links, left, top, width, height)
     const start = { 
       left: link.source.x
       , top: link.source.y
-      , width: 10
-      , height: 10
+      , width: 2
+      , height: 2
     }  
     const end = { 
       left: link.target.x
       , top: link.target.y
-      , width: 10
-      , height: 10
+      , width: 2
+      , height: 2
     }  
     
     const link_paths = orthogonalConnector2.route({

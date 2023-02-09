@@ -1,8 +1,7 @@
 import {flatten } from "lodash-bound";
 import {modelClasses} from "../../model";
 import { orthogonalLayout } from "./neuroViewHelper";
-import node from "jsonld/dist/node6/lib/documentLoaders/node";
-
+import { stddev, avg } from '../utils';
 const {Edge} = modelClasses;
 
 /**
@@ -441,8 +440,35 @@ export function getNodeLyph(lyph) {
   return housingLyph;
 }
 
+function distance(a, b) {
+  return Math.sqrt(Math.pow(b.x - a.x, 2) + Math.pow(b.y - a.y, 2));
+}
+
 export function applyOrthogonalLayout(links, left, top, width, height) {
-  const segments = orthogonalLayout(links, left, top, width, height);
-  const keys = Object.keys(segments).filter( k => segments[k].length > 0 );
-  return Object.fromEntries(Object.entries(segments).filter(([key]) => keys.indexOf(key) > - 1));
+  const distances = [];
+  links.forEach(l => {
+    const linkDistance = distance(l.source, l.target);
+    distances.push(linkDistance);
+  });
+  if (distances.length > 0)
+  {
+    const dev = stddev(distances);
+    const average = avg(distances);
+    const max_delta = average + dev ;
+    const distance_indexes = distances.map((d,i) => { 
+      if (d > max_delta)
+        return i ;
+    })
+    .filter(d => d);
+    const filtered_links = [];
+    distance_indexes.forEach( (di) => {
+      filtered_links.push(links[di])
+    })
+    if (filtered_links.length > 0)
+    {
+      const segments = orthogonalLayout(filtered_links, left, top, width, height);
+      const keys = Object.keys(segments).filter( k => segments[k].length > 0 );
+      return Object.fromEntries(Object.entries(segments).filter(([key]) => keys.indexOf(key) > - 1));
+    }
+  }
 }

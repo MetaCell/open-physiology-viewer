@@ -5,6 +5,12 @@ import {defaults} from 'lodash-bound';
 import tinycolor from 'tinycolor2';
 import {CSG} from 'three-csg-ts';
 
+export function stddev (array) {
+  const n = array.length
+  const mean = array.reduce((a, b) => a + b) / n
+  return Math.sqrt(array.map(x => Math.pow(x - mean, 2)).reduce((a, b) => a + b) / n)
+}
+export const avg = array => array.reduce((a, b) => a + b) / array.length;
 /**
  * Get a point on a curve
  * @param curve  - THREE.js curve
