@@ -20,8 +20,7 @@ VisualResource.prototype.createLabels = function(){
 
     if (!this.labels[labelKey] && this[labelKey]) {
         this.labels[labelKey] = new SpriteText2D(this[labelKey], this.state.fontParams);
-        this.labels[labelKey].material.alphaTest = .4;
-        this.labels[labelKey].scale.set(.1, .1, .1)
+        this.labels[labelKey].material.alphaTest = .1;
     }
 
     if (this.labels[labelKey]){
@@ -44,8 +43,8 @@ VisualResource.prototype.updateLabels = function(position){
         if (this.labels[labelKey].visible) {
             this.labels[labelKey].scale.set(this.state.labelRelSize, this.state.labelRelSize, this.state.labelRelSize);
             const lyphDim = getBoundingBoxSize(this.viewObjects["main"]);
-            const refHeight  = lyphDim.y * this.viewObjects["main"].scale.y;
-            position ? position.y = position.y - refHeight/2: null;
+            const refHeight  = lyphDim.x * this.viewObjects["main"].scale.x * .65;
+            position ? position.y = position.y - refHeight: null;
             copyCoords(this.labels[labelKey].position, position);
             this.viewObjects['label'] = this.labels[labelKey];
         }

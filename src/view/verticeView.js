@@ -1,7 +1,7 @@
 import {copyCoords, extractCoords, getCenterOfMass, THREE} from "./utils";
 import {MaterialFactory} from "./materialFactory";
 import {modelClasses} from "../model";
-import { getHouseLyph, getNodeLyph } from "./render/neuroView";
+import { getHouseLyph } from "./render/neuroView";
 import { getWorldPosition } from "./render/autoLayout/objects";
 
 const {VisualResource, Vertice, Node, Anchor} = modelClasses;
@@ -92,7 +92,7 @@ Node.prototype.updateViewObjects = function(state) {
         } else if ( this.internalIn ) {
             let housingLyph = this.internalIn;
             if ( housingLyph?.class != "Lyph" ){
-                housingLyph = getNodeLyph(housingLyph);
+                housingLyph = getHouseLyph(housingLyph);
             } else if ( housingLyph?.layerIn ){
                 housingLyph = housingLyph;
             }

@@ -291,12 +291,12 @@ export function autoLayoutNeuron(triplets, group) {
   });
 
   group?.lyphs?.forEach( m => {
-    let l = getNodeLyph(m);
+    let l = getLayerLyph(m);
     l.internalLyphs = []
   });
 
   group?.lyphs?.forEach( m => {
-    let l = getNodeLyph(m);
+    let l = getLayerLyph(m);
     l?.internalLyphs
     ? l.internalLyphs?.includes(m)
       ? null
@@ -388,7 +388,7 @@ function updateLyphsHosts(matches,neuronTriplets){
  */
 export function getHouseLyph(lyph) {
   let housingLyph = lyph;
-  if (housingLyph.internalIn || housingLyph?.layerIn || housingLyph.hostedBy || housingLyph.housingLyph || housingLyph.onBorder || housingLyph.host || housingLyph.onBorder) {
+  if (housingLyph.internalIn || housingLyph?.layerIn || housingLyph.hostedBy || housingLyph.housingLyph || housingLyph.onBorder || housingLyph.host ) {
     let tempParent = housingLyph.internalIn || housingLyph?.layerIn || housingLyph.hostedBy || housingLyph.housingLyph || housingLyph.onBorder || housingLyph.host;
     if ( tempParent.class != "Region" && tempParent.class != "Wire" ){
       housingLyph =housingLyph.internalIn || housingLyph?.layerIn ||  housingLyph.hostedBy || housingLyph.housingLyph || housingLyph.onBorder || housingLyph.host;
@@ -406,11 +406,10 @@ export function getHouseLyph(lyph) {
   return housingLyph;
 }
 
-export function getNodeLyph(lyph) {
+export function getLayerLyph(lyph) {
   let housingLyph = lyph;
   if (housingLyph.internalIn || housingLyph.hostedBy || housingLyph.onBorder || housingLyph.host || housingLyph.onBorder) {
-    let tempParent = housingLyph.internalIn || housingLyph.hostedBy || housingLyph.onBorder || housingLyph.host;
-      housingLyph =housingLyph.internalIn || housingLyph.hostedBy || housingLyph.onBorder || housingLyph.host;
+      housingLyph = housingLyph.internalIn || housingLyph.hostedBy || housingLyph.onBorder || housingLyph.host;
       while ( housingLyph.internalIn || housingLyph?.hostedBy || housingLyph?.onBorder || housingLyph.host) {
         let tempParent = housingLyph.internalIn || housingLyph.hostedBy || housingLyph.onBorder || housingLyph.host;
         if ( tempParent.class != "Region" && tempParent.class != "Wire" ){

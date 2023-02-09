@@ -15,7 +15,7 @@ import {
     THREE
 } from "./utils";
 import { fitToTargetRegion, LYPH_H_PERCENT_MARGIN, maxLyphSize, DIMENSIONS, placeLyphInWire, placeLyphInHost } from "./render/autoLayout";
-import { getHouseLyph, getNodeLyph } from "./render/neuroView";
+import { getHouseLyph } from "./render/neuroView";
 import { getBoundingBoxSize, getWorldPosition } from "./render/autoLayout/objects";
 
 const {Region, Lyph, Border, Wire, VisualResource, Shape} = modelClasses;
@@ -165,25 +165,24 @@ Lyph.prototype.autoSize = function(){
                 placeLyphInWire(this);
             }
         }
-
         let that = this;
-        this?.layers?.forEach((layer,index) => { 
+        this?.layers?.forEach((layer, index) => { 
             const house = getHouseLyph(layer)
             let obj = layer?.viewObjects["main"]
-            let hostMeshPosition = obj.position;
+            let x = 0;
             if ( house?.viewObjects["main"] ) {
                 const houseDim = getBoundingBoxSize(house?.viewObjects["main"]);
                 const size = houseDim.y / that.layers.length 
-                let y = (0 - houseDim.x/2) + ( (size/2) * (index + 0 ));
-                hostMeshPosition = new THREE.Vector3(y,0,DIMENSIONS.LYPH_MIN_Z);
+                x = (0 - houseDim.x/2) + ( (size/2) * (index + 0 ));
+                obj.position.x = x;
+                obj.position.z = DIMENSIONS.LAYER_MIN_Z;
             }
-            obj.position.x = hostMeshPosition.x;
-            obj.position.y = hostMeshPosition.y;
-            obj.position.z = DIMENSIONS.LAYER_MIN_Z;;
                 
             obj.geometry.center();
                 
-            copyCoords(layer, obj.position);
+            copyCoords(layer, obj.position);      
+            layer?.internalLyphs?.forEach( layerInLyph => layerInLyph.autoSize());
+            
         });
         // save position into object
         copyCoords(this, this.viewObjects["main"]?.position);  
@@ -297,9 +296,10 @@ Lyph.prototype.createViewObjects = function(state) {
             }
         });
     }
+    this.createLabels();
+
     //Do not create labels for layers and nested lyphs
     if (this.layerIn) { return; }
-    this.createLabels();
 };
 
 /**
@@ -351,11 +351,10 @@ Lyph.prototype.updateViewObjects = function(state) {
     (this.layers || []).forEach(layer => layer.updateViewObjects(state));
 
     this.border.updateViewObjects(state);
+    this.updateLabels(this.center.clone().addScalar(this.state.labelOffset.Lyph));
 
     //Layers and inner lyphs have no labels
     if (this.layerIn || this.internalIn) { return; }
-
-    this.updateLabels(this.center.clone().addScalar(this.state.labelOffset.Lyph));
 };
 
 /**

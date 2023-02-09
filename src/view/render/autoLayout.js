@@ -21,7 +21,7 @@ import { translateMeshToTarget
   , setLyphScale
   , setLyphPosition
   , rotateAroundCenter   } from "./autoLayout/transform";
-import { getHouseLyph, getNodeLyph } from "./neuroView";
+import { getHouseLyph } from "./neuroView";
 
 export const LYPH_H_PERCENT_MARGIN = 0.2;
 export const LYPH_V_PERCENT_MARGIN = 0.05;
@@ -31,7 +31,7 @@ export const MIN_INNER_LYPH_WIDTH = 50;
 export const DIMENSIONS =  {
   LYPH_MIN_Z : .5,
   REGION_MIN_Z : 0,
-  LINK_MIN_Z : 1,
+  LINK_MIN_Z : .6,
   WIRE_MIN_Z : 0,
   LAYER_MIN_Z : .25
 }
@@ -608,10 +608,11 @@ export function placeLyphInHost(lyph){
   const housingLyph = getHouseLyph(hostMesh?.userData);
   let targetY = hostMeshPosition.y;
   if ( housingLyph?.wiredTo?.viewObjects["main"] ){
-    if ( housingLyph?.viewObjects["main"].quaternion._x < 0 || housingLyph?.viewObjects["main"].rotation._y < 0 || housingLyph?.viewObjects["main"].quaternion._x > 0 || housingLyph?.viewObjects["main"].rotation._y > 0 ){
-      targetY = housingLyph?.viewObjects["main"]?.position.y;
-      targetY = targetY + refPaddingX + (refWidth/3);
-    }
+    // if ( housingLyph?.viewObjects["main"].quaternion._x < 0 || housingLyph?.viewObjects["main"].rotation._y < 0 || housingLyph?.viewObjects["main"].quaternion._x > 0 || housingLyph?.viewObjects["main"].rotation._y > 0 ){
+    //   targetY = housingLyph?.viewObjects["main"]?.position.y;
+    //   targetY = targetY + refPaddingX + (refWidth/2);
+    //   rotateAroundCenter(lyphMesh, housingLyph?.viewObjects["main"].quaternion._x, housingLyph?.viewObjects["main"].quaternion._y, housingLyph?.viewObjects["main"].quaternion._z);
+    // }
   }
 
   lyphMesh.position.x = targetX ;

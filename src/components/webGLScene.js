@@ -189,7 +189,7 @@ export class WebGLSceneComponent {
     selectColor    = 0x00ff00;
     defaultColor   = 0x000000;
     scaleFactor    = 10;
-    labelRelSize   = 0.1 * this.scaleFactor;
+    labelRelSize   = 0.02 * this.scaleFactor;
     lockControls   = false;
     isConnectivity = true;
 
