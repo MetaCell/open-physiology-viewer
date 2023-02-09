@@ -17,7 +17,8 @@ import {MatIconModule} from '@angular/material/icon';
 import {MatButtonModule} from '@angular/material/button';
 import {MatExpansionModule} from '@angular/material/expansion';
 import {ResourceVisibility} from "./gui/resourceVisibility";
-import { buildNeurulatedTriplets, autoLayoutNeuron, toggleScaffoldsNeuroview, findHousingLyphsGroups, handleNeurulatedGroup, toggleWire, getHouseLyph } from "../view/render/neuroView";
+import { buildNeurulatedTriplets, autoLayoutNeuron, toggleScaffoldsNeuroview, findHousingLyphsGroups, handleNeurulatedGroup, toggleWire, getHouseLyph, applyOrthogonalLayout } from "../view/render/neuroView";
+
 
 /**
  * @ignore
@@ -1136,6 +1137,8 @@ export class SettingsPanel {
 
   @Input() dynamicGroups;
 
+  @Input() viewPortSize; 
+
   @Input("scaffolds") set scaffolds(newScaffolds) {
     this._scaffolds = newScaffolds;
     this.updateRenderedResources();
@@ -1380,8 +1383,6 @@ export class SettingsPanel {
     if (this.neuroViewEnabled) {
       // Handle Neuro view initial settings. Turns OFF groups and scaffolds
       this.handleNeuroView(true);
-
-      // Identify TOO Map components and turn them ON/OFF
       const matchScaffolds = toggleScaffoldsNeuroview(this.scaffolds,neuronTriplets,event.checked);
       matchScaffolds?.forEach((scaffold) => this.onToggleGroup.emit(scaffold));
       this.config.layout.showLayers && this.toggleLayout("showLayers");
@@ -1401,6 +1402,13 @@ export class SettingsPanel {
         if ( group.neurulated ) {
           autoLayoutNeuron(neuronTriplets, group);
           autoLayoutNeuron(neuronTriplets, group);
+          const visibleLinks = group.links.filter( l => !l.hidden && !l.inactive );
+          const orthogonalSegments = applyOrthogonalLayout(visibleLinks, this.viewPortSize.left, this.viewPortSize.top, this.viewPortSize.width, this.viewPortSize.height)
+          if (orthogonalSegments)
+          {
+            console.log("Orthogonal segments Information : ", orthogonalSegments);
+            //autoLayoutSegments(orthogonalSegments, visibleLinks;
+          }
         }
       });
       group.neurulated = true;
@@ -1468,10 +1476,12 @@ export class SettingsPanel {
     // clear array keeping track of manipulated groups
     this.activeNeurulatedGroups = [];
     // Update rendered scafoold components
-    this.updateRenderedResources();
     this.config.layout.neuroviewEnabled = visible;
     // Toggle layers on or off
     this.config.layout.showLayers && this.toggleLayout("showLayers");
+
+
+    this.updateRenderedResources();
   };
 
   search(value, filterOptions, allOptions) {
