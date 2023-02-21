@@ -20,22 +20,50 @@ export async function orthogonalLayout(links, nodes, left, top, width, height)
   //obstacles, anything not a lyph and orphaned
 
   nodes.forEach( node => {
-    const nodeModel = new shapes.basic.Rect({
-      position: { x: node.points[0].x, y: node.points[0].y },
-      size: { width: node.width, height: node.height }
+    const nodeModel = new shapes.standard.Rectangle({
+      id: node.id,
+      position: { x: node.x, y: node.y },
+      size: { 
+        width: node.width
+        , height: node.height 
+      }
     });
   
     graph.addCell(nodeModel);
   });
   
   links.forEach( link => {
-    const linkModel = new shapes.standard.Link({
-      id: link.id,
-      router: { name: 'manhattan' },
-      source: { x: link.points[0].x, y: link.points[0].y },
-      target: { x: link.points[link.points.length-1].x , y: link.points[link.points.length-1].y }
-    });
-    graph.addCell(linkModel);
+
+    if (link.points?.length > 0)
+    {
+      const sx = link.points[0].x ;
+      const sy = link.points[0].y ;
+      const tx = link.points[link.points.length-1].x ;
+      const ty = link.points[link.points.length-1].y ;
+  
+      const source = new shapes.standard.Rectangle({
+        position: { x: sx, y: sy },
+        size: { 
+          width: 10
+          , height: 10 
+        }
+      });
+      graph.addCell(source);
+      const target = new shapes.standard.Rectangle({
+        position: { x: tx, y: ty },
+        size: { 
+          width: 10
+          , height: 10
+        }
+      });
+      graph.addCell(target);
+      const linkModel = new shapes.standard.Link({
+        id: link.id,
+        source: { id: source.id },
+        target: { id: target.id },
+      });
+      graph.addCell(linkModel);
+    }
   })
 
   // Call requestConnectionUpdate() to update the routing of all links
@@ -44,6 +72,15 @@ export async function orthogonalLayout(links, nodes, left, top, width, height)
   // Wait for the routing update to complete
   await new Promise(resolve => paper.on('render:done', resolve));
 
-  return graph.toJSON(); ;
+  const json = graph.toJSON();
+  json.cells.forEach(cell => {
+    if (cell.type == 'standard.Link') {
+      const link = graph.getCell(cell.id);
+      link.findView(paper).requestConnectionUpdate();
+      const vertices = link.get('vertices');
+      console.log(vertices);
+    }
+  });
+  return json ;
 }
 
