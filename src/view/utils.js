@@ -5,6 +5,11 @@ import {defaults} from 'lodash-bound';
 import tinycolor from 'tinycolor2';
 import {CSG} from 'three-csg-ts';
 
+export function random_rgba() {
+  return Math.floor(Math.random()*16777215).toString(16);
+}
+
+
 export function stddev (array) {
   const n = array.length
   const mean = array.reduce((a, b) => a + b) / n

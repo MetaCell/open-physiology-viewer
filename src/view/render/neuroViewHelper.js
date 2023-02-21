@@ -1,35 +1,49 @@
 import orthogonalConnector2 from "./orthogonalConnector2";
+import { dia, shapes } from 'jointjs';
 
-export function orthogonalLayout(links, left, top, width, height)
+export async function orthogonalLayout(links, nodes, left, top, width, height)
 {
-  const paths = {};
+  const graph = new dia.Graph();
 
-  links.forEach( link => {
+  const el = document.createElement('div');
+  el.style.width = width + 'px';
+  el.style.height = height + 'px';
 
-    const start = { 
-      left: link.points[0].x 
-      , top: link.points[0].y 
-      , width: 0
-      , height: 0
-    }  
-    const end = { 
-      left: link.points[link.points.length-1].x 
-      , top: link.points[link.points.length-1].y
-      , width: 0
-      , height: 0
-    }  
-    
-    const link_paths = orthogonalConnector2.route({
-      pointA: {shape: start, side: 'bottom', distance: 0.5},
-      pointB: {shape: end, side: 'right',  distance: 0.5},
-      shapeMargin: 0,
-      globalBoundsMargin: 0,
-      globalBounds: { left, top, width, height },
+  const paper = new dia.Paper({
+    el: el,
+    width: width,
+    height: height,
+    gridSize: 10,
+    async: true,
+    model: graph
+  });
+  //obstacles, anything not a lyph and orphaned
+
+  nodes.forEach( node => {
+    const nodeModel = new shapes.basic.Rect({
+      position: { x: node.points[0].x, y: node.points[0].y },
+      size: { width: node.width, height: node.height }
     });
   
-    paths[link.id] = link_paths ;
+    graph.addCell(nodeModel);
+  });
+  
+  links.forEach( link => {
+    const linkModel = new shapes.standard.Link({
+      id: link.id,
+      router: { name: 'manhattan' },
+      source: { x: link.points[0].x, y: link.points[0].y },
+      target: { x: link.points[link.points.length-1].x , y: link.points[link.points.length-1].y }
+    });
+    graph.addCell(linkModel);
   })
 
-  return paths ;
+  // Call requestConnectionUpdate() to update the routing of all links
+  paper.requestConnectedLinksUpdate();
+
+  // Wait for the routing update to complete
+  await new Promise(resolve => paper.on('render:done', resolve));
+
+  return graph.toJSON(); ;
 }
 

@@ -313,15 +313,10 @@ export function autoLayoutNeuron(triplets, group) {
 
 export function autoLayoutSegments(orthogonalSegments, links)
 {
-  const link_ids = Object.keys(orthogonalSegments);
-  link_ids.forEach( orthogonal_link_id => {
-    const link_model = links.find( l => l.id == orthogonal_link_id );
+  orthogonalSegments.forEach( segment => {
+    const link_model = links.find( l => l.id == segment.id );
     if (link_model) 
-    {
-      const links = orthogonalSegments[orthogonal_link_id];
-      if (links.length > 0)
-        link_model.regenerateFromSegments(links);
-    }
+      link_model.regenerateFromSegments(segment);
   });
 }
 
@@ -444,7 +439,7 @@ function distance(a, b) {
   return Math.sqrt(Math.pow(b.x - a.x, 2) + Math.pow(b.y - a.y, 2));
 }
 
-export function applyOrthogonalLayout(links, left, top, width, height) {
+export async function applyOrthogonalLayout(links, nodes, left, top, width, height) {
   const distances = [];
   links.forEach(l => {
     const linkDistance = distance(l.source, l.target);
@@ -466,9 +461,9 @@ export function applyOrthogonalLayout(links, left, top, width, height) {
     })
     if (filtered_links.length > 0)
     {
-      const segments = orthogonalLayout(filtered_links, left, top, width, height);
-      const keys = Object.keys(segments).filter( k => segments[k].length > 0 );
-      return Object.fromEntries(Object.entries(segments).filter(([key]) => keys.indexOf(key) > - 1));
+      const layout = await orthogonalLayout(filtered_links, nodes, left, top, width, height)
+      const links = layout.cells.filter( c => c.type == 'standard.Link' )
+      return links ;
     }
   }
 }
