@@ -1384,7 +1384,9 @@ export class SettingsPanel {
         // Run auto layout code to position lyphs on their regions and wires
         if ( group.neurulated ) {
           const visibleLinks = group.links.filter( l => !l.hidden && !l.inactive );
-          const orthogonalSegments = applyOrthogonalLayout(visibleLinks, group.lyphs, this.viewPortSize.left, this.viewPortSize.top, this.viewPortSize.width, this.viewPortSize.height)
+          const neuroTriplets = buildNeurulatedTriplets(group);
+          const bigLyphs = neuroTriplets.y;
+          const orthogonalSegments = applyOrthogonalLayout(visibleLinks, bigLyphs, this.viewPortSize.left, this.viewPortSize.top, this.viewPortSize.width, this.viewPortSize.height)
           if (orthogonalSegments)
           {
             console.log("Visible links: ", visibleLinks);
