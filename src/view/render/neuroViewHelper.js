@@ -1,9 +1,28 @@
 import orthogonalConnector2 from "./orthogonalConnector2";
 import { dia, shapes } from 'jointjs';
 
-export async function orthogonalLayout(links, nodes, left, top, width, height)
+function extractVerticesFromPath(path)
+{
+  const vertices = [];
+  path.forEach(function(path) {
+    const d = path.toString.attr('d');
+    const matches = d.match(/L\s*([\d.-]+)\s*,\s*([\d.-]+)/ig);
+
+    if (matches) {
+      matches.forEach(function(match) {
+        const values = match.replace(/L\s*/i, '').split(/,\s*/);
+        const vertex = { x: parseFloat(values[0]), y: parseFloat(values[1]) };
+        vertices.push(vertex);
+      });
+    }
+  });
+  return vertices ;
+}
+
+export function orthogonalLayout(links, nodes, left, top, width, height)
 {
   const graph = new dia.Graph();
+  const linkVertices = {};
 
   const el = document.createElement('div');
   el.style.width = width + 'px';
@@ -14,7 +33,7 @@ export async function orthogonalLayout(links, nodes, left, top, width, height)
     width: width,
     height: height,
     gridSize: 10,
-    async: true,
+    async: false,
     model: graph
   });
   //obstacles, anything not a lyph and orphaned
@@ -61,26 +80,25 @@ export async function orthogonalLayout(links, nodes, left, top, width, height)
         id: link.id,
         source: { id: source.id },
         target: { id: target.id },
+        router: { name: 'manhattan' }
       });
       graph.addCell(linkModel);
     }
   })
 
-  // Call requestConnectionUpdate() to update the routing of all links
-  paper.requestConnectedLinksUpdate();
-
   // Wait for the routing update to complete
-  await new Promise(resolve => paper.on('render:done', resolve));
-
   const json = graph.toJSON();
   json.cells.forEach(cell => {
     if (cell.type == 'standard.Link') {
-      const link = graph.getCell(cell.id);
-      link.findView(paper).requestConnectionUpdate();
-      const vertices = link.get('vertices');
-      console.log(vertices);
+      const linkModel = graph.getCell(cell.id);
+      const newLinkView = paper.findViewByModel(linkModel);
+      if (newLinkView) {
+        const vertices = newLinkView.path.toPoints();
+        linkVertices[cell.id] = vertices ;
+      }
     }
   });
-  return json ;
+
+  return linkVertices ;
 }
 

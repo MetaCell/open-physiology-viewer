@@ -164,27 +164,27 @@ Link.prototype.regenerateFromSegments = function(segments) {
  */
 Link.prototype.updateViewObjects = function(state) {
 
-  // if ( this.viewObjects['linkSegments'] ) {
+  if ( this.viewObjects['linkSegments'] ) {
     
-  //   const points = []
-  //   const z = Math.floor(Math.random() * 6) + 1 ;
+    const points = []
+    const z = Math.floor(Math.random() * 6) + 1 ;
 
-  //   const segment = this.viewObjects['linkSegments'] ;
+    const segments = this.viewObjects['linkSegments'][0] ;
 
-  //   //this.viewObjects['linkSegments'].forEach( segment => {
-  //   points.push( new THREE.Vector3( segment.source.x, segment.source.y, 1 ) );
-  //   points.push( new THREE.Vector3( segment.target.x, segment.target.y, 1 ) );
-  //   //})
+    segments.forEach( segment => {
+      points.push( new THREE.Vector3( segment.x, segment.y, z ) );
+      points.push( new THREE.Vector3( segment.x, segment.y, z ) );
+    })
 
-  //   const material = new THREE.LineBasicMaterial({
-  //     color: '#0000FF'
-  //   });
+    const material = new THREE.LineBasicMaterial({
+      color: random_rgba()
+    });
     
-  //   const geometry = new THREE.BufferGeometry().setFromPoints( points );
-  //   const line = new THREE.Line( geometry, material );
+    const geometry = new THREE.BufferGeometry().setFromPoints( points );
+    const line = new THREE.Line( geometry, material );
 
-  //   this.viewObjects["main"] = line ;
-  // }else{
+    this.viewObjects["main"] = line ;
+  }else{
 
     state && Edge.prototype.updateViewObjects.call(this, state);
 
@@ -281,7 +281,7 @@ Link.prototype.updateViewObjects = function(state) {
         this.updateLabels( this.center.clone().addScalar(this.state.labelOffset.Edge));
         
     }
-  //}
+  }
 };
 
 Object.defineProperty(Link.prototype, "polygonOffsetFactor", {
