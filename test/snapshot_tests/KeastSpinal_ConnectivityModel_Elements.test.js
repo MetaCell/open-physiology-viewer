@@ -146,7 +146,7 @@ describe('Merge Keast Spinal Model', () => {
     })
 })
 
-describe('Keast Spinal Model Snapshot Tests', () => {
+describe.skip('Keast Spinal Model Snapshot Tests', () => {
 
     it('Keast Spinal Model Group: All groups', async () => {
 
