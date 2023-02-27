@@ -454,7 +454,7 @@ export function applyOrthogonalLayout(links, nodes, left, top, width, height) {
   {
     const dev = stddev(distances);
     const average = avg(distances);
-    const max_delta = average - dev ;
+    const max_delta = average - 0.25 * dev ;
     const distance_indexes = distances.map((d,i) => { 
       if (d > max_delta)
         return i ;

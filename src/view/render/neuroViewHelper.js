@@ -41,7 +41,7 @@ export function orthogonalLayout(links, nodes, left, top, width, height)
   nodes.forEach( node => {
     const nodeModel = new shapes.standard.Rectangle({
       id: node.id,
-      position: { x: node.x, y: node.y },
+      position: { x: 0, y: 0 },
       size: { 
         width: node.width
         , height: node.height 
@@ -63,16 +63,16 @@ export function orthogonalLayout(links, nodes, left, top, width, height)
       const source = new shapes.standard.Rectangle({
         position: { x: sx, y: sy },
         size: { 
-          width: 10
-          , height: 10 
+          width: 0
+          , height: 0 
         }
       });
       graph.addCell(source);
       const target = new shapes.standard.Rectangle({
         position: { x: tx, y: ty },
         size: { 
-          width: 10
-          , height: 10
+          width: 0
+          , height: 0
         }
       });
       graph.addCell(target);
