@@ -1,5 +1,6 @@
 import orthogonalConnector2 from "./orthogonalConnector2";
 import { dia, shapes } from 'jointjs';
+import { combineLatestAll } from "rxjs";
 
 function extractVerticesFromPath(path)
 {
@@ -23,6 +24,8 @@ export function orthogonalLayout(links, nodes, left, top, width, height)
 {
   const graph = new dia.Graph();
   const linkVertices = {};
+  const obstacles = [];
+  const cells = [];
 
   const el = document.createElement('div');
   el.style.width = width + 'px';
@@ -32,7 +35,7 @@ export function orthogonalLayout(links, nodes, left, top, width, height)
     el: el,
     width: width,
     height: height,
-    gridSize: 10,
+    gridSize: 100,
     async: false,
     model: graph
   });
@@ -41,14 +44,14 @@ export function orthogonalLayout(links, nodes, left, top, width, height)
   nodes.forEach( node => {
     const nodeModel = new shapes.standard.Rectangle({
       id: node.id,
-      position: { x: 0, y: 0 },
+      position: { x: node.x, y: node.y },
       size: { 
-        width: node.width
-        , height: node.height 
+        width: node.scale.width
+        , height: node.scale.height
       }
     });
   
-    graph.addCell(nodeModel);
+    obstacles.push(nodeModel);
   });
   
   links.forEach( link => {
@@ -62,29 +65,26 @@ export function orthogonalLayout(links, nodes, left, top, width, height)
   
       const source = new shapes.standard.Rectangle({
         position: { x: sx, y: sy },
-        size: { 
-          width: 0
-          , height: 0 
-        }
+        size: { width: 0.01, height: 0.01 },
       });
-      graph.addCell(source);
+      cells.push(source);
       const target = new shapes.standard.Rectangle({
         position: { x: tx, y: ty },
-        size: { 
-          width: 0
-          , height: 0
-        }
+        size: { width: 0.01, height: 0.01 },
       });
-      graph.addCell(target);
+      cells.push(target);
       const linkModel = new shapes.standard.Link({
         id: link.id,
         source: { id: source.id },
         target: { id: target.id },
         router: { name: 'manhattan' }
       });
-      graph.addCell(linkModel);
+      cells.push(linkModel);
     }
   })
+
+  graph//.addCells(obstacles)
+  .addCells(cells);
 
   // Wait for the routing update to complete
   const json = graph.toJSON();
