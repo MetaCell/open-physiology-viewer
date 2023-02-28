@@ -1,6 +1,10 @@
 FROM ghcr.io/puppeteer/puppeteer:16.1.0
+ENV BUILDDIR=/builddir
 
-COPY package.json .
-COPY package-lock.json .
+COPY package.json ${BUILDDIR}/package.json
+COPY package-lock.json ${BUILDDIR}/package-lock.json
 
+WORKDIR ${BUILDDIR}
 RUN npm install
+
+
