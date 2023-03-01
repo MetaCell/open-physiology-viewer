@@ -4,7 +4,6 @@ ENV BUILDDIR=/builddir
 COPY package.json ${BUILDDIR}/package.json
 WORKDIR ${BUILDDIR}
 RUN npm install
-RUN npm install jest
 COPY . $BUILDDIR
 RUN npm run build
 ###
