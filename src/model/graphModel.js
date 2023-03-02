@@ -5,7 +5,7 @@ import {
     entries, keys, values,
     isNumber, isArray, isObject, isString, isEmpty,
     pick, merge,
-    cloneDeep, unionBy
+    cloneDeep, unionBy, sortBy
 } from 'lodash-bound';
 import {Validator} from 'jsonschema';
 import schema from './graphScheme.json';
@@ -365,6 +365,14 @@ export class Graph extends Group{
             }
             //res.createForceLinks();
             res.scaleFactor = 1;
+        }
+
+        if (res.groups) {
+            res.groups.forEach(g => g.markImported());
+            res.groups = res.groups::sortBy([$Field.namespace, $Field.name, $Field.id]);
+        }
+        if (res.scaffolds) {
+            res.scaffolds = res.scaffolds::sortBy([$Field.namespace, $Field.name, $Field.id]);
         }
 
         res.generated = true;

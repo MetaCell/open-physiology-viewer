@@ -3,7 +3,7 @@ import {Node} from './verticeModel';
 import {Link} from './edgeModel';
 import {Lyph} from './shapeModel';
 
-import {isObject, unionBy, merge, keys, entries, isArray, pick, sortBy, isNumber} from 'lodash-bound';
+import {isObject, unionBy, merge, keys, entries, isArray, pick} from 'lodash-bound';
 import {
     $SchemaClass,
     $Field,
@@ -69,9 +69,6 @@ export class Group extends Resource {
         addColor(res.lyphs);
 
         res.assignScaffoldComponents();
-        if (res.groups) {
-            res.groups = res.groups::sortBy($Field.fullID);
-        }
         return res;
     }
 
@@ -349,6 +346,21 @@ export class Group extends Resource {
        (json.chains || []).forEach(chain => modelClasses.Chain.embedToHousingLyphs(json, chain));
     }
 
+    markImported(){
+        if (this.imported) {
+            let relFieldNames = schemaClassModels[$SchemaClass.Group].filteredRelNames();
+            relFieldNames.forEach(prop => {
+                if (this[prop]::isArray()) {
+                    this[prop]?.forEach(r => r.imported = true)
+                } else {
+                    if (this[prop]::isObject()){
+                        this[prop].imported = true;
+                    }
+                }
+            });
+        }
+    }
+
     /**
      * Add resources from subgroups to the current group
      */
@@ -440,7 +452,7 @@ export class Group extends Resource {
      * @returns {*[]}
      */
     get visibleLyphs(){
-       return (this.lyphs||[]).filter(e => e.isVisible && e.axis && e.axis.isVisible);
+       return (this.lyphs||[]).filter(e => !e.hidden);
     }
 
     get create3d(){

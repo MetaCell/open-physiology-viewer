@@ -10,7 +10,7 @@ import {
     isNumber,
     isObject,
     keys,
-    pick, values
+    pick, sortBy, values
 } from "lodash-bound";
 import {
     $Field,
@@ -18,7 +18,8 @@ import {
     prepareForExport,
     schemaClassModels,
     refToResource,
-    collectNestedResources, deleteRecursively
+    collectNestedResources,
+    deleteRecursively
 } from "./utils";
 import {extractLocalConventions, extractModelAnnotation,
     convertValue, validateValue, replaceReferencesToExternal} from './utilsParser';
@@ -128,6 +129,15 @@ export class Scaffold extends Component {
              (res.components || []).forEach(component => component.includeRelated && component.includeRelated());
              res.generated = true;
          }
+
+         if (res.imported){
+             res.markImported();
+         } else {
+             res.components?.forEach(g => g.markImported());
+         }
+         if (res.components) {
+            res.components = res.components::sortBy([$Field.namespace, $Field.name, $Field.id]);
+        }
 
         //Log info about the number of generated resources
         logger.info($LogMsg.SCAFFOLD_RESOURCE_NUM, this.id, entitiesByID::keys().length - before);
