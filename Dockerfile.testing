@@ -1,10 +1,11 @@
 FROM ghcr.io/puppeteer/puppeteer:16.1.0
-ENV BUILDDIR=/builddir
 
-COPY package.json ${BUILDDIR}/package.json
+COPY package.json /package.json
+COPY package-lock.json /package-lock.json
+
 WORKDIR ${BUILDDIR}
 RUN npm install
-COPY . $BUILDDI
+COPY . .
 
 RUN pwd
 
