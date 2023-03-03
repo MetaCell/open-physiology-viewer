@@ -5,5 +5,5 @@ COPY package-lock.json  /package-lock.json
 
 RUN npm install
 RUN npm install jest
-
+RUN pwd
 
