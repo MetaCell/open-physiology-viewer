@@ -39,6 +39,7 @@ describe('Scaffold Model Elements', () => {
         });
 
         await page.goto(baseURL);
+        await console.log(page.url())
     });
 
     it('Fetching too-map.json file', async ()=>{
