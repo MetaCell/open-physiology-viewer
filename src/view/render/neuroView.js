@@ -127,8 +127,10 @@ export function handleNeurulatedGroup(checked, groupMatched, neurulatedMatches) 
   groupMatched?.links?.forEach((link) => { 
     if ( neurulatedMatches?.links?.find( l => l.id === link.id ) ) {
       link.inactive = !checked;
+      link.skipLabel = !checked;
     } else {
       link.inactive = checked;
+      link.skipLabel = checked;
     }
     // Hide nodes
     link.source ? link.source.inactive = checked : null;
@@ -140,6 +142,7 @@ export function handleNeurulatedGroup(checked, groupMatched, neurulatedMatches) 
   groupMatched.lyphs.forEach((lyph) => {
     if ( neurulatedMatches?.y?.find( l => l.id === lyph.id ) ) {
       lyph.hidden = !checked;
+      lyph.skipLabel = !checked;
       lyph.layers?.forEach( layer => {
         layer.hidden = !checked;
       });
@@ -151,6 +154,7 @@ export function handleNeurulatedGroup(checked, groupMatched, neurulatedMatches) 
       }
     } else {
       lyph.hidden = checked;
+      lyph.skipLabel = checked;
       lyph.layers?.forEach( layer => {
         layer.hidden = checked;
       });

@@ -114,9 +114,6 @@ Link.prototype.createViewObjects = function(state){
         this.viewObjects["main"] = obj;
     }
 
-    //Link label
-    this.createLabels();
-
     //Icon (lyph)
     if (this.conveyingLyph) {
         this.conveyingLyph.createViewObjects(state);
@@ -138,6 +135,9 @@ Link.prototype.createViewObjects = function(state){
             // this.viewObjects["edge"] = new SpriteText2D("X", state.fontParams);
         }
     }
+
+    //Link label
+    this.createLabels();
 };
 
 Link.prototype.getCurve = function(start, end){
@@ -186,6 +186,7 @@ Link.prototype.updateViewObjects = function(state) {
     line.geometry.computeBoundingSphere();
     line.position.z = DIMENSIONS.LINK_MIN_Z;
     this.viewObjects["main"] = line ;
+    this.skipLabel = false;
     this.createLabels();
   }else{
 
@@ -276,9 +277,19 @@ Link.prototype.updateViewObjects = function(state) {
                 }
             }
         }
-        copyCoords(this, obj.position);
-        this.updateLabels( obj.position.clone().addScalar(this.state.labelOffset.Edge));
-
+        copyCoords(this, obj.geometry.boundingSphere.center);
+        let labelPosition = obj.geometry.boundingSphere.center.clone();
+        // offset position of label to avoid overlaps
+        labelPosition.y = labelPosition.y - 1;
+        this.updateLabels(labelPosition.addScalar(this.state.labelOffset.Edge));
+        // if (this.viewObjects["label"]?.geometry)
+        // {
+        //     const quaternion = new THREE.Quaternion(); // create one and reuse it
+        //     quaternion.setFromUnitVectors( this.points[0], this.points[this.points.length - 1] );
+        //     let matrix = new THREE.Matrix4(); // create one and reuse it
+        //     matrix.makeRotationFromQuaternion( quaternion );
+        //     this.viewObjects["label"].applyMatrix( matrix );
+        // }       
     }
   }
 };
