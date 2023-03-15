@@ -2,6 +2,7 @@ version: "1.0"
 stages:
   - "clone"
   - "build"
+  - "test"
   - "deploy"
 steps:
   clone:
@@ -10,16 +11,50 @@ steps:
     type: "git-clone"
     repo: "metacell/open-physiology-viewer"
     revision: "${{CF_BRANCH}}"
-  build:
-    stage: "build"
-    title: "Building Apinatomy"
-    type: "build"
-    image_name: "apinatomy"
-    tag: "${{CF_BUILD_ID}}"
-    dockerfile: Dockerfile
+  builds:
+    type: parallel
+    steps:
+      build:
+        stage: "build"
+        title: "Building Apinatomy"
+        type: "build"
+        image_name: "apinatomy"
+        tag: "${{CF_BUILD_ID}}"
+        dockerfile: Dockerfile
+        working_directory: ./open-physiology-viewer
+        buildkit: true    
+        registry: "${{CODEFRESH_REGISTRY}}"
+      test_build:
+        stage: test
+        type: build
+        title: Building Apinatomy test image
+        image_name: apinatomy-test
+        working_directory: ./open-physiology-viewer
+        dockerfile: Dockerfile.testing
+        buildkit: true
+  test:
+    type: composition
+    title: Running Tests
+    description: Temporary test environment
+    stage: test
     working_directory: ./open-physiology-viewer
-    buildkit: true    
-    registry: "${{CODEFRESH_REGISTRY}}"
+    composition:
+      version: '2'
+      services:
+        app:
+          image: '${{build}}'
+          working_dir: /home/pptruser
+          ports:
+            - 80
+    composition_candidates:
+      test:
+        image: '${{test_build}}'
+        links:
+         - app
+        working_dir: /home/pptruser
+        environment:
+        - TEST_URL=http://app:80
+        command: bash -c 'npm run snapshot_test && npm run keast_snapshot_test'
   deploy:
     stage: "deploy"
     title: "Deploying Apinatomy"
