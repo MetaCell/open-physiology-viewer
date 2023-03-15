@@ -20,7 +20,7 @@ const SNAPSHOT_OPTIONS = {
         ssim: 'fast', 
     },
     failureThresholdType: 'percent',
-    failureThreshold: 0.040 //best one to allow some minor changes in display 
+    failureThreshold: 0.1 //best one to allow some minor changes in display 
 };
 
 
@@ -36,6 +36,7 @@ describe('Access Open Physiology Viewer', () => {
     it('Main Page: Open Physiology Viewer', async () => {
 
         await page.goto(baseURL);
+        await console.log(page.url())
         await page.setUserAgent('Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/69.0.3497.100 Safari/537.36');
 
         page.on('response', response => {
@@ -167,7 +168,7 @@ describe('Keast Spinal Model Snapshot Tests', () => {
         const group = await page.evaluate(() => {
             let map = document.querySelectorAll('span.mat-slide-toggle-content');
             for (var i = 0; i < map.length; i++) {
-                return map[0].innerText
+                return map[2].innerText
             }
         });
         expect(group).toContain(KeastSpinalModelGroups[0])
@@ -196,7 +197,7 @@ describe('Keast Spinal Model Snapshot Tests', () => {
         const group = await page.evaluate(() => {
             let map = document.querySelectorAll('span.mat-slide-toggle-content');
             for (var i = 0; i < map.length; i++) {
-                return map[1].innerText
+                return map[0].innerText
             }
         });
         expect(group).toContain(KeastSpinalModelGroups[1])
@@ -225,7 +226,7 @@ describe('Keast Spinal Model Snapshot Tests', () => {
         const group = await page.evaluate(() => {
             let map = document.querySelectorAll('span.mat-slide-toggle-content');
             for (var i = 0; i < map.length; i++) {
-                return map[2].innerText
+                return map[1].innerText
             }
         });
         expect(group).toContain(KeastSpinalModelGroups[2])

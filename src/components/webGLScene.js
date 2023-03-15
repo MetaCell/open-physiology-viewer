@@ -4,7 +4,6 @@ import {FormsModule} from '@angular/forms';
 import {MatSliderModule} from '@angular/material/slider';
 import {MatDialog, MatDialogModule} from '@angular/material/dialog';
 
-import FileSaver  from 'file-saver';
 import {keys, values, isObject, cloneDeep, defaults} from 'lodash-bound';
 import * as THREE from 'three';
 import ThreeForceGraph from '../view/threeForceGraph';
@@ -71,7 +70,7 @@ const WindowResize = require('three-window-resize');
                             <i class="fa fa-download"> </i>
                         </button>
                         <mat-slider vertical class="w3-grey"
-                                    [min]="0.1 * scaleFactor" [max]="0.4 * scaleFactor"
+                                    [min]="0.02 * scaleFactor" [max]="0.4 * scaleFactor"
                                     [step]="0.05 * scaleFactor" tickInterval="1"
                                     [value]="labelRelSize" title="Label size"
                                     (change)="onScaleChange($event.value)">
@@ -117,6 +116,8 @@ const WindowResize = require('three-window-resize');
                         [groups]="graphData?.activeGroups"
                         [dynamicGroups]="graphData?.dynamicGroups"
                         [scaffolds]="graphData?.scaffoldComponents"
+                        [graphData]="graphData"
+                        [viewPortSize]="viewPortSize"
                         [searchOptions]="_searchOptions"
                         [modelId]="graphData?.fullID || graphData?.id"
                         (onSelectBySearch)="selectByName($event)"
@@ -182,6 +183,7 @@ export class WebGLSceneComponent {
 
     _searchOptions;
     _helperKeys = [];
+    _viewPortSize = { width: 0, height: 0 };
 
     graph;
     helpers   = {};
@@ -189,7 +191,7 @@ export class WebGLSceneComponent {
     selectColor    = 0x00ff00;
     defaultColor   = 0x000000;
     scaleFactor    = 10;
-    labelRelSize   = 0.1 * this.scaleFactor;
+    labelRelSize   = 0.02 * this.scaleFactor;
     lockControls   = false;
     isConnectivity = true;
 
@@ -363,6 +365,10 @@ export class WebGLSceneComponent {
         return this._graphData;
     }
 
+    get viewPortSize() { 
+      return this._viewPortSize ;
+    }
+
     ngAfterViewInit() {
         if (this.renderer) {  return; }
 
@@ -373,7 +379,7 @@ export class WebGLSceneComponent {
         let width = this.container.clientWidth;
         let height = this.container.clientHeight;
 
-        this.camera = new THREE.PerspectiveCamera(70, width / height, 10, 10000);
+        this.camera = new THREE.PerspectiveCamera(70, width / height, 10, 4000);
         this.camera.aspect = width / height;
         this.resetCamera();
 
@@ -383,7 +389,7 @@ export class WebGLSceneComponent {
         this.controls = new OrbitControls(this.camera, this.renderer.domElement);
 
         this.controls.minDistance = 10;
-        this.controls.maxDistance = 10000 - 100 * this.scaleFactor;
+        this.controls.maxDistance = 4000 - 100 * this.scaleFactor;
 
         this.controls.minZoom = 0;
         this.controls.maxZoom = 10;
@@ -502,6 +508,7 @@ export class WebGLSceneComponent {
         this.controls.update();
         this.renderer.render(this.scene, this.camera);
         window.requestAnimationFrame(() => this.animate());
+        this.updateViewPortSize();
     }
 
     createHelpers() {
@@ -739,6 +746,10 @@ export class WebGLSceneComponent {
         this.mouse.x =  ( ( evt.clientX - rect.left ) / rect.width  ) * 2 - 1;
         this.mouse.y = -( ( evt.clientY - rect.top  ) / rect.height ) * 2 + 1;
         this.highlighted = this.getMouseOverEntity();
+    }
+
+    updateViewPortSize() {
+      this._viewPortSize = this.renderer.domElement.getBoundingClientRect() ;
     }
 
     toggleLayout(prop){
