@@ -1380,13 +1380,15 @@ export class SettingsPanel {
 
         // Create a new Group with only the housing lyphs
         const newGroupName = group.name + " - Housing Lyphs";
-        if ( this.filteredDynamicGroups.filter(g => g.id == group.id ).length <= 1 ) {
+        if ( this.filteredDynamicGroups.filter(g => g.name == newGroupName ).length < 1 ) {
           let groupClone = Object.assign(Object.create(Object.getPrototypeOf(group)), group)
           groupClone.name = newGroupName;
           groupClone.links = [];
           groupClone.nodes = [];
           groupClone.lyphs = neuronTriplets.y;
           groupClone.cloneOf = group;
+          console.log("New Group ", group);
+          this.dynamicGroups.push(groupClone);
           this.filteredDynamicGroups.push(groupClone);
         } else if ( this.filteredDynamicGroups.find(g => g.name == newGroupName ) ) {
           // Handle each group individually. Turn group's lyph on or off depending if they are housing lyphs
@@ -1411,8 +1413,6 @@ export class SettingsPanel {
             const orthogonalSegments = applyOrthogonalLayout(visibleLinks, bigLyphs, this.viewPortSize.left, this.viewPortSize.top, this.viewPortSize.width, this.viewPortSize.height)
             if (orthogonalSegments)
             {
-              console.log("Visible links: ", visibleLinks);
-              console.log("Orthogonal segments Information : ", orthogonalSegments);
               autoLayoutSegments(orthogonalSegments, visibleLinks);
             }
           }
@@ -1423,11 +1423,11 @@ export class SettingsPanel {
   };
 
   toggleAllDynamicGroup = () => {
-    let allVisible = this.dynamicGroups.filter(
+    let allVisible = this.filteredDynamicGroups.filter(
       (group) => group.hidden || group.undefined
     );
 
-    for (let group of this.dynamicGroups) {
+    for (let group of this.filteredDynamicGroups) {
       if (group.hidden || allVisible.length == 0) {
         this.onToggleGroup.emit(group);
       }

@@ -21,7 +21,6 @@ export function buildNeurulatedTriplets(group) {
   let neuronTriplets = { x: group.lyphs, y: [], w: [], r: [], links : [], chains : [], nodes : [] };
 
   let hostedLinks = group.links?.filter((l) => l.fasciculatesIn || l.endsIn || l.levelIn );
-  console.log("Hosted links ", hostedLinks);
   neuronTriplets.links = group?.links;
 
   let housingLyphs = [];
@@ -38,10 +37,8 @@ export function buildNeurulatedTriplets(group) {
       l.levelIn?.forEach( ll =>  ll.housingLyphs?.forEach( lyph => (!housingLyphs.includes(lyph) && lyph?.layerIn == undefined && housingLyphs.push(lyph))));
     }
   });
-  console.log("housingLyphs ", housingLyphs);
 
   let hostedHousingLyphs = housingLyphs?.map((l) => l?.hostedBy); //lyphs -> regions
-  console.log("hostedHousingLyphs ", hostedHousingLyphs);
   hostedHousingLyphs.forEach( h => h != undefined && h?.class == "Region" && neuronTriplets.r.indexOf(h) == -1 ? neuronTriplets.r.push(h) : null)
   neuronTriplets.y = housingLyphs;
   let updatedLyphs = []
@@ -56,53 +53,43 @@ export function buildNeurulatedTriplets(group) {
   neuronTriplets.y = neuronTriplets.y.filter((v,i,a)=>a.findIndex(v2=>(v.id === v2.id))===i);
   
   let housingLyphsInChains = housingLyphs?.filter((h) => h?.axis?.levelIn);
-  console.log("housingLyphsInChains ", housingLyphsInChains);
 
   let housingChains = [
     ...new Set(housingLyphsInChains.map((h) => h?.axis?.levelIn)::flatten()),
   ]; // lyphs -> links -> chains, each link can be part of several chains, hence levelIn gives an array that we need to flatten
-  console.log("housingChains ", housingChains);
 
   housingChains = [];
   group.links.filter( l => l.levelIn?.forEach( ll => !housingChains.find( c => c.id == ll.id ) && housingChains.push(ll) ));
-  console.log("housingChains from Links ", housingChains);
   neuronTriplets.chains = housingChains;
 
   let links = [];
   housingChains.forEach( chain => chain.levels.forEach( level => !links.find( c => c.id == level.id ) && links.push(level)));
-  console.log("housingChains Links ", links);
 
   let wiredHousingChains = housingChains
     .filter((c) => c.wiredTo)
     .map((c) => c.wiredTo); // chains -> wires
-  console.log("wiredHousingChains ", wiredHousingChains);
 
   wiredHousingChains.forEach((wire) => neuronTriplets.w.indexOf(wire) == -1 && neuronTriplets.w.push(wire));
 
   let housingChainRoots = housingChains
     .filter((c) => c.root)
     .map((c) => c.root); // chains -> nodes
-  console.log("housingChainRoots ", housingChainRoots);
 
   let housingChainLeaves = housingChains
     .filter((c) => c.leaf)
     .map((c) => c.leaf);
-  console.log("housingChainLeaves ", housingChainLeaves);
 
   let anchoredHousingChainRoots = housingChainRoots.filter((n) => n.anchoredTo); //nodes -> anchors
-  console.log("anchoredHousingChainRoots ", anchoredHousingChainRoots);
   anchoredHousingChainRoots.forEach((wire) => neuronTriplets.w.indexOf(wire) == -1 && neuronTriplets.w.push(wire));
 
   let anchoredHousingChainLeaves = housingChainLeaves.filter(
     (n) => n.anchoredTo
   );
-  console.log("anchoredHousingChainLeaves ", anchoredHousingChainLeaves);
   anchoredHousingChainLeaves.forEach((wire) => neuronTriplets.w.indexOf(wire) == -1 && neuronTriplets.w.push(wire));
 
   let hostedHousingChains = housingChains
     .filter((c) => c.hostedBy)
     .map((c) => c.hostedBy) //chains -> regions
-  console.log("hostedHousingChains ", hostedHousingChains);
   hostedHousingChains.forEach((region) => neuronTriplets.r.indexOf(region) == -1 && neuronTriplets.r.push(region));
 
   return neuronTriplets;
@@ -221,10 +208,10 @@ function toggleRegions(scaffoldsList, neuronTriplets, checked){
         );
         if ( match === undefined ) {
           region.inactive = checked;
-          region.hostedLyphs = [];
+          //region.hostedLyphs = [];
         } else {
           region.inactive = !checked;
-          region.hostedLyphs = [];
+          //region.hostedLyphs = [];
           if ( match?.namespace != region.namespace ) {
             neuronTriplets.r = neuronTriplets?.r?.filter(
               (matchReg) => region.id !== matchReg.id

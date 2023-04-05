@@ -15,6 +15,7 @@ import { DIMENSIONS } from "./render/autoLayout";
 
 import './lines/Line2.js';
 import {MaterialFactory} from "./materialFactory";
+import { link } from "d3-shape";
 
 const {VisualResource, Edge, Link, Wire} = modelClasses;
 
@@ -114,6 +115,9 @@ Link.prototype.createViewObjects = function(state){
         this.viewObjects["main"] = obj;
     }
 
+    //Link label
+    this.createLabels();
+
     //Icon (lyph)
     if (this.conveyingLyph) {
         this.conveyingLyph.createViewObjects(state);
@@ -135,9 +139,6 @@ Link.prototype.createViewObjects = function(state){
             // this.viewObjects["edge"] = new SpriteText2D("X", state.fontParams);
         }
     }
-
-    //Link label
-    this.createLabels();
 };
 
 Link.prototype.getCurve = function(start, end){
@@ -186,7 +187,6 @@ Link.prototype.updateViewObjects = function(state) {
     line.geometry.computeBoundingSphere();
     line.position.z = DIMENSIONS.LINK_MIN_Z;
     this.viewObjects["main"] = line ;
-    this.skipLabel = false;
     this.createLabels();
   }else{
 
@@ -199,7 +199,7 @@ Link.prototype.updateViewObjects = function(state) {
     this.center = getPoint(curve, start, end, 0.5);
     this.points = curve.getPoints? curve.getPoints(this.pointLength): [start, end];
 
-    if (this.geometry === Link.LINK_GEOMETRY.ARC){
+    if (this.geometry === Link.LINK_GEOMETRY.ARC){       
         this.points = this.points.map(p => new THREE.Vector3(p.x, p.y,0));
     }
 
@@ -268,7 +268,29 @@ Link.prototype.updateViewObjects = function(state) {
             } else {
                 let linkPos = obj.geometry.attributes && obj.geometry.attributes.position;
                 if (linkPos) {
-                    this.points.forEach((p, i) => ["x", "y", "z"].forEach((dim,j) => linkPos.array[3 * i + j] = p[dim]));
+                    if ( (start.y !== end.y)  && (start.x !== end.x) ) {
+                        let elevation = 0, height = 1.5;
+                        if ( this.source?.hostedBy ) {
+                            end.y < start.y ? elevation = -1 * height : elevation = height;
+                        } else {
+                            end.y > start.y ? elevation = -1 * height : elevation = height;
+                        }
+
+                        let curvature = this.curvature ? this.curvature :elevation * (Math.abs(Math.abs(start.y) - Math.abs(end.y)));
+                        let points = [start, getDefaultControlPoint(start, end, curvature), end];
+                        const curve3 = new THREE.SplineCurve( points);
+                        this.points = curve3.getPoints(41);
+
+                        if (this.conveyingLyph?.viewObjects["main"]){
+                            let centerPoint = this.points[Math.floor(this.points.length/2)];
+                            this.conveyingLyph.viewObjects["main"].position.x = centerPoint.x;
+                            this.conveyingLyph.viewObjects["main"].position.y = centerPoint.y;
+                            copyCoords(this.conveyingLyph,this.conveyingLyph.viewObjects["main"].position);
+                        }
+                    } else {
+                        this.points.forEach((p, i) => ["x", "y", "z"].forEach((dim,j) => linkPos.array[3 * i + j] = p[dim]));
+                    }
+                    obj.geometry.setFromPoints(this.points);
                     obj.geometry.attributes.position.needsUpdate = true;
                     obj.position.z = DIMENSIONS.LINK_MIN_Z;
                     obj.geometry.verticesNeedUpdate = true;
@@ -277,19 +299,8 @@ Link.prototype.updateViewObjects = function(state) {
                 }
             }
         }
-        copyCoords(this, obj.geometry.boundingSphere.center);
-        let labelPosition = obj.geometry.boundingSphere.center.clone();
-        // offset position of label to avoid overlaps
-        labelPosition.y = labelPosition.y - 1;
-        this.updateLabels(labelPosition.addScalar(this.state.labelOffset.Edge));
-        // if (this.viewObjects["label"]?.geometry)
-        // {
-        //     const quaternion = new THREE.Quaternion(); // create one and reuse it
-        //     quaternion.setFromUnitVectors( this.points[0], this.points[this.points.length - 1] );
-        //     let matrix = new THREE.Matrix4(); // create one and reuse it
-        //     matrix.makeRotationFromQuaternion( quaternion );
-        //     this.viewObjects["label"].applyMatrix( matrix );
-        // }       
+        copyCoords(this, obj.position);
+        this.updateLabels( obj.position.clone().addScalar(this.state.labelOffset.Edge));
     }
   }
 };

@@ -100,6 +100,7 @@ Node.prototype.updateViewObjects = function(state) {
                             index == 3 ? end = corners[0] : null;
                             let nodeIndex = hostedBy.hostedNodes?.indexOf(this);
                             let placeInLink = (nodeIndex + 1 ) / ( hostedBy.hostedNodes?.length + 1);
+                            index > 2 ? placeInLink = (( hostedBy.hostedNodes?.length + 1 ) - (nodeIndex + 1)) / ( hostedBy.hostedNodes?.length + 1): null;
                             placeInLink == undefined || placeInLink < 0 ? placeInLink = .5 : null;
                             let center = pointAlongLine(start, end, placeInLink);
                             copyCoords(this, center);
