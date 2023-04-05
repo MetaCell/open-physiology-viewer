@@ -3,7 +3,7 @@ import {Node} from './verticeModel';
 import {Link} from './edgeModel';
 import {Lyph} from './shapeModel';
 
-import {isObject, unionBy, merge, keys, entries, isArray, pick, sortBy, isNumber} from 'lodash-bound';
+import {isObject, unionBy, merge, keys, entries, isArray, pick} from 'lodash-bound';
 import {
     $SchemaClass,
     $Field,
@@ -69,9 +69,6 @@ export class Group extends Resource {
         addColor(res.lyphs);
 
         res.assignScaffoldComponents();
-        if (res.groups) {
-            res.groups = res.groups::sortBy($Field.fullID);
-        }
         return res;
     }
 
@@ -184,7 +181,6 @@ export class Group extends Resource {
      * @param parentGroup - input model
      */
     static replaceReferencesToTemplates(parentGroup){
-
         let changedLyphs = 0;
         let changedMaterials = 0;
 
@@ -257,7 +253,7 @@ export class Group extends Resource {
                     resource[key] = replaceRefToTemplate(resource[key], resource);
                 }
             }
-        };
+        }
 
         (parentGroup::entries()||[]).forEach(([relName, resources]) => {
             if (!resources::isArray()) { return; }
@@ -268,8 +264,8 @@ export class Group extends Resource {
                 (resources || []).forEach(resource => {
                     (resource::keys() || []).forEach(key => { // Do not replace valid references to templates
                         if (refsToLyphs.includes(key)) { replaceAbstractRefs(resource, key); }
-                    })
-                })
+                    });
+                });
             }
         });
         if (changedLyphs > 0){
@@ -348,6 +344,21 @@ export class Group extends Resource {
 
     static embedChainsToHousingLyphs(json, modelClasses){
        (json.chains || []).forEach(chain => modelClasses.Chain.embedToHousingLyphs(json, chain));
+    }
+
+    markImported(){
+        if (this.imported) {
+            let relFieldNames = schemaClassModels[$SchemaClass.Group].filteredRelNames();
+            relFieldNames.forEach(prop => {
+                if (this[prop]::isArray()) {
+                    this[prop]?.forEach(r => r.imported = true)
+                } else {
+                    if (this[prop]::isObject()){
+                        this[prop].imported = true;
+                    }
+                }
+            });
+        }
     }
 
     /**
@@ -441,7 +452,7 @@ export class Group extends Resource {
      * @returns {*[]}
      */
     get visibleLyphs(){
-       return (this.lyphs||[]).filter(e => e.isVisible && e.axis && e.axis.isVisible);
+       return (this.lyphs||[]).filter(e => !e.hidden);
     }
 
     get create3d(){
