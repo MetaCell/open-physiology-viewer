@@ -93,17 +93,26 @@ Node.prototype.updateViewObjects = function(state) {
                         copyCoords(this, position);
 
                         if ( onBorder ) {
-                            let index = onBorder.borders.indexOf(hostedBy);
-                            let start = corners[index];
-                            let end = corners[index+1];
-                            index == 3 ? start = corners[index] : null;
-                            index == 3 ? end = corners[0] : null;
+                            // Find border where link is hosted
+                            let borderIndex = onBorder.borders.indexOf(hostedBy);
+                            let start = corners[borderIndex];
+                            let end = corners[borderIndex+1];
+
+                            // If it's the last border, reset boundaries
+                            borderIndex == 3 ? start = corners[borderIndex] : null;
+                            borderIndex == 3 ? end = corners[0] : null;
+
+                            // Get position of node along the border
                             let nodeIndex = hostedBy.hostedNodes?.indexOf(this);
+
+                            // Place node along the border in link
                             let placeInLink = (nodeIndex + 1 ) / ( hostedBy.hostedNodes?.length + 1);
-                            index > 2 ? placeInLink = (( hostedBy.hostedNodes?.length + 1 ) - (nodeIndex + 1)) / ( hostedBy.hostedNodes?.length + 1): null;
+                            borderIndex > 2 ? placeInLink = (( hostedBy.hostedNodes?.length + 1 ) - (nodeIndex + 1)) / ( hostedBy.hostedNodes?.length + 1): null;
                             placeInLink == undefined || placeInLink < 0 ? placeInLink = .5 : null;
-                            let center = pointAlongLine(start, end, placeInLink);
-                            copyCoords(this, center);
+                            
+                            // Get point along the curve
+                            let pointAlonLink = pointAlongLine(start, end, placeInLink);
+                            copyCoords(this, pointAlonLink);
                         }
                     }
                 }

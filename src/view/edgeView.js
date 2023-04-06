@@ -268,7 +268,8 @@ Link.prototype.updateViewObjects = function(state) {
             } else {
                 let linkPos = obj.geometry.attributes && obj.geometry.attributes.position;
                 if (linkPos) {
-                    if ( (start.y !== end.y)  && (start.x !== end.x) ) {
+                    if ( this.neurulated && (start.y !== end.y)  && (start.x !== end.x) ) {
+                        // Elevation of the curve for the link
                         let elevation = 0, height = 1.5;
                         if ( this.source?.hostedBy ) {
                             end.y < start.y ? elevation = -1 * height : elevation = height;

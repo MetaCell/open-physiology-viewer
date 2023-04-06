@@ -22,6 +22,7 @@ export function buildNeurulatedTriplets(group) {
 
   let hostedLinks = group.links?.filter((l) => l.fasciculatesIn || l.endsIn || l.levelIn );
   neuronTriplets.links = group?.links;
+  neuronTriplets.links?.forEach( l => l.neurulated = true );
 
   let housingLyphs = [];
   hostedLinks.forEach((l) => { 
