@@ -39,6 +39,7 @@ import {logger, $LogMsg} from './logger';
  * @property coalescences
  * @property scaffolds
  * @property hostedBy
+ * @property varianceSpecs
  */
 export class Group extends Resource {
     /**
@@ -93,7 +94,6 @@ export class Group extends Resource {
         //internal nodes and internal lyphs to the group that contains the original lyph
         [$Field.nodes, $Field.links, $Field.lyphs].forEach(prop => {
             this[prop].forEach(res => res.includeRelated && res.includeRelated(this));
-            //TODO why not all nodes marked as hidden: keastSpinalFull
             this[prop].hidden = this.hidden;
         });
 
@@ -111,15 +111,25 @@ export class Group extends Resource {
         }
     }
 
-    createGroup(groupID, name, nodes, links, lyphs, modelClasses){
+    /**
+     * Generate a (dynamic) group
+     * @param id
+     * @param name
+     * @param nodes
+     * @param links
+     * @param lyphs
+     * @param modelClasses
+     * @returns {*}
+     */
+    createGroup(id, name, nodes, links, lyphs, modelClasses){
         const resources = {
             [$Field.nodes]: nodes,
             [$Field.links]: links,
             [$Field.lyphs]: lyphs
         }
-        let group = (this.groups||[]).find(g => g.id === groupID);
+        let group = (this.groups||[]).find(g => g.id === id);
         let json = group || genResource({
-            [$Field.id]    : groupID,
+            [$Field.id]    : id,
             [$Field.name]  : name
         }, "groupModel.createGroup (Group)");
         if (group) {
@@ -263,7 +273,9 @@ export class Group extends Resource {
                 if (!refsToLyphs){ return; }
                 (resources || []).forEach(resource => {
                     (resource::keys() || []).forEach(key => { // Do not replace valid references to templates
-                        if (refsToLyphs.includes(key)) { replaceAbstractRefs(resource, key); }
+                        if (refsToLyphs.includes(key)) {
+                            replaceAbstractRefs(resource, key);
+                        }
                     });
                 });
             }
