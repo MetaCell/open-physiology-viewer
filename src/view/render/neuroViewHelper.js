@@ -1,6 +1,7 @@
 import orthogonalConnector2 from "./orthogonalConnector2";
 import { dia, shapes } from 'jointjs';
 import { combineLatestAll } from "rxjs";
+import { getBoundingBoxSize } from "./autoLayout/objects";
 
 function extractVerticesFromPath(path)
 {
@@ -35,19 +36,32 @@ export function orthogonalLayout(links, nodes, left, top, width, height)
     el: el,
     width: width,
     height: height,
-    gridSize: 100,
-    async: false,
+    gridSize: 10,
+    snapLinks: {
+      radius: 20
+    },
+    defaultLink: () => new joint.shapes.standard.Link({
+      router: { name: 'metro' },
+      connector: { name: 'rounded' },
+    }),
     model: graph
   });
   //obstacles, anything not a lyph and orphaned
 
   nodes.forEach( node => {
+    let sourceSize =  getBoundingBoxSize(node.viewObjects["main"]);
+    let p = new THREE.Vector3(node.x, node.y, node.z);
+    let vector = p.project(window.camera);
+
+    vector.x = (vector.x + 1) / 2 * width;
+    vector.y = -(vector.y - 1) / 2 * height;
+
     const nodeModel = new shapes.standard.Rectangle({
       id: node.id,
-      position: { x: node.x, y: node.y },
+      position: { x: vector.x, y: vector.y },
       size: { 
-        width: node.scale.width
-        , height: node.scale.height
+        width: sourceSize.x * node.viewObjects["main"].scale.y
+        , height: sourceSize.y * node.viewObjects["main"].scale.x
       }
     });
   
@@ -77,16 +91,15 @@ export function orthogonalLayout(links, nodes, left, top, width, height)
         id: link.id,
         source: { id: source.id },
         target: { id: target.id },
-        router: { name: 'manhattan' },
-        connector : { name : 'jumpover'}
+        router: { name: 'metro' },
+        connector : { name : 'rounded'}
       });
       cells.push(linkModel);
     }
   })
 
-  graph//.addCells(obstacles)
-  .addCells(cells);
-
+  graph.addCells(cells);
+  
   // Wait for the routing update to complete
   const json = graph.toJSON();
   json.cells.forEach(cell => {
@@ -94,7 +107,7 @@ export function orthogonalLayout(links, nodes, left, top, width, height)
       const linkModel = graph.getCell(cell.id);
       const newLinkView = paper.findViewByModel(linkModel);
       if (newLinkView) {
-        const vertices = newLinkView.path.toPoints();
+        const vertices = newLinkView?.path?.toPoints();
         linkVertices[cell.id] = vertices ;
       }
     }

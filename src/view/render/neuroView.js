@@ -297,7 +297,7 @@ export function autoLayoutSegments(orthogonalSegments, links)
     if (link_model) 
     {
       const links = orthogonalSegments[orthogonal_link_id];
-      if (links.length > 0)
+      if (links?.length > 0)
         link_model.regenerateFromSegments(links);
     }
   });

@@ -1402,65 +1402,63 @@ export class SettingsPanel {
           }
         });
   
-        window.addEventListener("doneUpdating", () => { 
-          // Run auto layout code to position lyphs on their regions and wires
-          if ( group?.neurulated ) {
-            const visibleLinks = group.links.filter( l => !l.hidden && !l.inactive && l.collapsible );
-            const neuroTriplets = buildNeurulatedTriplets(group);
-            const bigLyphs = neuroTriplets.y;
-            const orthogonalSegments = applyOrthogonalLayout(visibleLinks, bigLyphs, this.viewPortSize.left, this.viewPortSize.top, this.viewPortSize.width, this.viewPortSize.height)
-            if (orthogonalSegments)
-            {
-              autoLayoutSegments(orthogonalSegments, visibleLinks);
-            }
-          }
-        });
       } else {
         this.onToggleGroup.emit(group);
-        console.log("Toggle group ", group);
         group?.lyphs?.forEach((m) => {
           m.hidden = !event.checked;
           m.inactive = !event.checked;
         });
-        let that = this;
         window.addEventListener("updateTick",function updateLayout(e){
-          // Run auto layout code to position lyphs on their regions and wires
-          that.filteredDynamicGroups?.forEach( g => {
-            if ( !g.hidden && e?.detail?.updating ) {
-              console.log("Group updating ", g);
-              g?.lyphs?.forEach((m) => {
-                m.autoSize();
-              });
-            }
-          })
+          if ( !group.hidden && e?.detail?.updating ) {
+            group?.lyphs?.forEach((m) => {
+              m.autoSize();
+            });
+          }
         });
-
-        window.addEventListener("doneUpdating", () => { 
-          // Run auto layout code to position lyphs on their regions and wires
-          if ( group?.neurulated ) {
-            const visibleLinks = group.links.filter( l => !l.hidden && !l.inactive && l.collapsible );
-            const neuroTriplets = buildNeurulatedTriplets(group);
+      }
+      let that = this;
+      window.addEventListener("doneUpdating", () => { 
+        // Run auto layout code to position lyphs on their regions and wires
+        that.filteredDynamicGroups?.forEach( g=> {
+          if ( !g.hidden ) {
+            const visibleLinks = g.links.filter( l => !l.hidden && !l.inactive && l.collapsible );
+            const neuroTriplets = buildNeurulatedTriplets(g);
             const bigLyphs = neuroTriplets.y;
             const orthogonalSegments = applyOrthogonalLayout(visibleLinks, bigLyphs, this.viewPortSize.left, this.viewPortSize.top, this.viewPortSize.width, this.viewPortSize.height)
             if (orthogonalSegments)
             {
               autoLayoutSegments(orthogonalSegments, visibleLinks);
-            }
+              }
           }
         });
-      }
+      });
   };
 
   toggleAllDynamicGroup = () => {
-    let allVisible = this.filteredDynamicGroups.filter(
-      (group) => group.hidden || group.undefined
-    );
-
+    let visibleLinks = [];
+    let bigLyphs = []
     for (let group of this.filteredDynamicGroups) {
-      if (group.hidden || allVisible.length == 0) {
+      if ( group.hidden ) {
+        let mode = !group.hidden;
         this.onToggleGroup.emit(group);
+        group?.lyphs?.forEach((m) => {
+          m.hidden = mode;
+          m.inactive = mode;
+        });
       }
-    }
+      visibleLinks = visibleLinks.concat(group.links.filter( l => !l.hidden && !l.inactive && l.collapsible ));
+      let neuroTriplets = buildNeurulatedTriplets(group);
+      bigLyphs = bigLyphs.concat(neuroTriplets.y);
+    }  
+
+      let that = this;
+      window.addEventListener("doneUpdating", () => { 
+        const orthogonalSegments = applyOrthogonalLayout(visibleLinks, bigLyphs, that.viewPortSize.left, that.viewPortSize.top, that.viewPortSize.width, that.viewPortSize.height)
+        if (orthogonalSegments)
+        {
+          autoLayoutSegments(orthogonalSegments, visibleLinks);
+        }
+      });
   };
 
   filterGroups = (groups) => {
