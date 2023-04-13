@@ -1,6 +1,7 @@
 import orthogonalConnector2 from "./orthogonalConnector2";
 import { dia, shapes } from 'jointjs';
 import { combineLatestAll, generate } from "rxjs";
+import { getBoundingBoxSize } from "./autoLayout/objects";
 
 function extractVerticesFromPath(path)
 {
@@ -61,9 +62,9 @@ function exportToSVG(graphJSONCells, jointGraph, paper, paperWidth, paperHeight)
       rect.setAttribute('y', cellData.position.y);
       rect.setAttribute('width', cellData.size.width);
       rect.setAttribute('height', cellData.size.height);
-      rect.setAttribute('fill', cellData.attrs.body.fill);
-      rect.setAttribute('stroke', cellData.attrs.body.stroke);
-      rect.setAttribute('stroke-width', cellData.attrs.body.strokeWidth);
+      rect.setAttribute('fill', "blue");
+      rect.setAttribute('stroke', "blue");
+      rect.setAttribute('stroke-width', 3);
 
       svg.appendChild(rect);
     } else if (cellData.type === 'standard.Link') {
@@ -74,7 +75,7 @@ function exportToSVG(graphJSONCells, jointGraph, paper, paperWidth, paperHeight)
       const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
       path.setAttribute('d', pathData);
       path.setAttribute('fill', 'none');
-      path.setAttribute('stroke', cellData.attrs.line.stroke);
+      path.setAttribute('stroke', 'red');
       path.setAttribute('stroke-width', 2);
 
       svg.appendChild(path);
@@ -89,7 +90,7 @@ function exportToSVG(graphJSONCells, jointGraph, paper, paperWidth, paperHeight)
   return svgString;
 }
 
-export function orthogonalLayout(links, nodes, left, top, width, height)
+export function orthogonalLayout(links, nodes, left, top, width, height, debug = false)
 {
   const graph = new dia.Graph();
   const linkVertices = {};
@@ -102,25 +103,24 @@ export function orthogonalLayout(links, nodes, left, top, width, height)
     el: el,
     width: width,
     height: height,
-    gridSize: 1,
+    gridSize: 10,
     model: graph,
-    defaultConnector: { name: 'rounded' },
+    defaultConnector: { name: 'jumpover' },
     defaultConnectionPoint: { name: 'boundary', args: { extrapolate: true } },
     interactive: true
   });
   //obstacles, anything not a lyph and orphaned
 
   nodes.forEach( node => {
+    const lyphMesh = node.state.graphScene.children.find( c => c.userData?.id == node.id)
+    const scale = lyphMesh.scale 
+    const lyphDim = getBoundingBoxSize(lyphMesh);
     const nodeModel = new shapes.standard.Rectangle({
       id: node.id,
       position: { x: node.x + left, y: node.y + top },
       size: { 
-        width: node.scale.width
-        , height: node.scale.height
-      },
-      attrs: {
-          body: { fill: 'blue', stroke: 'black', strokeWidth: 2 },
-          label: { text: node.id, fill: 'white', fontWeight: 'bold' }
+        width: lyphDim.x * scale.x + 5
+        , height: lyphDim.y * scale.y + 5
       }
     });
   
@@ -140,11 +140,9 @@ export function orthogonalLayout(links, nodes, left, top, width, height)
         id: link.id,
         source: { x: sx, y: sy },
         target: { x: tx, y: ty },
-        connector: { name: 'rounded' },
-        router: { name: 'manhattan', args: { obstacles: graph.getElements() } },
-        attrs: {
-            line: { stroke: 'red', strokeWidth: 2, targetMarker: { type: 'path', d: 'M 10 -5 0 0 10 5 z' } }
-        }
+        router: { name: 'manhattan'
+        , connector : { name : 'jumpover'}
+        , args: { obstacles: graph.getElements() } }
       });
       graph.addCell(connection);
     }
@@ -163,9 +161,11 @@ export function orthogonalLayout(links, nodes, left, top, width, height)
     }
   });
 
-  const svg = exportToSVG(json.cells, graph, paper, width, height);
-  console.log(svg);
-
+  if (debug)
+  {
+    const svg = exportToSVG(json.cells, graph, paper, width, height);
+    console.log(svg);  
+  }
   return linkVertices ;
 }
 
