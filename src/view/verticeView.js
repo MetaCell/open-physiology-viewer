@@ -68,6 +68,7 @@ Node.prototype.createViewObjects = function(state) {
  * Update visual objects for a node
  */
 Node.prototype.updateViewObjects = function(state) {
+    Vertice.prototype.updateViewObjects.call(this, state);
     if (this.anchoredTo){
         copyCoords(this, this.anchoredTo);
     } else {
@@ -112,6 +113,10 @@ Node.prototype.updateViewObjects = function(state) {
                             
                             // Get point along the curve
                             let pointAlonLink = pointAlongLine(start, end, placeInLink);
+                            this.viewObjects["main"].position.x = pointAlonLink.x;
+                            this.viewObjects["main"].position.y = pointAlonLink.y;
+                            this.viewObjects["main"].geometry.verticesNeedUpdate = true;
+                            this.viewObjects["main"]?.geometry?.computeBoundingSphere();
                             copyCoords(this, pointAlonLink);
                         }
                     }
@@ -125,7 +130,6 @@ Node.prototype.updateViewObjects = function(state) {
             copyCoords(this, getCenterOfMass(this.controlNodes));
         }
     }
-    Vertice.prototype.updateViewObjects.call(this, state);
 };
 
 Object.defineProperty(Node.prototype, "polygonOffsetFactor", {

@@ -1383,8 +1383,6 @@ export class SettingsPanel {
         if ( this.filteredDynamicGroups.filter(g => g.name == newGroupName ).length < 1 ) {
           let groupClone = Object.assign(Object.create(Object.getPrototypeOf(group)), group)
           groupClone.name = newGroupName;
-          groupClone.links = [];
-          groupClone.nodes = [];
           groupClone.lyphs = neuronTriplets.y;
           groupClone.cloneOf = group;
           this.filteredDynamicGroups.push(groupClone);
@@ -1393,7 +1391,6 @@ export class SettingsPanel {
           const groupMatched = this.filteredDynamicGroups.find(g => g.name == newGroupName );
           groupMatched.hidden = !event.checked;
         }
-
         window.addEventListener("updateTick",function updateLayout(e){
           // Run auto layout code to position lyphs on their regions and wires
           if ( group?.neurulated && !group.hidden && e?.detail?.updating ) {
@@ -1416,40 +1413,15 @@ export class SettingsPanel {
           }
         });
       }
-      let that = this;
-      window.addEventListener("doneUpdating", () => { 
-        // Run auto layout code to position lyphs on their regions and wires
-        that.filteredDynamicGroups?.forEach( g=> {
-          if ( !g.hidden ) {
-            const visibleLinks = g.links.filter( l => !l.hidden && !l.inactive && l.collapsible );
-            const neuroTriplets = buildNeurulatedTriplets(g);
-            const bigLyphs = neuroTriplets.y;
-            const orthogonalSegments = applyOrthogonalLayout(visibleLinks, bigLyphs, this.viewPortSize.left, this.viewPortSize.top, this.viewPortSize.width, this.viewPortSize.height)
-            if (orthogonalSegments)
-            {
-              autoLayoutSegments(orthogonalSegments, visibleLinks);
-              }
-          }
-        });
-      });
-  };
-
-  toggleAllDynamicGroup = () => {
-    let visibleLinks = [];
-    let bigLyphs = []
-    for (let group of this.filteredDynamicGroups) {
-      if ( group.hidden ) {
-        let mode = !group.hidden;
-        this.onToggleGroup.emit(group);
-        group?.lyphs?.forEach((m) => {
-          m.hidden = mode;
-          m.inactive = mode;
-        });
+      let visibleLinks = [];
+      let bigLyphs = []
+      for (let group of this.filteredDynamicGroups) {
+        if ( !group?.hidden && !group?.cloneOf ) {
+          let neuroTriplets = buildNeurulatedTriplets(group);        
+          visibleLinks = visibleLinks.concat(group.links.filter( l => !l.hidden && !l.inactive && l.collapsible ));
+          bigLyphs = bigLyphs.concat(neuroTriplets.y).filter( l => !l.hidden );
+        }
       }
-      visibleLinks = visibleLinks.concat(group.links.filter( l => !l.hidden && !l.inactive && l.collapsible ));
-      let neuroTriplets = buildNeurulatedTriplets(group);
-      bigLyphs = bigLyphs.concat(neuroTriplets.y);
-    }  
 
       let that = this;
       window.addEventListener("doneUpdating", () => { 
@@ -1459,6 +1431,42 @@ export class SettingsPanel {
           autoLayoutSegments(orthogonalSegments, visibleLinks);
         }
       });
+  };
+
+  toggleAllDynamicGroup = () => {
+    let visibleLinks = [];
+    let bigLyphs = []
+    for (let group of this.filteredDynamicGroups) {
+      let neuroTriplets = buildNeurulatedTriplets(group);
+      group?.lyphs?.forEach((m) => {
+        if ( m.internalIn ) {
+          m.hidden = !group.hidden;
+          m.inactive = !group.hidden;
+        } else if ( !m.internalIn ){
+          m.hidden = false;
+          m.inactive = false;
+        }
+      });
+      if ( group.hidden ) {
+        this.onToggleGroup.emit(group);
+
+      }
+      
+      if ( !group?.hidden && !group?.cloneOf ) {
+        neuroTriplets = buildNeurulatedTriplets(group);        
+        visibleLinks = visibleLinks.concat(group.links.filter( l => !l.hidden && !l.inactive && l.collapsible ));
+        bigLyphs = bigLyphs.concat(neuroTriplets.y).filter( l => !l.hidden );
+      }
+    }  
+
+    let that = this;
+    window.addEventListener("doneUpdating", () => { 
+      const orthogonalSegments = applyOrthogonalLayout(visibleLinks, bigLyphs, that.viewPortSize.left, that.viewPortSize.top, that.viewPortSize.width, that.viewPortSize.height)
+      if (orthogonalSegments)
+      {
+        autoLayoutSegments(orthogonalSegments, visibleLinks);
+      }
+    });
   };
 
   filterGroups = (groups) => {

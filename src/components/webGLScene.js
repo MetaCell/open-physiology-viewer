@@ -382,7 +382,6 @@ export class WebGLSceneComponent {
         this.camera = new THREE.PerspectiveCamera(70, width / height, 10, 4000);
         this.camera.aspect = width / height;
         this.resetCamera();
-        window.camera = this.camera;
         this.ray = new THREE.Raycaster();
         this.scene = new THREE.Scene();
 

@@ -587,9 +587,8 @@ export function placeLyphInHost(lyph){
     lyphMesh.position.x = targetPosition.x ;
     lyphMesh.position.y = targetPosition.y ;
     lyphMesh.position.z = targetPosition.z;
-    lyphMesh?.geometry?.computeBoundingSphere();
+    lyphMesh.geometry.verticesNeedUpdate = true;
     lyphMesh?.geometry?.computeBoundingBox();
-    copyCoords(lyph, lyphMesh.position);
   } else if ( terminalLyph ){
     lyphMesh.position.z = getHouseLyph(lyph)?.z + DIMENSIONS.LYPH_MIN_Z;
     copyCoords(lyph, lyphMesh.position);
@@ -599,8 +598,9 @@ export function placeLyphInHost(lyph){
     })
     lyphMesh.geometry.verticesNeedUpdate = true;
     lyphMesh?.geometry?.computeBoundingBox();
-    lyphMesh?.geometry?.computeBoundingSphere();
   }
+  lyphMesh.geometry.verticesNeedUpdate = true;
+  lyphMesh?.geometry?.computeBoundingBox();
 }
 
 function getLyphPosition(lyphMesh, hostMesh, lyph) {

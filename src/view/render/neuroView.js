@@ -1,7 +1,7 @@
 import {flatten } from "lodash-bound";
 import {modelClasses} from "../../model";
 import { orthogonalLayout } from "./neuroViewHelper";
-import { stddev, avg } from '../utils';
+import {  getWorldPosition } from "./autoLayout/objects";
 const {Edge} = modelClasses;
 
 /**
@@ -209,10 +209,8 @@ function toggleRegions(scaffoldsList, neuronTriplets, checked){
         );
         if ( match === undefined ) {
           region.inactive = checked;
-          //region.hostedLyphs = [];
         } else {
           region.inactive = !checked;
-          //region.hostedLyphs = [];
           if ( match?.namespace != region.namespace ) {
             neuronTriplets.r = neuronTriplets?.r?.filter(
               (matchReg) => region.id !== matchReg.id
@@ -407,8 +405,10 @@ function distance(a, b) {
 export function applyOrthogonalLayout(links, nodes, left, top, width, height) {
   const distances = [];
   links.forEach(l => {
-    const sourcePosition = { x: l.points[0].x, y: l.points[0].y }
-    const targetPosition = { x: l.points[1].x, y: l.points[1].y }
+    let start = getWorldPosition(l.source.viewObjects["main"])
+    let end   = getWorldPosition(l.target.viewObjects["main"])
+    const sourcePosition = { x: start.x, y: start.y }
+    const targetPosition = { x: end.x, y: end.y }
     const linkDistance = distance(sourcePosition, targetPosition);
     l['euclidianDistance'] = linkDistance ;
     distances.push(linkDistance);

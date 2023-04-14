@@ -165,7 +165,7 @@ Link.prototype.regenerateFromSegments = function(segments) {
 Link.prototype.updateViewObjects = function(state) {
 
   if ( this.viewObjects['linkSegments'] ) {
-    
+
     const points = []
     const z = Math.floor(Math.random() * 6) + 1 ;
 
@@ -181,12 +181,12 @@ Link.prototype.updateViewObjects = function(state) {
     const line = new THREE.Line( geometry, material );
 
     line.userData = this;
+    line.position.z = DIMENSIONS.LINK_MIN_Z;
+    this.viewObjects["main"] = line ;
     line.geometry.verticesNeedUpdate = true;
     line.computeLineDistances();
     line.geometry.computeBoundingBox();
     line.geometry.computeBoundingSphere();
-    line.position.z = DIMENSIONS.LINK_MIN_Z;
-    this.viewObjects["main"] = line ;
     this.createLabels();
   }else{
 
@@ -286,6 +286,7 @@ Link.prototype.updateViewObjects = function(state) {
                             let centerPoint = this.points[Math.floor(this.points.length/2)];
                             this.conveyingLyph.viewObjects["main"].position.x = centerPoint.x;
                             this.conveyingLyph.viewObjects["main"].position.y = centerPoint.y;
+                            this.conveyingLyph.viewObjects["main"].position.z = DIMENSIONS.LYPH_MIN_Z * 2;
                             copyCoords(this.conveyingLyph,this.conveyingLyph.viewObjects["main"].position);
                         }
                     } else {
