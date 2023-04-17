@@ -94,6 +94,7 @@ export function orthogonalLayout(links, nodes, left, top, width, height, debug =
 {
   const graph = new dia.Graph();
   const linkVertices = {};
+  debug = true 
 
   const el = document.createElement('div');
   el.style.width = width + 'px';
@@ -114,13 +115,12 @@ export function orthogonalLayout(links, nodes, left, top, width, height, debug =
   nodes.forEach( node => {
     const lyphMesh = node.state.graphScene.children.find( c => c.userData?.id == node.id)
     const scale = lyphMesh.scale 
-    const lyphDim = getBoundingBoxSize(lyphMesh);
     const nodeModel = new shapes.standard.Rectangle({
       id: node.id,
-      position: { x: node.x + left, y: node.y + top },
+      position: { x: node.x, y: node.y },
       size: { 
-        width: lyphDim.x * scale.x + 5
-        , height: lyphDim.y * scale.y + 5
+        width: node.width * scale.x + 2
+        , height: node.height * scale.y + 2
       }
     });
   
