@@ -1,10 +1,10 @@
 import orthogonalConnector2 from "./orthogonalConnector2";
 import { dia, shapes } from 'jointjs';
 import { combineLatestAll, generate } from "rxjs";
-import { getBoundingBoxSize, getWorldPosition } from "./autoLayout/objects";
 import {
   extractCoords
 } from "./../utils";
+import { getBoundingBoxSize, getWorldPosition } from "./autoLayout/objects";
 
 function extractVerticesFromPath(path)
 {
@@ -97,6 +97,7 @@ export function orthogonalLayout(links, nodes, left, top, width, height, debug =
 {
   const graph = new dia.Graph();
   const linkVertices = {};
+  debug = true 
 
   const el = document.createElement('div');
   el.style.width = width + 'px';
@@ -115,21 +116,21 @@ export function orthogonalLayout(links, nodes, left, top, width, height, debug =
   //obstacles, anything not a lyph and orphaned
 
   nodes.forEach( node => {
-    const lyphMesh = node.state.graphScene.children.find( c => c.userData?.id == node.id);
+    const lyphMesh = node.state.graphScene.children.find( c => c.userData?.id == node.id)
     if ( lyphMesh ) {
       const scale = lyphMesh?.scale 
-      const lyphDim = getBoundingBoxSize(lyphMesh);
       const nodeModel = new shapes.standard.Rectangle({
         id: node.id,
-        position: { x: node.x + left, y: node.y + top },
+        position: { x: node.x, y: node.y },
         size: { 
-          width: lyphDim.x * scale.x + 5
-          , height: lyphDim.y * scale.y + 5
+          width: node.width * scale.x + 2
+          , height: node.height * scale.y + 2
         }
       });
       graph.addCell(nodeModel);
-    }  
+    }
   });
+
   links.forEach( link => {
 
     if (link.points?.length > 0)
