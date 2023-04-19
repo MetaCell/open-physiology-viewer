@@ -1435,21 +1435,24 @@ export class SettingsPanel {
 
   toggleAllDynamicGroup = () => {
     let visibleLinks = [];
-    let bigLyphs = []
+    let bigLyphs = [];
+    let toggleOn = true;
+    const length = this.filteredDynamicGroups.filter( g => g.hidden )?.length;
+    length == 0 ? toggleOn = false : null;
     for (let group of this.filteredDynamicGroups) {
       let neuroTriplets = buildNeurulatedTriplets(group);
       group?.lyphs?.forEach((m) => {
         if ( m.internalIn ) {
-          m.hidden = !group.hidden;
-          m.inactive = !group.hidden;
+          m.hidden = !toggleOn;
+          m.inactive = !toggleOn;
         } else if ( !m.internalIn ){
           m.hidden = false;
           m.inactive = false;
         }
       });
+      
       if ( group.hidden ) {
         this.onToggleGroup.emit(group);
-
       }
       
       if ( !group?.hidden && !group?.cloneOf ) {
