@@ -752,7 +752,8 @@ export class WebGLSceneComponent {
     }
 
     toggleLayout(prop){
-        if (this.graph){ this.graph[prop](this._config.layout[prop]); }
+        if (this.graph && prop){ this.graph[prop](this._config.layout[prop]); }
+        else if ( this.graph ) { this.graph.graphData(this.graphData); }
     }
 
     toggleGroup(group) {

@@ -1384,6 +1384,8 @@ export class SettingsPanel {
           let groupClone = Object.assign(Object.create(Object.getPrototypeOf(group)), group)
           groupClone.name = newGroupName;
           groupClone.lyphs = neuronTriplets.y;
+          groupClone.links = [];
+          groupClone.nodes = [];
           groupClone.cloneOf = group;
           this.filteredDynamicGroups.push(groupClone);
         } else if ( this.filteredDynamicGroups.find(g => g.name == newGroupName ) ) {
@@ -1422,15 +1424,19 @@ export class SettingsPanel {
           bigLyphs = bigLyphs.concat(neuroTriplets.y).filter( l => !l.hidden );
         }
       }
-
+      
       let that = this;
-      window.addEventListener("doneUpdating", () => { 
+      let doneUpdating = () => { 
         const orthogonalSegments = applyOrthogonalLayout(visibleLinks, bigLyphs, that.viewPortSize.left, that.viewPortSize.top, that.viewPortSize.width, that.viewPortSize.height)
         if (orthogonalSegments)
         {
           autoLayoutSegments(orthogonalSegments, visibleLinks);
         }
-      });
+        that.onToggleLayout.emit();
+        window.removeEventListener("doneUpdating", doneUpdating);
+      };
+
+      window.addEventListener("doneUpdating", doneUpdating);
   };
 
   toggleAllDynamicGroup = () => {
@@ -1451,7 +1457,7 @@ export class SettingsPanel {
         }
       });
       
-      if ( group.hidden ) {
+      if ( group.hidden === toggleOn ) {
         this.onToggleGroup.emit(group);
       }
       

@@ -294,7 +294,7 @@ Link.prototype.updateViewObjects = function(state) {
                     }
                     obj.geometry.setFromPoints(this.points);
                     obj.geometry.attributes.position.needsUpdate = true;
-                    obj.position.z = DIMENSIONS.LINK_MIN_Z;
+                    obj.position.z = DIMENSIONS.LINK_MIN_Z * 2;
                     obj.geometry.verticesNeedUpdate = true;
                     obj.geometry.computeBoundingBox();
                     obj.geometry.computeBoundingSphere();
