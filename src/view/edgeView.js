@@ -171,7 +171,7 @@ Link.prototype.updateViewObjects = function(state) {
     const segments = this.viewObjects['linkSegments'][0] ;
 
     segments.forEach( segment => {
-      points.push( new THREE.Vector3( segment.x, segment.y, 0 ) );
+      points.push( new THREE.Vector3( segment.x, segment.y, z ) );
     })
     
     const material = MaterialFactory.createLineDashedMaterial({color: random_rgba()});
