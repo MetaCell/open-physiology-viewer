@@ -1404,6 +1404,8 @@ export class SettingsPanel {
         
         // Find housing lyphs of neuron, also links and chains.
         let neuronTriplets = buildNeurulatedTriplets(group);
+        neuronTriplets.links?.forEach( l => l.neurulated = true );
+
         console.log("Neuron Information : ", neuronTriplets);
         
         // Handle Neuro view initial settings. Turns OFF groups and scaffolds
@@ -1471,7 +1473,9 @@ export class SettingsPanel {
           bigLyphs = bigLyphs.concat(neuroTriplets.y).filter( l => !l.hidden );
         }
       }
-      
+
+      visibleLinks?.forEach( l => l.neurulated = false );
+
       let that = this;
       let doneUpdating = () => { 
         const orthogonalSegments = applyOrthogonalLayout(visibleLinks, bigLyphs, that.viewPortSize.left, that.viewPortSize.top, that.viewPortSize.width, that.viewPortSize.height)
