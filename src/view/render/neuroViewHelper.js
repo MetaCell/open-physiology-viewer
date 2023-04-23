@@ -108,8 +108,12 @@ export function orthogonalLayout(links, nodes, left, top, canvasWidth, canvasHei
   el.id = "orthogonalDiv";
   el.style.width = canvasWidth * 2 + 'px';
   el.style.height = canvasHeight *  2 + 'px';
-  el.style.cssText = 'position:absolute;opacity:0.3;z-index:100;background:#000;';
-  document.body.appendChild(el);
+
+  if (debug)
+  {
+    el.style.cssText = 'position:absolute;opacity:0.3;z-index:100;background:#000;';
+    document.body.appendChild(el);
+  }
 
   const paper = new dia.Paper({
     el: el,
@@ -164,9 +168,9 @@ export function orthogonalLayout(links, nodes, left, top, canvasWidth, canvasHei
 
     if (link.points?.length > 0)
     {
-      const sx = link.points[0].x + canvasWidth;
+      const sx = link.points[0].x ; //+ canvasWidth;
       const sy = link.points[0].y ;
-      const tx = link.points[link.points.length-1].x + canvasWidth ;
+      const tx = link.points[link.points.length-1].x ; //+ canvasWidth ;
       const ty = link.points[link.points.length-1].y ;
 
       const sourceNode = new shapes.standard.Rectangle({
@@ -205,6 +209,25 @@ export function orthogonalLayout(links, nodes, left, top, canvasWidth, canvasHei
 
   graph.addCells(obstacles).addCells(linkNodes).addCells(connections);
 
+  graph.on('change:position', function(cell) {
+
+    // has an obstacle been moved? Then reroute the link.
+    if (obstacles.indexOf(cell) > -1) {
+        //link.findView(paper).requestConnectionUpdate();
+        const json = graph.toJSON();
+        json.cells.forEach(cell => {
+          if (cell.type == 'standard.Link') {
+            const linkModel = graph.getCell(cell.id);
+            const newLinkView = paper.findViewByModel(linkModel);
+            
+            if (newLinkView) {
+              newLinkView.requestConnectionUpdate();
+            }
+          }
+        });
+    }
+});
+
 
   // Wait for the routing update to complete
   const json = graph.toJSON();
@@ -213,6 +236,7 @@ export function orthogonalLayout(links, nodes, left, top, canvasWidth, canvasHei
       const linkModel = graph.getCell(cell.id);
       const newLinkView = paper.findViewByModel(linkModel);
       if (newLinkView) {
+        newLinkView.requestConnectionUpdate();
         const vertices = newLinkView.path.toPoints();
         linkVertices[cell.id] = vertices ;
       }
