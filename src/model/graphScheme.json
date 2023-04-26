@@ -277,6 +277,7 @@
               }
             ]
           },
+          "relatedTo": "inChains",
           "default": []
         },
         "lyphTemplate": {
@@ -737,6 +738,22 @@
           },
           "relatedTo": "ontologyTerms",
           "advanced": true
+        },
+        "cladeInVariances": {
+          "description": "Variance specs in which the term defines clade",
+          "type": "array",
+          "items": {
+            "anyOf": [
+              {
+                "$ref": "#/definitions/IdentifierScheme"
+              },
+              {
+                "$ref": "#/definitions/VarianceSpec"
+              }
+            ]
+          },
+          "relatedTo": "clades",
+          "advanced": "true"
         }
       }
     },
@@ -794,6 +811,64 @@
         }
       }
     },
+    "VarianceSpec": {
+      "description": "Specification of variance among species",
+      "allOf": [
+        {
+          "$ref": "#/definitions/Resource"
+        }
+      ],
+      "properties": {
+        "clades": {
+          "description": "External resources identifying clades",
+          "type": "array",
+          "items": {
+            "anyOf": [
+              {
+                "$ref": "#/definitions/IdentifierScheme"
+              },
+              {
+                "$ref": "#/definitions/OntologyTerm"
+              }
+            ]
+          },
+          "relatedTo": "cladeInVariances"
+        },
+        "phenotypes": {
+          "description": "External resources identifying phenotypes",
+          "type": "array",
+          "items": {
+            "anyOf": [
+              {
+                "$ref": "#/definitions/IdentifierScheme"
+              },
+              {
+                "$ref": "#/definitions/OntologyTerm"
+              }
+            ]
+          }
+        },
+        "includes": {
+          "description": "Variance specifications which are parts of the given specification",
+          "type": "array",
+          "items": {
+            "anyOf": [
+              {
+                "$ref": "#/definitions/IdentifierScheme"
+              },
+              {
+                "$ref": "#/definitions/VarianceSpec"
+              }
+            ]
+          }
+        },
+        "presence": {
+          "description": "Ontology term that identifies resource from which the variance present in all descendants unless lost",
+          "type": "string",
+          "enum": ["basal", "absent", "observed"]
+        }
+      }
+    },
     "Graph": {
       "description": "The ApiNATOMY connectivity model is a complex graph that combines semantic resources and visual annotations. The graph nodes are arranged by the force-directed graph layout that respects constrains on relative positioning of the model elements, specified in the input data by the modeller.",
       "$ref": "#/definitions/Group",
@@ -821,6 +896,10 @@
           "description": "Number of pixels per unit of length, set in a generated model",
           "type": "number",
           "readOnly": true
+        },
+        "variance": {
+          "description": "Variance for which model was generated",
+          "$ref": "#/definitions/VarianceSpec"
         }
       }
     },
@@ -1022,7 +1101,15 @@
             "$ref": "#/definitions/Scaffold"
           },
           "advanced": true
-        }
+        },
+        "varianceSpecs": {
+          "description": "Specifications of variance among species",
+            "type": "array",
+            "items": {
+              "$ref": "#/definitions/VarianceSpec"
+            },
+            "advanced": true
+          }
       }
     },
     "EdgeGeometryScheme": {
@@ -1738,6 +1825,22 @@
           "default": [],
           "advanced": true
         },
+        "inChains": {
+          "description": "Shows chains in which the given lyph is used as level",
+          "type": "array",
+          "items": {
+            "anyOf": [
+              {
+                "$ref": "#/definitions/IdentifierScheme"
+              },
+              {
+                "$ref": "#/definitions/Chain"
+              }
+            ]
+          },
+          "relatedTo": "lyphs",
+          "advanced": true
+        },
         "generatedFrom": {
           "description": "Material which was used to generate the current lyph",
           "anyOf": [
@@ -2392,6 +2495,20 @@
             ]
           },
           "relatedTo": "annotates"
+        },
+        "varianceSpecs": {
+          "description": "Variance specifications associated with the resource",
+          "type": "array",
+          "items": {
+            "anyOf": [
+              {
+                "$ref": "#/definitions/IdentifierScheme"
+              },
+              {
+                "$ref": "#/definitions/VarianceSpec"
+              }
+            ]
+          }
         }
       }
     },

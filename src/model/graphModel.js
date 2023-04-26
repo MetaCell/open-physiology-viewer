@@ -222,7 +222,8 @@ export class Graph extends Group{
             inputModel.groups = inputModel.groups || [];
 
             //Collect resources necessary for template expansion from all groups
-            let relFieldNames = [$Field.nodes, $Field.links, $Field.lyphs, $Field.materials, $Field.groups, $Field.channels];
+            let relFieldNames = [$Field.nodes, $Field.links, $Field.lyphs, $Field.materials, $Field.groups, $Field.channels,
+                $Field.varianceSpecs];
             collectNestedResources(inputModel, relFieldNames, $Field.groups);
 
             modelClasses.Channel.defineChannelLyphTemplates(inputModel);
@@ -555,6 +556,9 @@ export class Graph extends Group{
      */
     createAxes(noAxisLyphs, modelClasses, entitiesByID){
         let group = (this.groups||[]).find(g => g.id === getGenID($Prefix.group, $Prefix.default));
+        if (!group){
+            group = {links: [], nodes: [], name: "Auto-created links"};
+        }
         noAxisLyphs.forEach(lyph => {
             if (!lyph.createAxis){
                 logger.error($LogMsg.CLASS_ERROR_RESOURCE, lyph);
@@ -563,7 +567,7 @@ export class Graph extends Group{
             let link = lyph.createAxis(modelClasses, entitiesByID, lyph.namespace);
             this.links.push(link);
             link.applyToEndNodes(end => this.nodes.push(end));
-            if (group){
+            if (group && !group.links.find(lnk => lnk.id === link.id)){
                 group.links.push(link);
                 link.applyToEndNodes(end => group.nodes.push(end));
             }
@@ -571,7 +575,20 @@ export class Graph extends Group{
         if (noAxisLyphs.length > 0){
             logger.info($LogMsg.GROUP_GEN_LYPH_AXIS, noAxisLyphs.map(x => x.id));
         }
-        noAxisLyphs.forEach(lyph => lyph.assignAxisLength());
+        noAxisLyphs.forEach(lyph => lyph.assignAxisLength && lyph.assignAxisLength());
+        if (group.name === "Auto-created links" && group.links.length > 0){
+            const autoID = getGenID($Prefix.group, $Prefix.autoLinks);
+            let autoGroup = modelClasses.Group.fromJSON(genResource({
+                [$Field.id]: autoID,
+                [$Field.fullID]: getFullID(this.namespace, autoID),
+                [$Field.namespace]: this.namespace,
+                [$Field.name]: group.name,
+                [$Field.hidden]: true,
+                [$Field.links]: group.links,
+                [$Field.nodes]: group.nodes
+            }, "graphModel.createAxes (Group)"));
+            this.groups.push(autoGroup);
+        }
     }
 
     /**
@@ -814,5 +831,15 @@ export class Graph extends Group{
             json.scaffolds.push(s.getCurrentState())
         })
         return json;
+    }
+
+    removeLyph(lyph){
+        let removed = lyph.clearReferences();
+        if (!removed) {
+            logger.error($LogMsg.LYPH_REMOVE_FAIL, this.id);
+        } else {
+            removed.forEach(lyph => this.deleteFromGroup(lyph));
+        }
+        return removed;
     }
 }

@@ -3,7 +3,7 @@ import {Node} from './verticeModel';
 import {Link} from './edgeModel';
 import {Lyph} from './shapeModel';
 
-import {isObject, unionBy, merge, keys, entries, isArray, pick} from 'lodash-bound';
+import {isObject, unionBy, merge, keys, entries, isArray, pick, flatten} from 'lodash-bound';
 import {
     $SchemaClass,
     $Field,
@@ -19,7 +19,7 @@ import {
     refToResource,
     mergeGenResource,
     genResource,
-    mergeRecursively
+    mergeRecursively, VARIANCE_PRESENCE
 } from './utils';
 import {logger, $LogMsg} from './logger';
 
@@ -39,6 +39,8 @@ import {logger, $LogMsg} from './logger';
  * @property coalescences
  * @property scaffolds
  * @property hostedBy
+ * @property varianceSpecs
+ * @property entitiesByID
  */
 export class Group extends Resource {
     /**
@@ -72,6 +74,15 @@ export class Group extends Resource {
         return res;
     }
 
+    get clades(){
+        return Array.from(new Set((this.varianceSpecs || []).map(vs => vs.clades || [])::flatten()));
+    }
+
+    getVarianceSpecForClade(clade){
+         let varianceSpecs = (this.varianceSpecs || []).filter(vs => vs.clades||[]);
+
+    }
+
     contains(resource){
         if (resource instanceof Node){
             return findResourceByID(this.nodes, resource.id);
@@ -85,6 +96,23 @@ export class Group extends Resource {
         return false;
     }
 
+    deleteFromGroup(lyph){
+        if (this.entitiesByID && this.entitiesByID[lyph.fullID]){
+            delete this.entitiesByID[lyph.fullID];
+        }
+        if (this.lyphsByID && this.lyphsByID[lyph.fullID]){
+            delete this.lyphsByID[lyph.fullID];
+        }
+        let idx = (this.lyphs || []).findIndex(e => e.fullID === lyph.fullID);
+        if (idx > -1) {
+            this.lyphs.splice(idx, 1);
+        }
+        if (this.coalescences){
+            this.coalescences = this.coalescences.filter(c => (c.lyphs||[]).length > 1);
+        }
+        (this.groups||[]).forEach(g => g.deleteFromGroup(lyph));
+    }
+
     /**
      * Include related to resources to the group: node clones, internal lyphs and nodes
      */
@@ -93,7 +121,6 @@ export class Group extends Resource {
         //internal nodes and internal lyphs to the group that contains the original lyph
         [$Field.nodes, $Field.links, $Field.lyphs].forEach(prop => {
             this[prop].forEach(res => res.includeRelated && res.includeRelated(this));
-            //TODO why not all nodes marked as hidden: keastSpinalFull
             this[prop].hidden = this.hidden;
         });
 
@@ -111,15 +138,25 @@ export class Group extends Resource {
         }
     }
 
-    createGroup(groupID, name, nodes, links, lyphs, modelClasses){
+    /**
+     * Generate a (dynamic) group
+     * @param id
+     * @param name
+     * @param nodes
+     * @param links
+     * @param lyphs
+     * @param modelClasses
+     * @returns {*}
+     */
+    createGroup(id, name, nodes, links, lyphs, modelClasses){
         const resources = {
             [$Field.nodes]: nodes,
             [$Field.links]: links,
             [$Field.lyphs]: lyphs
         }
-        let group = (this.groups||[]).find(g => g.id === groupID);
+        let group = (this.groups||[]).find(g => g.id === id);
         let json = group || genResource({
-            [$Field.id]    : groupID,
+            [$Field.id]    : id,
             [$Field.name]  : name
         }, "groupModel.createGroup (Group)");
         if (group) {
@@ -263,7 +300,9 @@ export class Group extends Resource {
                 if (!refsToLyphs){ return; }
                 (resources || []).forEach(resource => {
                     (resource::keys() || []).forEach(key => { // Do not replace valid references to templates
-                        if (refsToLyphs.includes(key)) { replaceAbstractRefs(resource, key); }
+                        if (refsToLyphs.includes(key)) {
+                            replaceAbstractRefs(resource, key);
+                        }
                     });
                 });
             }
@@ -402,7 +441,7 @@ export class Group extends Resource {
      */
     show(){
         this.hidden = false;
-        this.resources.forEach(entity => delete entity.hidden);
+        this.resources.forEach(entity => entity.hidden = false);
     }
 
     /**

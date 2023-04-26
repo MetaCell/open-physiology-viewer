@@ -18,7 +18,7 @@ import {
     refToResource,
     getFullID,
     mergeGenResource,
-    genResource
+    genResource, replaceAbstractRefs
 } from './utils';
 import tinycolor from "tinycolor2";
 
@@ -86,6 +86,7 @@ export class Shape extends VisualResource {
  * @property internalIn
  * @property inMaterials
  * @property inCoalescences
+ * @property inChains
  * @property bundles
  * @property endBbundles
  * @property bundlesChains
@@ -97,6 +98,7 @@ export class Shape extends VisualResource {
  * @property length
  * @property thickness
  * @property internalNodesInLayers
+ * @property seedIn
  */
 export class Lyph extends Shape {
     /**
@@ -173,7 +175,6 @@ export class Lyph extends Shape {
 
         if (sourceLyph.supertype && (sourceLyph.layers||[]).length === 0){
             //expand the supertype - the sourceLyph may need to get its layers from the supertype first
-            //FIXME supertype in another namespace?
             let supertype = refToResource(sourceLyph.supertype, parentGroup, $Field.lyphs);
             if (supertype && supertype.isTemplate){
                 this.expandTemplate(parentGroup, supertype);
@@ -181,8 +182,9 @@ export class Lyph extends Shape {
         }
 
         targetLyph::mergeWith(sourceLyph::pick([$Field.color, $Field.scale, $Field.height, $Field.width, $Field.length,
-            $Field.thickness, $Field.scale, $Field.description, $Field.create3d, $Field.namespace,
-                $Field.materials, $Field.channels, $Field.bundlesChains]), mergeResources);
+                $Field.thickness, $Field.scale, $Field.description, $Field.create3d, $Field.namespace, $Field.topology,
+                $Field.materials, $Field.channels, $Field.bundlesChains, $Field.internalLyphsInLayers
+            ]), mergeResources);
         //If targetLyph is from different namespace, add namespace to default materials
         if (targetLyph.namespace !== sourceLyph.namespace){
             [$Field.materials, $Field.channels, $Field.bundlesChains].forEach(prop => {
@@ -191,7 +193,6 @@ export class Lyph extends Shape {
                 }
             });
         }
-
         if (sourceLyph.isTemplate){
             if (!targetLyph.supertype) {
                 targetLyph.supertype = sourceLyph.fullID || sourceLyph.id;
@@ -218,40 +219,46 @@ export class Lyph extends Shape {
             logger.warn($LogMsg.LYPH_SUBTYPE_HAS_OWN_LAYERS, targetLyph);
         }
 
-        let missingLayers = [];
-        (sourceLyph.layers || []).forEach((layerRef, i) => {
-            let nm = sourceLyph.namespace || parentGroup.namespace;
-            let fullLayerRef = getFullID(nm, layerRef);
-            let sourceLayer = refToResource(fullLayerRef, parentGroup, $Field.lyphs);
-            if (!sourceLayer) {
-                missingLayers.push(fullLayerRef);
-                return;
+        const cloneParts = (prop) =>{
+            let missingParts = [];
+            (sourceLyph[prop] || []).forEach((partRef, i) => {
+                let nm = sourceLyph.namespace || parentGroup.namespace;
+                let fullPartRef = getFullID(nm, partRef);
+                let sourcePart = refToResource(fullPartRef, parentGroup, $Field.lyphs);
+                if (!sourcePart) {
+                    missingParts.push(fullPartRef);
+                    return;
+                }
+
+                let targetPart = {};
+                const n = (targetLyph[prop]||[]).length;
+                if (n > i){
+                    targetPart = targetLyph.layers[i];
+                }
+                let targetPartID = getGenID(sourcePart.id, targetLyph.id, i+1);
+                targetPart = targetPart::merge(genResource({
+                    [$Field.id]        : targetPartID,
+                    [$Field.namespace] : targetLyph.namespace,
+                    [$Field.fullID]    : getFullID(targetLyph.namespace, targetPartID),
+                    [$Field.name]      : getGenName(sourcePart.name || '?', "in", targetLyph.name || '?', $Prefix[prop], i+1),
+                    [$Field.skipLabel] : true
+                }, "shapeModel.clone (Lyph)"));
+
+                mergeGenResource(undefined, parentGroup, targetPart, $Field.lyphs);
+                this.clone(parentGroup, sourcePart, targetPart);
+                if (prop === "layers") {
+                    //Layers inherit their topology from hosting lyph
+                    targetPart::merge(sourcePart::pick([$Field.topology]));
+                }
+                targetLyph[prop] = targetLyph[prop] || [];
+                targetLyph[prop].push(targetPart.id);
+            });
+            if (missingParts.length > 0) {
+                logger.error($LogMsg.LYPH_NO_TEMPLATE, prop, sourceLyph.fullID, missingParts.join(", "));
             }
-
-            let targetLayer = {};
-            const n = (targetLyph.layers||[]).length;
-            if (n > i){
-                targetLayer = targetLyph.layers[i];
-            }
-            let targetLayerID = getGenID(sourceLayer.id, targetLyph.id, i+1);
-            targetLayer = targetLayer::merge(genResource({
-                [$Field.id]        : targetLayerID,
-                [$Field.namespace] : targetLyph.namespace,
-                [$Field.fullID]    : getFullID(targetLyph.namespace, targetLayerID),
-                [$Field.name]      : getGenName(sourceLayer.name || '?', "in", targetLyph.name || '?', $Prefix.layer, i+1),
-                [$Field.skipLabel] : true
-            }, "shapeModel.clone (Lyph)"));
-            mergeGenResource(undefined, parentGroup, targetLayer, $Field.lyphs);
-
-            this.clone(parentGroup, sourceLayer, targetLayer);
-            targetLayer::merge(targetLyph::pick([$Field.topology]));
-            targetLyph.layers = targetLyph.layers || [];
-            targetLyph.layers.push(targetLayer.id);
-        });
-
-        if (missingLayers.length > 0) {
-            logger.error($LogMsg.LYPH_NO_TEMPLATE_LAYER, sourceLyph.fullID, missingLayers.join(", "));
         }
+        cloneParts($Field.layers);
+        cloneParts($Field.internalLyphs);
 
         return targetLyph;
     }
@@ -538,6 +545,11 @@ export class Lyph extends Shape {
                 //TODO lyph can be internal in a region - dynamically compute length based on region width or length
             }
             this.axis.length = this.axis.length || $Default.EDGE_LENGTH;
+            if (this.container.layerIn){
+                let layerWidth = this.container.layerIn.width ||
+                    this.axis.length / (this.container.layerIn.layers||[0]).length;
+                this.axis.length = layerWidth * 0.5;
+            }
         }
     }
 
@@ -591,6 +603,51 @@ export class Lyph extends Shape {
             res = this.layerIn.isSubtypeOf(supertypeID)
         }
         return res;
+    }
+
+    clearReferences(){
+        if (this.isTemplate || this.subtypes){
+            return;
+        }
+        let removed = [this];
+        if (this.conveys) {
+            delete this.conveys.conveyingLyph;
+            this.conveys.collapsible = true;
+        }
+        if (this.border){
+            (this.border.borders||[]).forEach(e => delete e.onBorder);
+        }
+        //1..*
+        let props = [$Field.internalIn, $Field.layerIn, $Field.supertype, $Field.hostedBy, $Field.cloneOf];
+        let otherProps = [$Field.internalLyphs, $Field.layers, $Field.subtypes, $Field.hostedLyphs, $Field.clones];
+        props.forEach((prop, i) => {
+            if (this[prop]) {
+                this[prop][otherProps[i]] = (this[prop][otherProps[i]]||[]).filter(e => e.fullID !== this.fullID);
+            }
+        });
+        //1..1
+        props = [$Field.endBundles, $Field.bundles, $Field.seedIn, $Field.villus, $Field.border];
+        otherProps = [$Field.endsIn, $Field.fasciculatesIn, $Field.seed, $Field.villusOf, $Field.host];
+        props.forEach((prop, i) => {
+            if (this[prop]){
+                delete this[prop][otherProps[i]];
+            }
+        });
+        //*..*
+        props = [$Field.transportedBy, $Field.materials, $Field.channels, $Field.bundlesChains, $Field.external,
+            $Field.references, $Field.ontologyTerms, $Field.inCoalescences, $Field.clones, $Field.inChains];
+        otherProps = [$Field.materials, $Field.inMaterials, $Field.housingLyphs, $Field.housingLyphs, $Field.externalTo,
+            $Field.documents, $Field.annotates, $Field.lyphs, $Field.cloneOf, $Field.lyphs];
+        props.forEach((prop, i) => {
+            if (this[prop]){
+                this[prop].forEach(r => r[otherProps[i]] = (r[otherProps[i]]||[]).filter(e => e.fullID !== this.fullID));
+            }
+        });
+        (this.layers||[]).forEach(layer => {
+            removed.push(layer);
+            layer.clearReferences();
+        });
+        return removed;
     }
 }
 

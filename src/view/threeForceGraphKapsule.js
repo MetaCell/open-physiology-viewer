@@ -9,7 +9,7 @@ import {select as d3Select } from 'd3-selection';
 import {drag as d3Drag } from 'd3-drag';
 
 import Kapsule from 'kapsule';
-import {modelClasses} from '../model/index';
+import {generateFromJSON, modelClasses} from '../model/index';
 import './modelView';
 import {extractCoords} from './utils';
 
@@ -21,7 +21,7 @@ const {Graph} = modelClasses;
 export default Kapsule({
     props: {
         graphData: {
-            default: Graph.fromJSON({}, modelClasses),
+            default: Graph.fromJSON({"id":"Empty"}, modelClasses),
             onChange(value, state) {
                 state.onFrame = null;
             }
@@ -187,9 +187,9 @@ export default Kapsule({
         showLabels       : { default: {}},
 
         labels           : { default: {Anchor: 'id', Wire: 'id', Node: 'id', Link: 'id', Lyph: 'id', Region: 'id'}},
-        labelRelSize     : { default: 0.01},
+        labelRelSize     : { default: 0.005},
         labelOffset      : { default: {Vertice: 1, Edge: 1, Lyph: 1, Region: 1}},
-        fontParams       : { default: { font: '12px Arial', fillStyle: '#000000' , antialias: true}},
+        fontParams       : { default: { font: '11px Arial', fillStyle: '#000000' , antialias: true}},
 
         d3AlphaDecay     : { default: 0.045}, //triggerUpdate: false, onChange(alphaDecay, state) { state.simulation.alphaDecay(alphaDecay) }},
         d3AlphaTarget    : { default: 0}, //triggerUpdate: false, onChange(alphaTarget, state) { state.simulation.alphaTarget(alphaTarget) }},
