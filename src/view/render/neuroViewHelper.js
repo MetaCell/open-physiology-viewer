@@ -109,6 +109,8 @@ export function orthogonalLayout(links, nodes, left, top, canvasWidth, canvasHei
   el.style.width = canvasWidth * 2 + 'px';
   el.style.height = canvasHeight *  2 + 'px';
 
+  const linkNodeSide = 5 ;
+
   if (debug)
   {
     el.style.cssText = 'position:absolute;opacity:0.3;z-index:100;background:#000;';
@@ -176,24 +178,24 @@ export function orthogonalLayout(links, nodes, left, top, canvasWidth, canvasHei
       const sourceNode = new shapes.standard.Rectangle({
         id: link.id + '-source',
         position: { 
-            x: sx
-          , y: sy
+            x: sx - linkNodeSide * 0.5
+          , y: sy - linkNodeSide * 0.5
         },
         size: { 
-          width: 5
-          , height: 5
+          width: linkNodeSide
+          , height: linkNodeSide
         }
       });
 
       const targetNode = new shapes.standard.Rectangle({
         id: link.id + '-target',
         position: { 
-            x: tx
-          , y: ty
+            x: tx - linkNodeSide * 0.5
+          , y: ty - linkNodeSide * 0.5
         },
         size: { 
-            width: 5
-          , height: 5
+            width: linkNodeSide
+          , height: linkNodeSide
         }
       });
       linkNodes.push(sourceNode);
