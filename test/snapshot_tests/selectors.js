@@ -10,3 +10,5 @@ export const MERGE_MODEL_SELECTOR = '#mergeBtn > i';
 export const ERROR_PANEL_SELECTOR = '.cdk-overlay-pane';
 export const OK_ERROR_SELECTOR = 'div[class = "mat-simple-snackbar-action ng-star-inserted"]';
 export const UNTOGLE_ALL_GROUPS_SELECTOR = 'button[class = "mat-focus-indicator mat-raised-button mat-button-base cdk-focused cdk-mouse-focused"]';
+export const LOAD_BUTTON_SELECTOR = '#loadBtn'
+export const NEUROVIEW_CHECKBOX_SELECTOR = '#mat-checkbox-16'

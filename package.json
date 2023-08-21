@@ -6,6 +6,7 @@
   "scripts": {
     "snapshot_test": "./node_modules/.bin/jest tooMap_scaffold_elements.test.js --no-sandbox",
     "keast_snapshot_test": "./node_modules/.bin/jest KeastSpinal_ConnectivityModel_Elements.test.js --no-sandbox",
+    "scaletta_snapshot_test": "./node_modules/.bin/jest Scaletta_model.test.js --no-sandbox",
     "test": "mochapack --opts mocha-webpack.opts --timeout 50000 test/**/*.spec.js",
     "build": "cross-env BABEL_ENV=production webpack",
     "watch": "webpack --progress --watch",
